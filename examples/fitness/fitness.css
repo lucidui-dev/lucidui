@@ -112,7 +112,6 @@ body { background: var(--ft-bg); color: var(--ft-ink); }
     radial-gradient(50% 60% at 50% 55%, rgb(200 255 62 / .10), transparent 70%),
     radial-gradient(40% 50% at 85% 10%, rgb(53 214 255 / .10), transparent 70%),
     radial-gradient(40% 50% at 10% 90%, rgb(255 77 109 / .08), transparent 70%),
-    radial-gradient(circle, rgb(255 255 255 / .05) 1px, transparent 1.5px) 0 0 / 22px 22px,
     #050607;
   animation: ft-fade 420ms var(--lucid-ease-out) both;
   --lucid-ink: #f2f4f1; --lucid-ink-2: #b4bab3; --lucid-ink-3: #6f7670; --lucid-line: rgb(255 255 255 / .08);

@@ -7,18 +7,19 @@ const MARKS = "/media/logo";
 const KIT = "/media/press/lucidui-press-kit.zip";
 
 const LOGOS = [
-  { file: "avatar-wordmark.svg", name: "Primary lockup", text: "The mark and wordmark together. Use this one first.", stage: "plum", wide: true },
-  { file: "avatar.svg", name: "Mark", text: "For avatars, app icons and anywhere space is tight.", stage: "plum" },
-  { file: "avatar-wordmark-white.svg", name: "Lockup, white", text: "One colour, for plum and dark photography.", stage: "plum" },
+  { file: "avatar-wordmark.svg", name: "Primary lockup", text: "The mark and wordmark together. Use this one first.", stage: "obsidian", wide: true },
+  { file: "avatar.svg", name: "Mark", text: "For avatars, app icons and anywhere space is tight.", stage: "obsidian" },
+  { file: "avatar-wordmark-white.svg", name: "Lockup, white", text: "One colour, for obsidian and dark photography.", stage: "obsidian" },
   { file: "avatar-wordmark-black.svg", name: "Lockup, black", text: "One colour, for light backgrounds and print.", stage: "paper" },
-  { file: "avatar-outline.svg", name: "Mark, outline", text: "A quiet watermark for large plum surfaces.", stage: "plum" },
+  { file: "avatar-outline.svg", name: "Mark, outline", text: "A quiet watermark for large obsidian surfaces.", stage: "obsidian" },
   { file: "../lucid-mark.svg", name: "Favicon", text: "The small rounded mark used in browsers and the nav.", stage: "paper", small: true }
 ];
 
 const COLOURS = [
-  { name: "Plum", hex: "#570D38", role: "Primary. The ground the mark sits on.", ink: "#fff" },
-  { name: "Deep plum", hex: "#370723", role: "Depth and gradients beneath plum.", ink: "#fff" },
-  { name: "Tangerine", hex: "#FFB448", role: "The mark itself, and small highlights.", ink: "#2a0818" },
+  { name: "Obsidian", hex: "#111111", role: "Primary. The ground the mark sits on.", ink: "#fff" },
+  { name: "Graphite", hex: "#1C1C1B", role: "Raised surfaces and depth above obsidian.", ink: "#fff" },
+  { name: "Champagne", hex: "#E8D6A8", role: "The mark itself, and small highlights.", ink: "#111111" },
+  { name: "Deep champagne", hex: "#8A6D1F", role: "Champagne for text on paper.", ink: "#fff" },
   { name: "Navy ink", hex: "#0A2540", role: "Headings and numbers in the interface.", ink: "#fff" },
   { name: "Slate", hex: "#425466", role: "Body copy in the interface.", ink: "#fff" },
   { name: "Paper", hex: "#F3F3F1", role: "Quiet backgrounds and print stock.", ink: "#0a2540" }
@@ -171,7 +172,7 @@ function Usage() {
 function Colours() {
   return h("section", { class: "press-section", id: "colour" },
     h("div", { class: "site-wrap" },
-      SectionHead({ eyebrow: "colour", title: "Plum and tangerine.", lead: "Plum carries the brand, tangerine marks it, and navy and slate do the reading. Click any colour to copy its hex value." }),
+      SectionHead({ eyebrow: "colour", title: "Obsidian and champagne.", lead: "Obsidian carries the brand, champagne marks it, and navy and slate do the reading. Click any colour to copy its hex value." }),
       h("div", { class: "swatches" },
         COLOURS.map(colour => {
           const [r, g, b] = rgb(colour.hex);
@@ -193,16 +194,16 @@ function Colours() {
       h("div", { class: "proportion" },
         h("div", { class: "proportion-copy" },
           h("h3", "In proportion"),
-          h("p", "A Lucid UI layout is mostly plum or paper, with tangerine used sparingly. Each dot is one percent of a typical page.")),
+          h("p", "A Lucid UI layout is mostly obsidian or paper, with champagne used sparingly. Each dot is one percent of a typical page.")),
         Waffle({
           columns: 20,
           rows: 5,
           label: "Brand colour proportions",
           segments: [
-            { label: "Plum", value: 46, color: "#570D38" },
+            { label: "Obsidian", value: 46, color: "#111111" },
             { label: "Paper", value: 30, color: "#D9D6CF" },
             { label: "Navy and slate", value: 14, color: "#425466" },
-            { label: "Tangerine", value: 10, color: "#FFB448" }
+            { label: "Champagne", value: 10, color: "#E8D6A8" }
           ]
         }))));
 }
@@ -210,7 +211,7 @@ function Colours() {
 function Type() {
   const sample = signal("Interfaces with taste");
   const size = signal("lg");
-  const ground = signal("plum");
+  const ground = signal("obsidian");
   const sizes = { md: "48px", lg: "84px", xl: "128px" };
   const alphabet = ["ABCDEFGHIJKLM", "NOPQRSTUVWXYZ", "abcdefghijklm", "nopqrstuvwxyz", "0123456789", "&!?.,:;@#()"];
   return h("section", { class: "press-section press-tint", id: "type" },
@@ -231,7 +232,7 @@ function Type() {
           h("div", { class: "tester-controls" },
             Input({ bind: sample, placeholder: "Type something", aria: { label: "Sample text" }, icon: "type", maxlength: 60 }),
             Segmented({ value: size, size: "sm", aria: { label: "Size" }, options: [{ value: "md", label: "M" }, { value: "lg", label: "L" }, { value: "xl", label: "XL" }] }),
-            Segmented({ value: ground, size: "sm", aria: { label: "Background" }, options: [{ value: "plum", label: "Plum" }, { value: "paper", label: "Paper" }, { value: "tangerine", label: "Tangerine" }] })),
+            Segmented({ value: ground, size: "sm", aria: { label: "Background" }, options: [{ value: "obsidian", label: "Obsidian" }, { value: "paper", label: "Paper" }, { value: "champagne", label: "Champagne" }] })),
           h("div", { class: "tester-stage", "data-ground": ground, style: { "--size": () => sizes[size.value] } }, () => sample.value.trim() || "Lucid UI"))),
       h("div", { class: "type-pair" },
         h("div", { class: "type-card" },

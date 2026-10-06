@@ -222,8 +222,6 @@ export function NetworkMap() {
     aria: { label: "Subway network map. Use arrow keys to move along a line, L to switch line at an interchange, Enter to open a station." },
     onKeydown: keys
   },
-  h("defs",
-    h("pattern", { id: "tr-grid", width: 20, height: 20, patternUnits: "userSpaceOnUse" }, h("circle", { cx: 10, cy: 10, r: 0.9, class: "tr-grid-dot" }))),
   h("g", { class: "tr-world", transform: () => {
     const v = view.value;
     const cx = v.x + v.w / 2;
@@ -231,7 +229,6 @@ export function NetworkMap() {
     const flat = 1 - v.tilt * 0.0045;
     return `translate(${cx.toFixed(2)} ${cy.toFixed(2)}) rotate(${v.twist.toFixed(3)}) scale(1 ${flat.toFixed(4)}) translate(${(-cx).toFixed(2)} ${(-cy).toFixed(2)})`;
   } },
-  h("rect", { x: VIEW.x - 400, y: VIEW.y - 300, width: VIEW.w + 800, height: VIEW.h + 600, fill: "url(#tr-grid)" }),
   lake,
   h("g", { class: "tr-halos" }, halos),
   casing,

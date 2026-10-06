@@ -102,7 +102,6 @@ body { background: var(--lucid-bg); }
 .tr-hud .lucid-btn { margin-left: 8px; }
 .tr-svg { display: block; width: 100%; height: auto; overflow: visible; }
 .tr-svg:focus-visible { outline: none; }
-.tr-grid-dot { fill: light-dark(rgb(0 0 0 / .07), rgb(255 255 255 / .06)); }
 .tr-lake path { fill: light-dark(rgb(76 141 255 / .06), rgb(76 141 255 / .045)); }
 .tr-lake text { font: italic 500 11px var(--lucid-font-sans); fill: light-dark(rgb(40 90 190 / .45), rgb(140 180 255 / .4)); letter-spacing: .08em; }
 

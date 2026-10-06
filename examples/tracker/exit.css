@@ -4,7 +4,7 @@
   box-shadow: 0 0 0 1px var(--lucid-line), var(--lucid-shadow-xs), var(--lucid-highlight);
   transition: box-shadow 420ms var(--lucid-ease);
 }
-.tk-exit:not([data-state="idle"]) { box-shadow: 0 0 0 1px color-mix(in oklab, #ffb448 40%, var(--lucid-line)), 0 14px 34px -18px rgb(55 7 35 / .9), var(--lucid-highlight); }
+.tk-exit:not([data-state="idle"]) { box-shadow: 0 0 0 1px color-mix(in oklab, #e8d6a8 40%, var(--lucid-line)), 0 14px 34px -18px rgb(10 10 10 / .9), var(--lucid-highlight); }
 .tk-exit-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding: 0 2px; }
 .tk-exit-copy b { font-size: var(--lucid-text-sm); font-weight: 600; color: var(--lucid-ink); }
 .tk-exit-sub { display: grid; font-size: 11.5px; line-height: 1.35; color: var(--lucid-ink-3); }
@@ -23,7 +23,7 @@
 .tk-exit-btn:active { transform: scale(.98); }
 .tk-exit-fill {
   position: absolute; inset: 0; z-index: -1; border-radius: inherit;
-  background: linear-gradient(135deg, #7a1a50, #370723);
+  background: linear-gradient(135deg, #2e2e2c, #111111);
   clip-path: inset(0 100% 0 0 round 9px);
   transition: clip-path 560ms var(--lucid-ease-out);
 }
@@ -33,11 +33,11 @@
 .tk-exit-btn:hover .tk-exit-idle .lucid-icon { transform: translateX(2px); }
 .tk-exit-confirm { opacity: 0; transform: translateY(10px); filter: blur(3px); pointer-events: none; }
 .tk-exit-ask { flex: 1; }
-.tk-exit-go { padding: 4px 9px; border-radius: 6px; font-size: 11.5px; font-weight: 600; color: #370723; background: #ffb448; box-shadow: inset 0 1px 0 rgb(255 255 255 / .4), 0 4px 12px -4px rgb(255 180 72 / .6); }
+.tk-exit-go { padding: 4px 9px; border-radius: 6px; font-size: 11.5px; font-weight: 600; color: #111111; background: #e8d6a8; box-shadow: inset 0 1px 0 rgb(255 255 255 / .4), 0 4px 12px -4px rgb(232 214 168 / .6); }
 .tk-exit-ring { flex: none; transform: rotate(-90deg); }
 .tk-exit-ring-track { stroke: rgb(255 255 255 / .22); }
-.tk-exit-ring-fill { stroke: #ffb448; stroke-dasharray: 40.84; stroke-dashoffset: 0; stroke-linecap: round; }
-.tk-exit:not([data-state="idle"]) .tk-exit-btn { color: #fff; box-shadow: inset 0 0 0 1px rgb(255 180 72 / .4); }
+.tk-exit-ring-fill { stroke: #e8d6a8; stroke-dasharray: 40.84; stroke-dashoffset: 0; stroke-linecap: round; }
+.tk-exit:not([data-state="idle"]) .tk-exit-btn { color: #fff; box-shadow: inset 0 0 0 1px rgb(232 214 168 / .4); }
 .tk-exit:not([data-state="idle"]) .tk-exit-fill { clip-path: inset(0 0 0 0 round 9px); }
 .tk-exit:not([data-state="idle"]) .tk-exit-idle { opacity: 0; transform: translateY(-10px); filter: blur(3px); }
 .tk-exit:not([data-state="idle"]) .tk-exit-confirm { opacity: 1; transform: none; filter: none; transition-delay: 160ms; }

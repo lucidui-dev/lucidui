@@ -6,7 +6,6 @@ import {
 import { StatTile, DotSparkline, DotColumns, Waffle, DotDumbbell, DotCalendar, ChartCard } from "/lucid/viz/index.js";
 import { mountPage, commandOpen, SectionHead, jump, DownloadButton } from "/shared/chrome.js";
 import { CodeWindow } from "/shared/code.js";
-import { DotField } from "/shared/field.js";
 
 const FACTS = { core: "5.8 KB", tokens: "1,140", deps: "0" };
 
@@ -92,7 +91,6 @@ function HeroStage() {
 
 function Hero() {
   return h("section", { class: "hero" },
-    DotField(),
     h("div", { class: "site-wrap hero-inner" },
       h("a", { class: "hero-chip", href: LINKS.changelog },
         h("span", { class: "hero-chip-dot" }),
