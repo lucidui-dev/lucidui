@@ -1,5 +1,5 @@
 === Lucid UI ===
-Contributors: luciduihq
+Contributors: lucidui
 Tags: ui, components, javascript, charts, shortcode
 Requires at least: 6.5
 Tested up to: 6.8

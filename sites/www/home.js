@@ -533,7 +533,7 @@ function Start() {
         DownloadButton({ size: "lg", label: `Download v${version}` }),
         Button({ variant: "secondary", size: "lg", href: LINKS.docs, iconRight: "arrow-right" }, "Read the docs")),
       CodeWindow({ file: "index.html", code: IMPORT, lang: "html", icon: "monitor", class: "start-code" }),
-      h("p", { class: "start-note" }, "The package arrives on npm and GitHub at launch. Follow ", h("a", { href: LINKS.x }, "@luciduihq"), " to hear first.")));
+      h("p", { class: "start-note" }, "The package arrives on npm and GitHub at launch. Follow ", h("a", { href: LINKS.x }, "@lucidui_"), " to hear first.")));
 }
 
 mountPage({
