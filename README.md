@@ -66,6 +66,10 @@ The repository holds every site Lucid UI runs on:
 
 Both pages load Lucid straight from `/lucid/`, unminified. Locally, `tools/dev-router.php` maps `/lucid/` to `src/` (run it with `php -S`), and `npm run build` writes a ready-to-upload folder per site into `dist/`, plus the download zip.
 
+## Maintainers
+
+Lucid UI is maintained by Ezra ([@thisisezra](https://github.com/thisisezra) on GitHub, [@thisisez_](https://x.com/thisisez_) on X). Follow the project at [@lucidui_](https://x.com/lucidui_), or say hello at hello@lucidui.dev.
+
 ## License
 
 MIT

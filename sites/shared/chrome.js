@@ -36,6 +36,7 @@ export function links(site) {
     reddit: "https://www.reddit.com/user/lucidui_",
     discord: "https://discord.gg/ZsWe7AqFV",
     maintainer: "https://x.com/thisisez_",
+    maintainer_github: "https://github.com/thisisezra",
     hello: "mailto:hello@lucidui.dev",
     press_mail: "mailto:press@lucidui.dev",
     security: "mailto:security@lucidui.dev",
@@ -324,7 +325,9 @@ function Footer(L) {
         `© ${new Date().getFullYear()} Lucid UI`,
         h("span", { class: "foot-sep", "aria-hidden": "true" }, "|"),
         "maintained by ",
-        h("a", { href: L.maintainer, target: "_blank", rel: "noopener" }, "@thisisez_")),
+        h("a", { href: L.maintainer_github, target: "_blank", rel: "noopener" }, "Ezra"),
+        h("span", { class: "foot-sep", "aria-hidden": "true" }, "·"),
+        h("a", { href: L.maintainer, target: "_blank", rel: "noopener", aria: { label: "@thisisez_ on X" } }, "@thisisez_")),
       h("span", { class: "foot-base-links" }, h("a", { href: L.press }, "Press"), h("a", { href: L.privacy }, "Privacy"), h("a", { href: L.license }, "License"))));
 }
 
