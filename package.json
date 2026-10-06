@@ -1,0 +1,42 @@
+{
+  "name": "lucidui",
+  "version": "0.3.0",
+  "description": "A small, dependency-free UI runtime for the web, built for people and AI agents.",
+  "license": "MIT",
+  "homepage": "https://lucidui.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lucidui-dev/lucidui.git"
+  },
+  "bugs": {
+    "url": "https://github.com/lucidui-dev/lucidui/issues",
+    "email": "hello@lucidui.dev"
+  },
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./ui": "./src/ui/index.js",
+    "./ui.css": "./src/ui/lucid.css",
+    "./viz": "./src/viz/index.js",
+    "./bundle": "./bundle/lucid.js",
+    "./bundle.css": "./bundle/lucid.css"
+  },
+  "files": [
+    "src",
+    "bundle",
+    "docs",
+    "llms.txt",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "test": "node --test --import ./test/setup.js \"test/*.test.js\"",
+    "build": "node tools/build.js"
+  },
+  "devDependencies": {
+    "@happy-dom/global-registrator": "^20.14.5",
+    "happy-dom": "^20.14.5"
+  }
+}

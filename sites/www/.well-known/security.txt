@@ -1,0 +1,5 @@
+Contact: mailto:security@lucidui.dev
+Expires: 2027-10-02T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://lucidui.dev/.well-known/security.txt
+Policy: https://lucidui.dev/license/

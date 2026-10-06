@@ -1,0 +1,123 @@
+import { h, version } from "/lucid/index.js";
+import { Badge } from "/lucid/ui/index.js";
+import { mountPage, SectionHead } from "/shared/chrome.js";
+
+const UPDATES = [
+  { date: "3 October 2026", area: "Sandbox", kind: "New", title: "Demo: Juniper Clinic", text: "A calm clinic console in a new layout: icon rail, list sidebar, tabs, detail panel and status bar. Three screens: today's queue and rooms, a clinician day planner, and patient charts with vitals and labs." },
+  { date: "3 October 2026", area: "Sandbox", kind: "Improved", title: "Leaving a demo returns you to the picker", text: "Every demo's Leave the sandbox button now lands on the sandbox picker with the demo you just left highlighted, and the picker has its own Exit sandbox button." },
+  { date: "3 October 2026", area: "Sandbox", kind: "New", title: "Demo: Maison sofa configurator", text: "A furniture store's product page: size, fabric and legs redraw the sofa live, the price follows, and a cart sheet holds the sofa and free swatches." },
+  { date: "3 October 2026", area: "Sandbox", kind: "Improved", title: "A new way to pick a demo", text: "The sandbox picker shows the highlighted demo on the left and every demo in a searchable, filterable list on the right. Arrow keys browse, Enter opens." },
+  { date: "3 October 2026", area: "Sandbox", kind: "Improved", title: "The playground is now the sandbox", text: "Same demos, clearer name, new home at sandbox.lucidui.dev." },
+  { date: "3 October 2026", area: "Site", kind: "Improved", title: "The Case for Lucid in the footer", text: "The footer now links to The Case for Lucid by name." },
+  { date: "3 October 2026", area: "Sandbox", kind: "New", title: "Demo: Dotwave step sequencer", text: "Sixteen steps, six instruments synthesised live with the Web Audio API, swing, presets, mute and solo, and a dot visualiser that dances to the sound." },
+  { date: "3 October 2026", area: "Site", kind: "New", title: "Find us on Reddit and Discord", text: "Reddit and Discord join X, GitHub and npm in the footer and the command menu, and the footer credits the maintainer." },
+  { date: "3 October 2026", area: "Site", kind: "Improved", title: "A cleaner changelog and a shorter menu", text: "Updates are grouped by day, matching the release notes below them. Press and Changelog moved out of the top menu and live in the footer." },
+  { date: "3 October 2026", area: "Site", kind: "Fixed", title: "Pages never mix old and new files", text: "Every release now stamps its stylesheets and scripts with the version, so browsers and servers can't serve a stale stylesheet against new code." },
+  { date: "3 October 2026", area: "Sandbox", kind: "New", title: "Demo: Stride fitness tracker", text: "Activity rings, steps, heart rate and 12 weeks of training, all in dots. Sync a watch and a 3D watch spins into view beside live readouts, then hands its data to today." },
+  { date: "3 October 2026", area: "Sandbox", kind: "Improved", title: "Headway: a clear way out of a zoomed station", text: "A Zoom out button sits in the map's corner whenever you're zoomed in, next to Recenter. Esc still works." },
+  { date: "3 October 2026", area: "Sandbox", kind: "Fixed", title: "Headway: crisp lines and labels when zoomed", text: "The zoom and the tilt are now drawn as part of the map itself, instead of enlarging and tilting a picture of it, so text and lines stay sharp at any zoom." },
+  { date: "3 October 2026", area: "Sandbox", kind: "New", title: "Headway: drag the map", text: "Grab and pan, zoomed out or zoomed in. A drag never counts as a click on a station." },
+  { date: "3 October 2026", area: "Sandbox", kind: "New", title: "Headway: zoom into a station", text: "Click a station and the map glides in with a gentle tilt. Only the lines through it stay lit, and every station on them is labelled." },
+  { date: "3 October 2026", area: "Sandbox", kind: "Improved", title: "Flight check-in: the seat map fits on one screen", text: "The cabin is drawn sideways like a fuselage seen from above, so choosing seats needs no scrolling." },
+  { date: "3 October 2026", area: "Sandbox", kind: "New", title: "Flight check-in: the plane flies the route", text: "A small plane eases from Incheon to Los Angeles along the route arc, banking with the curve, and loops." },
+  { date: "3 October 2026", area: "Library", kind: "Fixed", title: "Closed tooltips are fully hidden", text: "A closed tooltip stayed rendered but invisible, which could widen the page on phones. It's now removed until it opens, and still animates in and out." },
+  { date: "3 October 2026", area: "Library", kind: "Improved", title: "DotDumbbell takes any number of series", text: "It used to draw nothing, with no warning, unless given exactly two. Now every series is drawn, joined by a stem from lowest to highest." },
+  { date: "3 October 2026", area: "Sandbox", kind: "New", title: "Demo: Flight check-in", text: "A calm check-in concierge for a fictional airline, Celadon Air: seats, bags, a boarding pass, and a rail that collapses to icons." },
+  { date: "3 October 2026", area: "Sandbox", kind: "New", title: "Demo: Race Center", text: "A fictional newsroom's campaign tracker, custom-branded through Lucid's tokens: polls, a forecast slider and a county dot map." },
+  { date: "2 October 2026", area: "Sandbox", kind: "New", title: "Demo: Headway transit control", text: "A live subway service desk on Toronto's map: moving trains, platform crowding and service alerts, drawn in dots." },
+  { date: "2 October 2026", area: "Sandbox", kind: "New", title: "Pick a demo, and leave when you like", text: "lucidui.dev opens a demo picker. Every demo has its own Leave the sandbox button, with a two-step confirm." },
+  { date: "2 October 2026", area: "Builder", kind: "New", title: "Lucid UI Builder, preview", text: "Write Lucid in the browser at build.lucidui.dev and watch it run, with a console that explains every diagnostic." },
+  { date: "2 October 2026", area: "Library", kind: "New", title: "One file, works anywhere", text: "lucidui/bundle is the whole library in a single module, for pages without a bundler, including Shopify themes and Squarespace." },
+  { date: "2 October 2026", area: "Library", kind: "Fixed", title: "Menus near the right edge open in view", text: "Popovers now position themselves again once visible, so right-aligned menus no longer open off-screen." },
+  { date: "2 October 2026", area: "Site", kind: "New", title: "The Case for Lucid", text: "How Lucid UI compares with React, Tailwind CSS, shadcn/ui, Svelte and plain HTML and CSS, including where it loses." },
+  { date: "2 October 2026", area: "Site", kind: "New", title: "Press kit", text: "Logos, colours and the Rubik wordmark type at lucidui.dev/press." }
+];
+
+const RELEASES = [
+  {
+    version: "0.3.0",
+    date: "2 October 2026",
+    title: "Forms, dates, undo and virtual lists",
+    summary: "The interaction layer. Everything you need to build real forms and long, fast lists, and to let people take things back instead of confirming them first.",
+    items: [
+      ["New", "form() with rules for required, length, email, pattern and number ranges, plus your own. Errors appear once a field is left or the form is submitted."],
+      ["New", "DatePicker with quick picks, a full-keyboard calendar, min and max dates, and a sliding month transition."],
+      ["New", "Select can create options: unmatched searches offer “Create …”."],
+      ["New", "VirtualList renders only the rows in view, with fixed or per-row heights."],
+      ["New", "createHistory() adds undo and redo to any signal."],
+      ["Improved", "Dialogs focus their first field on open. Shortcuts leave text fields alone, so ⌘Z keeps undoing your typing."],
+      ["Improved", "Text colours follow a clear hierarchy: navy headings, slate body copy, lighter labels on data."],
+      ["Fixed", "Segmented controls sit exactly 3px from every edge, measured, in every state."]
+    ]
+  },
+  {
+    version: "0.2.0",
+    date: "2 October 2026",
+    title: "The design language, components and dot charts",
+    summary: "The look arrives: one set of tokens for light and dark, a full set of components, and charts drawn entirely with dots.",
+    items: [
+      ["New", "Design tokens on CSS light-dark(), scoped to .lucid-app so Lucid never styles the page around it."],
+      ["New", "Components: layout, type, buttons, inputs, select, menu, tooltip, dialog and sheet, command menu, toasts, avatars and badges."],
+      ["New", "Charts made of dots: columns, dumbbells, waffles, unit rows, calendars, sparklines and stat tiles, each with a table view."],
+      ["New", "The sandbox: an issue tracker with list and board views, drag and drop, and an Insights dashboard."],
+      ["Fixed", "aria-* attributes keep their true and false values."]
+    ]
+  },
+  {
+    version: "0.1.0",
+    date: "2 October 2026",
+    title: "The runtime",
+    summary: "Fine-grained signals and a tiny DOM runtime, built so an AI agent can learn the whole thing in one read.",
+    items: [
+      ["New", "signal, computed, effect, batch and untrack, with cleanup scopes."],
+      ["New", "h, tags, mount, Show and For. Components run once, and only what changed is touched."],
+      ["New", "Diagnostics with stable codes and fixes, delivered as data, including accessibility checks."],
+      ["New", "A size budget enforced by tests, and an API reference kept short enough for an agent's context."]
+    ]
+  }
+];
+
+const tone = { New: "accent", Improved: "solid", Fixed: undefined };
+
+const DAYS = UPDATES.reduce((days, update) => {
+  const last = days[days.length - 1];
+  if (last && last.date === update.date) last.items.push(update);
+  else days.push({ date: update.date, items: [update] });
+  return days;
+}, []);
+
+mountPage({
+  site: "changelog",
+  main: () => h("div", { class: "site-wrap changelog" },
+    SectionHead({
+      eyebrow: "changelog",
+      title: "What's new in Lucid UI.",
+      lead: `Every release, what changed and why. The current version is ${version}.`,
+      level: 1
+    }),
+    h("section", { class: "updates", aria: { label: "Latest updates" } },
+      h("header", { class: "updates-head" },
+        h("h2", { class: "updates-title" }, "Latest updates"),
+        h("p", { class: "updates-lead" }, "Every change as it lands, newest first. Library changes roll into the next numbered release.")),
+      h("ol", { class: "update-days" }, DAYS.map(day => h("li", { class: "update-day" },
+        h("div", { class: "update-day-meta" },
+          h("time", { class: "update-day-date" }, day.date),
+          h("span", { class: "update-day-count" }, `${day.items.length} ${day.items.length === 1 ? "change" : "changes"}`)),
+        h("ul", { class: "update-items" }, day.items.map(u => h("li", { class: "update-item" },
+          h("div", { class: "update-tags" }, Badge({ tone: tone[u.kind], size: "sm" }, u.kind), h("span", { class: "update-area" }, u.area)),
+          h("h3", { class: "update-title" }, u.title),
+          h("p", { class: "update-text" }, u.text)))))))),
+    h("h2", { class: "updates-title releases-title" }, "Releases"),
+    h("ol", { class: "releases" },
+      RELEASES.map(release => h("li", { class: "release", id: `v${release.version}` },
+        h("div", { class: "release-meta" },
+          h("a", { class: "release-version", href: `#v${release.version}` }, `v${release.version}`),
+          h("time", release.date)),
+        h("div", { class: "release-body" },
+          h("h2", { class: "release-title" }, release.title),
+          h("p", { class: "release-summary" }, release.summary),
+          h("ul", { class: "release-items" },
+            release.items.map(([kind, text]) => h("li",
+              Badge({ tone: tone[kind], size: "sm" }, kind),
+              h("span", text)))))))))
+});

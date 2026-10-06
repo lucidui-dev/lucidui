@@ -1,0 +1,54 @@
+.tk-exit {
+  display: flex; flex-direction: column; gap: 10px; padding: 12px; border-radius: 12px;
+  background: var(--lucid-surface-raised);
+  box-shadow: 0 0 0 1px var(--lucid-line), var(--lucid-shadow-xs), var(--lucid-highlight);
+  transition: box-shadow 420ms var(--lucid-ease);
+}
+.tk-exit:not([data-state="idle"]) { box-shadow: 0 0 0 1px color-mix(in oklab, #ffb448 40%, var(--lucid-line)), 0 14px 34px -18px rgb(55 7 35 / .9), var(--lucid-highlight); }
+.tk-exit-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding: 0 2px; }
+.tk-exit-copy b { font-size: var(--lucid-text-sm); font-weight: 600; color: var(--lucid-ink); }
+.tk-exit-sub { display: grid; font-size: 11.5px; line-height: 1.35; color: var(--lucid-ink-3); }
+.tk-exit-sub > span { grid-area: 1 / 1; transition: opacity 280ms var(--lucid-ease), transform 420ms var(--lucid-ease-out); }
+.tk-exit-sub-confirm { opacity: 0; transform: translateY(5px); color: var(--lucid-ink-2); }
+.tk-exit:not([data-state="idle"]) .tk-exit-sub-idle { opacity: 0; transform: translateY(-5px); }
+.tk-exit:not([data-state="idle"]) .tk-exit-sub-confirm { opacity: 1; transform: none; transition-delay: 80ms; }
+.tk-exit-btn {
+  position: relative; display: grid; align-items: center; width: 100%; height: 34px; padding: 0 6px 0 12px;
+  border: 0; border-radius: 9px; cursor: pointer; overflow: hidden; isolation: isolate;
+  font: 500 var(--lucid-text-sm)/1 var(--lucid-font-sans); color: var(--lucid-ink);
+  background: var(--lucid-hover); box-shadow: inset 0 0 0 1px var(--lucid-line-strong);
+  transition: color 320ms var(--lucid-ease), box-shadow 320ms var(--lucid-ease), transform 160ms var(--lucid-ease);
+}
+.tk-exit-btn:hover { box-shadow: inset 0 0 0 1px light-dark(rgb(12 12 13 / .22), rgb(255 255 255 / .2)); }
+.tk-exit-btn:active { transform: scale(.98); }
+.tk-exit-fill {
+  position: absolute; inset: 0; z-index: -1; border-radius: inherit;
+  background: linear-gradient(135deg, #7a1a50, #370723);
+  clip-path: inset(0 100% 0 0 round 9px);
+  transition: clip-path 560ms var(--lucid-ease-out);
+}
+.tk-exit-btn > span:not(.tk-exit-fill) { grid-area: 1 / 1; display: flex; align-items: center; gap: 8px; white-space: nowrap; transition: opacity 260ms var(--lucid-ease), transform 460ms var(--lucid-ease-out), filter 260ms var(--lucid-ease); }
+.tk-exit-idle { justify-content: space-between; padding-right: 6px; }
+.tk-exit-idle .lucid-icon { color: var(--lucid-ink-3); transition: transform var(--lucid-base) var(--lucid-ease-out); }
+.tk-exit-btn:hover .tk-exit-idle .lucid-icon { transform: translateX(2px); }
+.tk-exit-confirm { opacity: 0; transform: translateY(10px); filter: blur(3px); pointer-events: none; }
+.tk-exit-ask { flex: 1; }
+.tk-exit-go { padding: 4px 9px; border-radius: 6px; font-size: 11.5px; font-weight: 600; color: #370723; background: #ffb448; box-shadow: inset 0 1px 0 rgb(255 255 255 / .4), 0 4px 12px -4px rgb(255 180 72 / .6); }
+.tk-exit-ring { flex: none; transform: rotate(-90deg); }
+.tk-exit-ring-track { stroke: rgb(255 255 255 / .22); }
+.tk-exit-ring-fill { stroke: #ffb448; stroke-dasharray: 40.84; stroke-dashoffset: 0; stroke-linecap: round; }
+.tk-exit:not([data-state="idle"]) .tk-exit-btn { color: #fff; box-shadow: inset 0 0 0 1px rgb(255 180 72 / .4); }
+.tk-exit:not([data-state="idle"]) .tk-exit-fill { clip-path: inset(0 0 0 0 round 9px); }
+.tk-exit:not([data-state="idle"]) .tk-exit-idle { opacity: 0; transform: translateY(-10px); filter: blur(3px); }
+.tk-exit:not([data-state="idle"]) .tk-exit-confirm { opacity: 1; transform: none; filter: none; transition-delay: 160ms; }
+.tk-exit[data-state="confirm"] .tk-exit-ring-fill { animation: tk-exit-countdown 4s linear forwards; }
+.tk-exit[data-state="leaving"] .tk-exit-ring-fill { stroke-dasharray: 14 30; }
+.tk-exit[data-state="leaving"] .tk-exit-ring { animation: tk-exit-spin 700ms linear infinite; }
+@keyframes tk-exit-countdown { to { stroke-dashoffset: 40.84; } }
+@keyframes tk-exit-spin { from { transform: rotate(-90deg); } to { transform: rotate(270deg); } }
+.tk-exit[data-compact] { gap: 0; padding: 5px; border-radius: 12px; }
+.tk-exit[data-compact] .tk-exit-copy { display: none; }
+.tk-exit[data-compact] .tk-exit-btn { padding: 0; justify-items: center; }
+.tk-exit[data-compact] .tk-exit-idle { gap: 0; padding: 0; font-size: 0; justify-content: center; }
+.tk-exit[data-compact] .tk-exit-confirm { justify-content: center; }
+.tk-exit[data-compact] .tk-exit-ask, .tk-exit[data-compact] .tk-exit-go { display: none; }

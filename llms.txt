@@ -1,0 +1,23 @@
+# Lucid UI
+
+> A small, dependency-free UI runtime for the web. Fine-grained signals, plain DOM output, components that run once, and coded diagnostics that explain every mistake with a fix.
+
+Read docs/API.md in full before writing Lucid UI code. It is the complete API and is kept short so it fits in context.
+
+Key rules:
+- Props are optional and always the first argument, as the only plain object.
+- Read and write signals with `.value`. Pass the signal itself (not `.value`) as a child or prop to keep it live.
+- A function child or prop is a live expression. Event handlers are props starting with `on`.
+- Pass `Show` branches as functions. Give `For` a `key` when items have ids.
+- Use `button` for actions and `a` for navigation, never a clickable `div`.
+- When you see a diagnostic code, look it up in docs/DIAGNOSTICS.md and apply the fix it gives.
+
+Single file: `lucidui/bundle` (bundle/lucid.js plus bundle/lucid.css) exports everything from lucidui, lucidui/ui and lucidui/viz in one module, for pages without a bundler or import map (Shopify themes, Squarespace code blocks, plain HTML). In WordPress, the Lucid UI plugin registers lucidui, lucidui/ui and lucidui/viz as script modules; an app is a file in the theme's lucid/ folder whose default export is a component, used with [lucid app="name"].
+
+## Docs
+
+- [API](docs/API.md): the complete API
+- [Components](docs/UI.md): styled, accessible components (lucidui/ui)
+- [Charts](docs/VIZ.md): dot-based data visualisation (lucidui/viz)
+- [Diagnostics](docs/DIAGNOSTICS.md): every warning and error code, with the fix
+- [Vision](docs/VISION.md): goals, principles and roadmap
