@@ -13,8 +13,8 @@ $map = [
     '/lucid/' => $root . '/src/',
     '/shared/' => $root . '/sites/shared/',
     '/docs/' => $root . '/docs/',
-    '/brand/' => $root . '/brand/',
-    '/press-kit/' => $root . '/dist/press-kit/',
+    '/media/press/' => $root . '/dist/press-kit/',
+    '/media/' => $root . '/media/',
 ];
 $files = [
     '/llms.txt' => $root . '/llms.txt',

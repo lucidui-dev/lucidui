@@ -3,6 +3,7 @@ import { Badge } from "/lucid/ui/index.js";
 import { mountPage, SectionHead } from "/shared/chrome.js";
 
 const UPDATES = [
+  { date: "6 October 2026", area: "Site", kind: "Improved", title: "One home for the brand: media.lucidui.dev", text: "Logos, icons and the press kit now live in one place, used by every Lucid UI site and sandbox demo instead of a copy in each." },
   { date: "6 October 2026", area: "Site", kind: "Improved", title: "Meet the maintainer", text: "The footer credits Ezra with links to GitHub and X, and the repository lists its maintainer and code owner." },
   { date: "6 October 2026", area: "Site", kind: "New", title: "Lucid UI is on GitHub", text: "The source now lives at github.com/lucidui-dev/lucidui, with tests and a full build running on every push. Social links point to @lucidui_ on X and u/lucidui_ on Reddit." },
   { date: "3 October 2026", area: "Sandbox", kind: "New", title: "Demo: Juniper Clinic", text: "A calm clinic console in a new layout: icon rail, list sidebar, tabs, detail panel and status bar. Three screens: today's queue and rooms, a clinician day planner, and patient charts with vitals and labs." },

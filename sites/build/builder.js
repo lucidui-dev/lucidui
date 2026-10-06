@@ -258,7 +258,7 @@ function AgentDialog() {
 function Bar() {
   return h("header", { class: "b-bar" },
     h("a", { class: "b-brand", href: "https://lucidui.dev", aria: { label: "Lucid UI home" } },
-      h("img", { src: "/brand/marks/lucid-mark.svg", alt: "", width: 24, height: 24 }),
+      h("img", { src: "/media/logo/lucid-mark.svg", alt: "", width: 24, height: 24 }),
       h("span", { class: "b-brand-word" }, "Lucid UI")),
     h("span", { class: "b-slash", "aria-hidden": "true" }, "/"),
     h("span", { class: "b-name" }, "Builder", h("span", { class: "b-pill" }, "Preview")),

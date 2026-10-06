@@ -3,8 +3,8 @@ import { Button, Segmented, Input, Icon, Tooltip, toast } from "/lucid/ui/index.
 import { StatTile, Waffle } from "/lucid/viz/index.js";
 import { mountPage, SectionHead, jump } from "/shared/chrome.js";
 
-const MARKS = "/brand/marks/press";
-const KIT = "/press-kit/lucidui-press-kit.zip";
+const MARKS = "/media/logo";
+const KIT = "/media/press/lucidui-press-kit.zip";
 
 const LOGOS = [
   { file: "avatar-wordmark.svg", name: "Primary lockup", text: "The mark and wordmark together. Use this one first.", stage: "plum", wide: true },

@@ -157,7 +157,7 @@ function Stack() {
             h("span", { class: "stack-layer-tools" }, layer.examples)))),
         h("div", { class: "stack-lucid", "aria-hidden": () => (lucid.value ? "false" : "true") },
           h("div", { class: "stack-lucid-head" },
-            h("img", { src: "/brand/marks/lucid-mark.svg", alt: "", width: 34, height: 34 }),
+            h("img", { src: "/media/logo/lucid-mark.svg", alt: "", width: 34, height: 34 }),
             h("div", h("b", "Lucid UI"), h("span", "one layer · no build"))),
           h("ul", LUCID_LAYER.map(([icon, title, text]) => h("li",
             Icon({ name: icon, size: 15 }),
@@ -273,7 +273,7 @@ function Matrix() {
               class: c === 0 ? "matrix-lucid" : null,
               onPointerenter: () => { focus.value = String(c); },
               onPointerleave: () => { focus.value = null; }
-            }, c === 0 ? h("span", { class: "matrix-brand" }, h("img", { src: "/brand/marks/lucid-mark.svg", alt: "", width: 18, height: 18 }), name) : name)))),
+            }, c === 0 ? h("span", { class: "matrix-brand" }, h("img", { src: "/media/logo/lucid-mark.svg", alt: "", width: 18, height: 18 }), name) : name)))),
           h("tbody", ROWS.map(([label, ...cells]) => h("tr",
             h("th", { scope: "row" }, label),
             cells.map(([kind, text], c) => h("td", {
@@ -314,7 +314,7 @@ function Verdicts() {
             h("p", { class: "versus-text" }, item.differ)),
           h("div", { class: "versus-picks" },
             h("div", { class: "versus-pick" }, h("span", { class: "versus-pick-label" }, item.name), h("p", item.pick)),
-            h("div", { class: "versus-pick versus-pick-lucid" }, h("span", { class: "versus-pick-label" }, h("img", { src: "/brand/marks/lucid-mark.svg", alt: "", width: 16, height: 16 }), "Lucid UI"), h("p", item.lucid))));
+            h("div", { class: "versus-pick versus-pick-lucid" }, h("span", { class: "versus-pick-label" }, h("img", { src: "/media/logo/lucid-mark.svg", alt: "", width: 16, height: 16 }), "Lucid UI"), h("p", item.lucid))));
       }));
 }
 

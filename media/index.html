@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Media · Lucid UI</title>
+  <meta name="description" content="Official Lucid UI logos, icons and press kit.">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="logo/lucid-mark.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..600&family=Geist+Mono&display=swap">
+  <style>
+    :root { color-scheme: light dark; --ink: light-dark(#0a2540, #f6f2f4); --ink-2: light-dark(#425466, #c9b8c1); --line: light-dark(rgb(10 37 64 / .1), rgb(255 255 255 / .1)); --card: light-dark(#ffffff, #1c0b14); --bg: light-dark(#f6f6f4, #12050c); }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100dvh; display: grid; place-items: center; padding: 48px 20px; font: 15px/1.6 Geist, system-ui, sans-serif; color: var(--ink); background: var(--bg); }
+    main { width: min(100%, 720px); }
+    header { display: flex; align-items: center; gap: 14px; }
+    header img { border-radius: 12px; }
+    h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -.02em; }
+    p { margin: 4px 0 0; color: var(--ink-2); }
+    ul { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin: 32px 0 0; padding: 0; list-style: none; }
+    li a { display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 14px; color: inherit; text-decoration: none; background: var(--card); box-shadow: inset 0 0 0 1px var(--line); }
+    li a:hover { box-shadow: inset 0 0 0 1px #ffb448; }
+    li a:focus-visible { outline: 2px solid #ffb448; outline-offset: 2px; }
+    li img { height: 56px; object-fit: contain; object-position: left; }
+    li span { font: 500 12.5px "Geist Mono", monospace; color: var(--ink-2); }
+    footer { margin-top: 28px; font-size: 13.5px; color: var(--ink-2); }
+    footer a { color: inherit; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <img src="logo/lucid-mark.svg" alt="" width="44" height="44">
+      <div>
+        <h1>Lucid UI media</h1>
+        <p>Official logos and the press kit. Please don't alter the marks.</p>
+      </div>
+    </header>
+    <ul>
+      <li><a href="press/lucidui-press-kit.zip" download><img src="logo/avatar-wordmark.svg" alt=""><b>Press kit</b><span>press/lucidui-press-kit.zip</span></a></li>
+      <li><a href="logo/avatar-wordmark.svg"><img src="logo/avatar-wordmark.svg" alt=""><b>Primary lockup</b><span>logo/avatar-wordmark.svg</span></a></li>
+      <li><a href="logo/avatar.svg"><img src="logo/avatar.svg" alt=""><b>Mark</b><span>logo/avatar.svg</span></a></li>
+      <li><a href="logo/lucid-mark.svg"><img src="logo/lucid-mark.svg" alt=""><b>Icon</b><span>logo/lucid-mark.svg</span></a></li>
+    </ul>
+    <footer>Usage guidance and colours: <a href="https://lucidui.dev/press/">lucidui.dev/press</a> · press@lucidui.dev</footer>
+  </main>
+</body>
+</html>
