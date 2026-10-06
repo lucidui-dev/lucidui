@@ -1,6 +1,6 @@
 import { signal, computed, effect, h, mount, For, Show, version } from "/lucid/index.js";
 import { Button, Select, Segmented, Dialog, Tooltip, Kbd, Icon, hotkey, toast } from "/lucid/ui/index.js";
-import { theme } from "/shared/chrome.js";
+import { theme, dark } from "/shared/chrome.js";
 import { highlight } from "/shared/code.js";
 import { TEMPLATES } from "/templates.js";
 
@@ -258,8 +258,7 @@ function AgentDialog() {
 function Bar() {
   return h("header", { class: "b-bar" },
     h("a", { class: "b-brand", href: "https://lucidui.dev", aria: { label: "Lucid UI home" } },
-      h("img", { src: "/media/logo/lucid-mark.svg", alt: "", width: 24, height: 24 }),
-      h("span", { class: "b-brand-word" }, "Lucid UI")),
+      h("img", { src: () => (dark() ? "/media/logo/lucidui-wordmark-on-dark.svg" : "/media/logo/lucidui-wordmark-on-light.svg"), alt: "Lucid UI", height: 22, width: 111 })),
     h("span", { class: "b-slash", "aria-hidden": "true" }, "/"),
     h("span", { class: "b-name" }, "Builder", h("span", { class: "b-pill" }, "Preview")),
     Select({

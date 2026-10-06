@@ -106,7 +106,7 @@ function Broken() {
   return Stack({ gap: 3 },
     h("p", "Lucid reports mistakes with a code and a fix. Check the console below."),
     Button({ icon: "trash" }),
-    h("img", { src: "/media/logo/lucid-mark.svg", width: 32 }),
+    h("img", { src: "/media/logo/lucidui-icon.svg", width: 32 }),
     h("ul", For({ each: items, key: item => item.id }, item => h("li", item.name))));
 }
 

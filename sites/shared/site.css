@@ -20,7 +20,8 @@ body.site { background: var(--lucid-surface); min-height: 100dvh; overflow-x: cl
 }
 .site-nav-inner { display: flex; align-items: center; gap: 10px; height: 64px; }
 .site-brand { display: inline-flex; align-items: center; gap: 10px; color: var(--lucid-ink); text-decoration: none; font: 700 17px/1 "Rubik", var(--lucid-font-sans); letter-spacing: -.005em; flex: none; }
-.site-brand img { display: block; border-radius: 7px; }
+.site-brand img { display: block; height: 26px; width: auto; }
+.mark-ring { border-radius: 50%; box-shadow: 0 0 0 1.5px light-dark(transparent, rgb(245 242 234 / .9)); }
 .site-links { display: flex; gap: 2px; margin-left: 22px; }
 .site-links a { white-space: nowrap;
   padding: 7px 11px; border-radius: 8px;
@@ -42,6 +43,14 @@ body.site { background: var(--lucid-surface); min-height: 100dvh; overflow-x: cl
 .site-search span { min-width: 80px; text-align: left; }
 
 .hero { position: relative; padding: 72px 0 96px; isolation: isolate; }
+.dot-field {
+  position: absolute; inset: -64px 0 auto; height: 760px; width: 100%; z-index: -1;
+  color: var(--lucid-ink-4);
+  border: 0 solid light-dark(#a8a59e, #3b3a37);
+  -webkit-mask-image: radial-gradient(ellipse 70% 62% at 50% 34%, #000 30%, transparent 78%);
+  mask-image: radial-gradient(ellipse 70% 62% at 50% 34%, #000 30%, transparent 78%);
+  pointer-events: none;
+}
 .hero-inner { display: flex; flex-direction: column; align-items: center; text-align: center; }
 .hero-chip {
   display: inline-flex; align-items: center; gap: 8px;
@@ -54,7 +63,7 @@ body.site { background: var(--lucid-surface); min-height: 100dvh; overflow-x: cl
 }
 .hero-chip:hover { transform: translateY(-1px); box-shadow: 0 0 0 1px var(--lucid-line-strong), var(--lucid-shadow-md), var(--lucid-highlight); }
 .hero-chip .lucid-icon { color: var(--lucid-ink-3); }
-.hero-chip-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--lucid-accent); box-shadow: 0 0 0 3px var(--lucid-accent-soft); }
+.hero-chip-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--site-champagne); box-shadow: 0 0 0 3px rgb(232 214 168 / .22); }
 .hero-chip-sep { width: 1px; height: 12px; background: var(--lucid-line-strong); }
 .hero-title {
   margin: 0; max-width: 980px;
@@ -394,7 +403,7 @@ body.site { background: var(--lucid-surface); min-height: 100dvh; overflow-x: cl
 .bumper-close:hover { color: #fff; background: rgb(255 255 255 / .12); }
 .bumper-inner { width: min(100%, 1120px); transform: translateY(14px) scale(.985); transition: transform 700ms var(--lucid-ease-out); }
 .bumper[data-open] .bumper-inner { transform: none; }
-.bumper-mark { flex: none; border-radius: 13px; box-shadow: 0 0 0 1px rgb(255 255 255 / .12), 0 18px 50px rgb(0 0 0 / .45), 0 0 60px rgb(232 214 168 / .16); }
+.bumper-mark { flex: none; border-radius: 50%; box-shadow: 0 0 0 1.5px rgb(245 242 234 / .9), 0 18px 50px rgb(0 0 0 / .45), 0 0 60px rgb(232 214 168 / .14); }
 .bumper-eyebrow { font: 500 12.5px/1 var(--lucid-font-mono); color: var(--site-champagne); letter-spacing: 0; }
 .bumper-title { margin: 18px 0 0; font-size: clamp(38px, 5vw, 60px); line-height: 1; font-weight: 600; letter-spacing: -.05em; color: #fff; }
 .bumper-text { margin: 16px 0 0; max-width: 480px; font-size: 17px; line-height: 1.6; color: rgb(245 242 234 / .75); }

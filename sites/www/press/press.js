@@ -3,26 +3,40 @@ import { Button, Segmented, Input, Icon, Tooltip, toast } from "/lucid/ui/index.
 import { StatTile, Waffle } from "/lucid/viz/index.js";
 import { mountPage, SectionHead, jump } from "/shared/chrome.js";
 
-const MARKS = "/media/logo";
+const MEDIA = "/media";
 const KIT = "/media/press/lucidui-press-kit.zip";
 
 const LOGOS = [
-  { file: "avatar-wordmark.svg", name: "Primary lockup", text: "The mark and wordmark together. Use this one first.", stage: "obsidian", wide: true },
-  { file: "avatar.svg", name: "Mark", text: "For avatars, app icons and anywhere space is tight.", stage: "obsidian" },
-  { file: "avatar-wordmark-white.svg", name: "Lockup, white", text: "One colour, for obsidian and dark photography.", stage: "obsidian" },
-  { file: "avatar-wordmark-black.svg", name: "Lockup, black", text: "One colour, for light backgrounds and print.", stage: "paper" },
-  { file: "avatar-outline.svg", name: "Mark, outline", text: "A quiet watermark for large obsidian surfaces.", stage: "obsidian" },
-  { file: "../lucid-mark.svg", name: "Favicon", text: "The small rounded mark used in browsers and the nav.", stage: "paper", small: true }
+  { file: "logo/lucidui-wordmark-on-light.svg", png: "logo/lucidui-wordmark-on-light.png", name: "Wordmark, for light backgrounds", text: "The icon and the name together. Use this one first.", stage: "paper", wide: true, ratio: 688 / 136 },
+  { file: "logo/lucidui-icon.svg", png: "logo/lucidui-icon-1024.png", name: "Icon", text: "For avatars, app icons and anywhere space is tight.", stage: "paper", ratio: 1 },
+  { file: "logo/lucidui-wordmark-on-dark.svg", png: "logo/lucidui-wordmark-on-dark.png", name: "Wordmark, for dark backgrounds", text: "White lettering for obsidian, navy and dark photography.", stage: "obsidian", wide: true, ratio: 688 / 136 },
+  { file: "icons/favicon.svg", png: "icons/favicon-48.png", name: "Favicon", text: "Simplified so it still reads at 16 pixels.", stage: "paper", small: true, ratio: 1 }
+];
+
+const FILES = [
+  ["Icon", "logo/lucidui-icon.svg", "SVG", "Any size"],
+  ["Icon", "logo/lucidui-icon-1024.png", "PNG", "1024 × 1024"],
+  ["Wordmark, light backgrounds", "logo/lucidui-wordmark-on-light.svg", "SVG", "Any size"],
+  ["Wordmark, light backgrounds", "logo/lucidui-wordmark-on-light.png", "PNG", "688 × 136"],
+  ["Wordmark, dark backgrounds", "logo/lucidui-wordmark-on-dark.svg", "SVG", "Any size"],
+  ["Wordmark, dark backgrounds", "logo/lucidui-wordmark-on-dark.png", "PNG", "688 × 136"],
+  ["Favicon", "icons/favicon.svg", "SVG", "Any size"],
+  ["Favicon", "icons/favicon.ico", "ICO", "16, 32 and 48"],
+  ["Apple touch icon", "icons/apple-touch-icon.png", "PNG", "180 × 180"],
+  ["App icon", "icons/icon-192.png", "PNG", "192 × 192"],
+  ["App icon", "icons/icon-512.png", "PNG", "512 × 512"],
+  ["App icon, maskable", "icons/icon-maskable-512.png", "PNG", "512 × 512"],
+  ["Social share image", "og/og-default.png", "PNG", "1200 × 630"]
 ];
 
 const COLOURS = [
-  { name: "Obsidian", hex: "#111111", role: "Primary. The ground the mark sits on.", ink: "#fff" },
-  { name: "Graphite", hex: "#1C1C1B", role: "Raised surfaces and depth above obsidian.", ink: "#fff" },
-  { name: "Champagne", hex: "#E8D6A8", role: "The mark itself, and small highlights.", ink: "#111111" },
+  { name: "Logo navy", hex: "#09203F", role: "The logo itself, on every background.", ink: "#fff" },
+  { name: "Obsidian", hex: "#111111", role: "The dark ground for pages and panels.", ink: "#fff" },
+  { name: "Graphite", hex: "#1C1C1B", role: "Raised surfaces above obsidian.", ink: "#fff" },
+  { name: "Champagne", hex: "#E8D6A8", role: "Accents, highlights and calls to action.", ink: "#111111" },
   { name: "Deep champagne", hex: "#8A6D1F", role: "Champagne for text on paper.", ink: "#fff" },
-  { name: "Navy ink", hex: "#0A2540", role: "Headings and numbers in the interface.", ink: "#fff" },
-  { name: "Slate", hex: "#425466", role: "Body copy in the interface.", ink: "#fff" },
-  { name: "Paper", hex: "#F3F3F1", role: "Quiet backgrounds and print stock.", ink: "#0a2540" }
+  { name: "Paper", hex: "#F3F3F1", role: "The light ground, and print stock.", ink: "#09203F" },
+  { name: "Slate", hex: "#425466", role: "Body copy in the interface.", ink: "#fff" }
 ];
 
 const BOILERPLATE = {
@@ -46,21 +60,21 @@ const copy = (text, label) => {
   );
 };
 
-async function exportPng(src, size, name) {
+async function exportPng(src, size, name, ratio = 1) {
   try {
     const image = new Image();
     image.src = src;
     await image.decode();
     const canvas = document.createElement("canvas");
     canvas.width = size;
-    canvas.height = size;
-    canvas.getContext("2d").drawImage(image, 0, 0, size, size);
+    canvas.height = Math.round(size / ratio);
+    canvas.getContext("2d").drawImage(image, 0, 0, canvas.width, canvas.height);
     const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
     const url = URL.createObjectURL(blob);
     const link = h("a", { href: url, download: `${name}-${size}.png` });
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 2000);
-    toast("PNG ready", { tone: "success", description: `${name}-${size}.png` });
+    toast("PNG ready", { tone: "success", description: `${name}-${size}.png · ${canvas.width} × ${canvas.height}` });
   } catch {
     toast("Couldn't make the PNG", { tone: "danger", description: "Download the SVG instead; it scales to any size." });
   }
@@ -83,13 +97,13 @@ function Hero(L) {
         h("div", { class: "press-hero-actions" },
           Button({ variant: "primary", size: "lg", href: KIT, download: "", icon: "download" }, "Download the press kit"),
           Button({ variant: "ghost", size: "lg", href: L.press_mail, icon: "inbox" }, "press@lucidui.dev")),
-        h("div", { class: "press-hero-meta" }, "SVG logos · colour values · descriptions · ", h("span", "one zip"))),
+        h("div", { class: "press-hero-meta" }, "SVG and PNG logos · app icons · colours · ", h("span", "one zip"))),
       h("div", { class: "press-hero-art", "aria-hidden": "true" },
         h("div", {
           class: "press-hero-card",
           style: { transform: () => `perspective(900px) rotateY(${tilt.value.x * 14}deg) rotateX(${-tilt.value.y * 14}deg)` }
         },
-        h("img", { src: `${MARKS}/avatar.svg`, alt: "", width: 320, height: 320 }),
+        h("img", { src: `${MEDIA}/logo/lucidui-icon.svg`, alt: "", width: 320, height: 320 }),
         h("span", { class: "press-hero-shine", style: { "--x": () => `${(tilt.value.x + 0.5) * 100}%`, "--y": () => `${(tilt.value.y + 0.5) * 100}%` } })))));
 }
 
@@ -108,9 +122,9 @@ function Facts() {
 }
 
 function LogoCard(logo) {
-  const size = signal(2160);
-  const src = `${MARKS}/${logo.file}`;
-  const base = logo.file.replace("../", "").replace(".svg", "");
+  const size = signal(2400);
+  const src = `${MEDIA}/${logo.file}`;
+  const base = logo.file.split("/").pop().replace(".svg", "");
   return h("article", { class: ["logo-card", logo.wide ? "logo-wide" : null], "data-stage": logo.stage },
     h("div", { class: "logo-stage" },
       h("img", { src, alt: `Lucid UI ${logo.name.toLowerCase()}`, class: logo.small ? "logo-small" : null, loading: "lazy" })),
@@ -120,13 +134,13 @@ function LogoCard(logo) {
         h("span", { class: "logo-file" }, `${base}.svg`)),
       h("p", { class: "logo-text" }, logo.text),
       h("div", { class: "logo-actions" },
-        Button({ size: "sm", href: src, download: `lucidui-${base}.svg`, icon: "download" }, "SVG"),
-        Button({ size: "sm", variant: "ghost", icon: "image", onClick: () => exportPng(src, size.peek(), `lucidui-${base}`) }, "PNG"),
+        Button({ size: "sm", href: src, download: `${base}.svg`, icon: "download" }, "SVG"),
+        Button({ size: "sm", variant: "ghost", icon: "image", onClick: () => exportPng(src, size.peek(), base, logo.ratio) }, "PNG"),
         Segmented({
           value: size,
           size: "sm",
-          aria: { label: `${logo.name} PNG size` },
-          options: [{ value: 1080, label: "1K" }, { value: 2160, label: "2K" }, { value: 4320, label: "4K" }]
+          aria: { label: `${logo.name} PNG width` },
+          options: [{ value: 1200, label: "1.2K" }, { value: 2400, label: "2.4K" }, { value: 4800, label: "4.8K" }]
         }))));
 }
 
@@ -134,32 +148,50 @@ function Logos() {
   return h("section", { class: "press-section", id: "logos" },
     h("div", { class: "site-wrap" },
       h("div", { class: "press-head-row" },
-        SectionHead({ eyebrow: "logos", title: "The mark and the name.", lead: "Download any logo as SVG, or as a PNG at the size you need, made right here in your browser." }),
+        SectionHead({ eyebrow: "logos", title: "The icon and the name.", lead: "Download any logo as SVG, or as a crisp PNG at the width you need, made right here in your browser." }),
         Button({ href: KIT, download: "", icon: "download" }, "All logos (.zip)")),
       h("div", { class: "logo-grid" },
         LOGOS.map(LogoCard),
         h("article", { class: "kit-card" },
           h("div",
             h("h3", "Everything in one zip."),
-            h("p", "Every logo as SVG, the favicon and the colour values, ready to drop into a story or a slide."),
-            h("div", { class: "kit-files" }, "6 SVG files · colours.txt")),
+            h("p", "Every logo as SVG and PNG, the favicon and app icons, the share image and the colour values, ready to drop into a story or a slide."),
+            h("div", { class: "kit-files" }, `${FILES.length} files · colours.txt`)),
           Button({ variant: "primary", size: "lg", href: KIT, download: "", icon: "download" }, "Download the press kit")))));
+}
+
+function Files() {
+  return h("section", { class: "press-section press-tint", id: "files" },
+    h("div", { class: "site-wrap" },
+      SectionHead({ eyebrow: "files", title: "Every file, every size.", lead: "The official set, served from media.lucidui.dev. Link to these directly or download them." }),
+      h("div", { class: "file-table", role: "table", aria: { label: "Logo and icon files" } },
+        h("div", { class: "file-row file-row-head", role: "row" },
+          h("span", { role: "columnheader" }, "Asset"), h("span", { role: "columnheader" }, "File"), h("span", { role: "columnheader" }, "Format"), h("span", { role: "columnheader" }, "Size"), h("span", { role: "columnheader" }, h("span", { class: "sr-only" }, "Download"))),
+        FILES.map(([name, file, format, dims]) => h("div", { class: "file-row", role: "row" },
+          h("span", { role: "cell", class: "file-name" },
+            h("span", { class: "file-thumb", "data-dark": file.includes("on-dark") }, h("img", { src: `${MEDIA}/${file}`, alt: "", loading: "lazy" })),
+            name),
+          h("code", { role: "cell" }, file.split("/").pop()),
+          h("span", { role: "cell", class: "file-format" }, format),
+          h("span", { role: "cell", class: "file-dims" }, dims),
+          h("span", { role: "cell" }, Tooltip({ label: `Download ${file.split("/").pop()}` },
+            Button({ size: "xs", variant: "ghost", icon: "download", href: `${MEDIA}/${file}`, download: file.split("/").pop(), aria: { label: `Download ${file.split("/").pop()}` } }))))))));
 }
 
 function Usage() {
   const rule = (ok, label, cls) => h("figure", { class: ["rule", ok ? "rule-do" : "rule-dont"] },
-    h("div", { class: "rule-stage" }, h("img", { src: `${MARKS}/avatar-wordmark.svg`, alt: "", class: cls })),
+    h("div", { class: "rule-stage" }, h("img", { src: `${MEDIA}/logo/lucidui-wordmark-on-dark.svg`, alt: "", class: cls })),
     h("figcaption", h("span", { class: "rule-badge" }, Icon({ name: ok ? "check" : "x", size: 12, stroke: 3 })), label));
   return h("section", { class: "press-section press-tint", id: "usage" },
     h("div", { class: "site-wrap" },
-      SectionHead({ eyebrow: "usage", title: "Give it room. Leave it as it is.", lead: "Keep clear space around the logo equal to the height of the L, and never show the mark smaller than 16 pixels or the lockup narrower than 96." }),
+      SectionHead({ eyebrow: "usage", title: "Give it room. Leave it as it is.", lead: "Keep clear space around the logo equal to the height of the L, and never show the icon smaller than 16 pixels or the wordmark narrower than 96." }),
       h("div", { class: "usage-grid" },
         h("figure", { class: "clearspace" },
           h("div", { class: "clearspace-box" },
             h("span", { class: "clearspace-zone" }),
-            h("img", { src: `${MARKS}/avatar.svg`, alt: "The mark with clear space marked around it" }),
+            h("img", { src: `${MEDIA}/logo/lucidui-icon.svg`, alt: "The icon with clear space marked around it" }),
             ["top", "right", "bottom", "left"].map(side => h("span", { class: `clearspace-x clearspace-${side}` }, "x"))),
-          h("figcaption", "Clear space equals x, the height of the L.")),
+          h("figcaption", "Clear space equals x, a quarter of the icon\u2019s width.")),
         h("div", { class: "rules" },
           rule(true, "Use the logo as supplied"),
           rule(false, "Don't change its colours", "r-hue"),
@@ -172,7 +204,7 @@ function Usage() {
 function Colours() {
   return h("section", { class: "press-section", id: "colour" },
     h("div", { class: "site-wrap" },
-      SectionHead({ eyebrow: "colour", title: "Obsidian and champagne.", lead: "Obsidian carries the brand, champagne marks it, and navy and slate do the reading. Click any colour to copy its hex value." }),
+      SectionHead({ eyebrow: "colour", title: "Navy, obsidian and champagne.", lead: "Navy is the logo, obsidian and paper carry the pages, champagne picks out what matters, and slate does the reading. Click any colour to copy its hex value." }),
       h("div", { class: "swatches" },
         COLOURS.map(colour => {
           const [r, g, b] = rgb(colour.hex);
@@ -194,16 +226,17 @@ function Colours() {
       h("div", { class: "proportion" },
         h("div", { class: "proportion-copy" },
           h("h3", "In proportion"),
-          h("p", "A Lucid UI layout is mostly obsidian or paper, with champagne used sparingly. Each dot is one percent of a typical page.")),
+          h("p", "A Lucid UI layout is mostly obsidian or paper, with navy for the logo and champagne used sparingly. Each dot is one percent of a typical page.")),
         Waffle({
           columns: 20,
           rows: 5,
           label: "Brand colour proportions",
           segments: [
-            { label: "Obsidian", value: 46, color: "#111111" },
+            { label: "Obsidian", value: 42, color: "#111111" },
             { label: "Paper", value: 30, color: "#D9D6CF" },
-            { label: "Navy and slate", value: 14, color: "#425466" },
-            { label: "Champagne", value: 10, color: "#E8D6A8" }
+            { label: "Navy", value: 14, color: "#09203F" },
+            { label: "Slate", value: 8, color: "#425466" },
+            { label: "Champagne", value: 6, color: "#E8D6A8" }
           ]
         }))));
 }
@@ -281,9 +314,10 @@ function Contact(L) {
 
 mountPage({
   site: "press",
-  main: L => [Hero(L), Facts(), Logos(), Usage(), Colours(), Type(), Words(L), Contact(L)],
+  main: L => [Hero(L), Facts(), Logos(), Files(), Usage(), Colours(), Type(), Words(L), Contact(L)],
   commands: [
     { group: "On this page", label: "Logos", icon: "image", run: jump("logos") },
+    { group: "On this page", label: "Every file and size", icon: "download", run: jump("files") },
     { group: "On this page", label: "Usage", icon: "check-circle", run: jump("usage") },
     { group: "On this page", label: "Colour", icon: "sparkles", run: jump("colour") },
     { group: "On this page", label: "Type", icon: "type", run: jump("type") },

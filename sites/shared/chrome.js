@@ -11,6 +11,10 @@ effect(() => {
   else document.documentElement.dataset.theme = theme.value;
 });
 
+const prefersDark = signal(matchMedia("(prefers-color-scheme: dark)").matches);
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", event => { prefersDark.value = event.matches; });
+export const dark = () => (theme.value === "system" ? prefersDark.value : theme.value === "dark");
+
 export const commandOpen = signal(false);
 
 export const LAUNCH_NOTE = "Downloads open at launch";
@@ -131,7 +135,7 @@ function Bumper(L) {
   h("div", { class: "bumper-inner bx" },
     h("section", { class: "bx-detail", aria: { live: "polite" } },
       h("div", { class: "bx-head" },
-        h("img", { class: "bumper-mark", src: "/media/logo/lucid-mark.svg", alt: "", width: 44, height: 44 }),
+        h("img", { class: "bumper-mark mark-ring", src: "/media/logo/lucidui-icon.svg", alt: "", width: 44, height: 44 }),
         h("div", h("div", { class: "bumper-eyebrow" }, "sandbox"), h("p", { class: "bx-intro" }, "Real apps, built entirely with Lucid UI. They run in your browser: nothing is saved or sent."))),
       () => {
         const d = current.value;
@@ -194,7 +198,7 @@ function interceptPlayground(L) {
 function PlaygroundCard(L) {
   const card = h("div", { class: "pg-card", popover: "manual", role: "tooltip", id: "playground-card" },
     h("div", { class: "pg-card-head" },
-      h("img", { src: "/media/logo/lucid-mark.svg", alt: "", width: 32, height: 32 }),
+      h("img", { class: "mark-ring", src: "/media/logo/lucidui-icon.svg", alt: "", width: 32, height: 32 }),
       h("div", { class: "pg-card-title" }, h("b", "Sandbox"), h("span", "sandbox.lucidui.dev"))),
     h("p", { class: "pg-card-text" }, "A working issue tracker built entirely with Lucid UI. Drag cards across the board, open an issue, filter the list, press ⌘K, and undo anything."),
     h("ul", { class: "pg-card-points" },
@@ -250,10 +254,14 @@ function PlaygroundCard(L) {
   return card;
 }
 
-export function Brand(L) {
+export function Brand(L, { height = 26 } = {}) {
   return h("a", { class: "site-brand", href: L.home, aria: { label: "Lucid UI home" } },
-    h("img", { src: "/media/logo/lucid-mark.svg", alt: "", width: 26, height: 26 }),
-    h("span", "Lucid UI"));
+    h("img", {
+      src: () => (dark() ? "/media/logo/lucidui-wordmark-on-dark.svg" : "/media/logo/lucidui-wordmark-on-light.svg"),
+      alt: "Lucid UI",
+      height,
+      width: Math.round(height * 688 / 136)
+    }));
 }
 
 function Nav(L, site) {

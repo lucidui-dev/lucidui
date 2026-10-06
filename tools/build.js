@@ -38,10 +38,11 @@ await rm(join(dist, "stage"), { recursive: true, force: true });
 
 const kit = join(dist, "stage", "lucidui-press-kit");
 await mkdir(kit, { recursive: true });
-await cp(join(root, "media/logo"), kit, { recursive: true, filter: skip });
+for (const dir of ["logo", "icons", "og"]) await cp(join(root, "media", dir), join(kit, dir), { recursive: true, filter: skip });
 await writeFile(join(kit, "colours.txt"), [
   "Lucid UI colours",
   "",
+  "Logo navy        #09203F   RGB 9 32 63",
   "Obsidian         #111111   RGB 17 17 17",
   "Graphite         #1C1C1B   RGB 28 28 27",
   "Champagne        #E8D6A8   RGB 232 214 168",

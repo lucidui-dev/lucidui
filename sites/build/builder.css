@@ -30,8 +30,7 @@ body.builder {
 
 .b-bar { display: flex; align-items: center; gap: 10px; height: 56px; padding: 0 14px 0 18px; }
 .b-brand { display: inline-flex; align-items: center; gap: 9px; color: var(--lucid-ink); text-decoration: none; border-radius: 8px; }
-.b-brand img { border-radius: 7px; box-shadow: 0 6px 16px -8px rgb(10 10 10 / .8); }
-.b-brand-word { font: 700 16px/1 Rubik, var(--lucid-font-sans); letter-spacing: -.01em; }
+.b-brand img { display: block; height: 22px; width: auto; }
 .b-slash { color: var(--lucid-ink-4, var(--lucid-ink-3)); font-weight: 300; font-size: 20px; opacity: .5; }
 .b-name { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14.5px; letter-spacing: -.01em; margin-right: 6px; }
 .b-pill {
@@ -191,7 +190,7 @@ body.builder {
   .b-editor { height: 56vh; }
   .b-right { grid-template-rows: 60vh 300px; }
   .b-hide-sm { display: none; }
-  .b-slash, .b-brand-word { display: none; }
+  .b-slash { display: none; }
   .b-run .lucid-kbd, .b-theme { display: none; }
 }
 @media (max-width: 560px) {
@@ -202,3 +201,4 @@ body.builder {
 @media (prefers-reduced-motion: reduce) {
   .b-log-row, .b-caret, .b-status-dot { animation: none !important; }
 }
+
