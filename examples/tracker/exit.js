@@ -54,3 +54,24 @@ export function ExitCard({ compact = false } = {}) {
       h("span", { class: "tk-exit-ask" }, () => (state.value === "leaving" ? "Leaving" : "Sure?")),
       h("span", { class: "tk-exit-go" }, () => (state.value === "leaving" ? "Bye" : "Leave")))));
 }
+
+export function ExitDock() {
+  const key = `lucid-sandbox:dock:${here()}`;
+  let initial = true;
+  try { const saved = localStorage.getItem(key); initial = saved ? saved === "open" : !matchMedia("(max-width: 640px)").matches; } catch {}
+  const open = signal(initial);
+  const toggle = () => {
+    open.value = !open.peek();
+    try { localStorage.setItem(key, open.peek() ? "open" : "closed"); } catch {}
+  };
+  return h("div", { class: "tk-dock", "data-open": open },
+    h("button", {
+      type: "button",
+      class: "tk-dock-toggle",
+      aria: { expanded: () => String(open.value), label: () => (open.value ? "Hide the sandbox card" : "Show the sandbox card") },
+      onClick: toggle
+    },
+    h("span", { class: "tk-dock-pill" }, h("span", { class: "tk-dock-dot" }), "Sandbox"),
+    Icon({ name: "chevron-down", size: 14 })),
+    h("div", { class: "tk-dock-card", inert: () => !open.value }, ExitCard()));
+}

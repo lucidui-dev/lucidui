@@ -52,3 +52,23 @@
 .tk-exit[data-compact] .tk-exit-idle { gap: 0; padding: 0; font-size: 0; justify-content: center; }
 .tk-exit[data-compact] .tk-exit-confirm { justify-content: center; }
 .tk-exit[data-compact] .tk-exit-ask, .tk-exit[data-compact] .tk-exit-go { display: none; }
+
+.tk-dock { position: fixed; left: 16px; bottom: 16px; z-index: 40; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; width: 236px; }
+.tk-dock-toggle {
+  display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 10px 0 8px;
+  border: 0; border-radius: 999px; cursor: pointer;
+  font: 500 12px/1 var(--lucid-font-sans); color: var(--lucid-ink-2);
+  background: var(--lucid-surface-raised); box-shadow: 0 0 0 1px var(--lucid-line), var(--lucid-shadow-md);
+}
+.tk-dock-toggle:hover { color: var(--lucid-ink); }
+.tk-dock-toggle:focus-visible { outline: 2px solid #e8d6a8; outline-offset: 2px; }
+.tk-dock-pill { display: inline-flex; align-items: center; gap: 7px; }
+.tk-dock-dot { width: 7px; height: 7px; border-radius: 50%; background: #e8d6a8; box-shadow: 0 0 0 3px rgb(232 214 168 / .25); }
+.tk-dock-toggle .lucid-icon { color: var(--lucid-ink-3); transition: rotate 320ms var(--lucid-ease-out); }
+.tk-dock:not([data-open]) .tk-dock-toggle .lucid-icon { rotate: 180deg; }
+.tk-dock-card { width: 100%; transform-origin: bottom left; transition: opacity 260ms var(--lucid-ease), transform 420ms var(--lucid-ease-out), visibility 0s; }
+.tk-dock-card .tk-exit { box-shadow: 0 0 0 1px var(--lucid-line), var(--lucid-shadow-lg), var(--lucid-highlight); }
+.tk-dock { flex-direction: column-reverse; }
+.tk-dock:not([data-open]) .tk-dock-card { opacity: 0; transform: translateY(8px) scale(.96); visibility: hidden; transition: opacity 200ms var(--lucid-ease), transform 300ms var(--lucid-ease), visibility 0s 300ms; }
+@media (prefers-reduced-motion: reduce) { .tk-dock-card, .tk-dock-toggle .lucid-icon { transition: none; } }
+@media (max-width: 640px) { .tk-dock { left: 12px; bottom: 12px; width: min(236px, calc(100vw - 24px)); } }

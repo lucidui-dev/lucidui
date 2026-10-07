@@ -33,26 +33,32 @@
 html, body { margin: 0; height: 100%; }
 body { background: var(--ms-bg); color: var(--ms-ink); }
 
-.ms-app { display: grid; grid-template-columns: 220px minmax(0, 1fr); height: 100dvh; }
-.ms-rail { display: flex; flex-direction: column; gap: 4px; min-height: 0; overflow: auto; padding: 26px 14px 12px; box-shadow: inset -1px 0 0 var(--ms-line); }
-.ms-logo { padding: 0 10px 28px; font: 400 30px/1 var(--ms-serif); letter-spacing: -.02em; font-variation-settings: "opsz" 144; }
-.ms-navs { display: flex; flex-direction: column; }
-.ms-nav { height: 36px; padding: 0 10px; border: 0; font: inherit; font-size: 14.5px; text-align: left; color: var(--ms-ink-2); background: transparent; cursor: pointer; }
-.ms-nav:hover { color: var(--ms-ink); }
-.ms-nav[aria-current="page"] { color: var(--ms-ink); text-decoration: underline; text-decoration-color: var(--ms-accent); text-underline-offset: 6px; text-decoration-thickness: 1.5px; }
-.ms-nav:focus-visible, .ms-bag-btn:focus-visible, .ms-swatch:focus-visible { outline: 2px solid var(--ms-accent); outline-offset: 2px; }
-.ms-bag-btn { display: flex; align-items: center; gap: 10px; height: 42px; margin-top: 22px; padding: 0 12px; border: 0; font: inherit; font-size: 14px; color: var(--ms-ink); background: var(--ms-panel); box-shadow: inset 0 0 0 1px var(--ms-line); cursor: pointer; }
-.ms-bag-count { margin-left: auto; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; font: 500 12px/22px var(--lucid-font-mono); text-align: center; color: #fbf8f3; background: var(--ms-accent); transition: transform 300ms var(--lucid-ease-spring, ease); }
+.ms-app { display: flex; flex-direction: column; height: 100dvh; }
+.ms-header {
+  position: relative; z-index: 2; display: flex; align-items: center; gap: 28px; height: 68px; padding: 0 28px; flex: none;
+  background: var(--ms-bg); box-shadow: inset 0 -1px 0 var(--ms-line);
+}
+.ms-logo { padding: 0; border: 0; font: 400 30px/1 var(--ms-serif); letter-spacing: -.02em; font-variation-settings: "opsz" 144; color: var(--ms-ink); background: none; cursor: pointer; }
+.ms-links { display: flex; align-items: center; gap: 2px; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.ms-links::-webkit-scrollbar { display: none; }
+.ms-link { flex: none; height: 36px; padding: 0 12px; border: 0; font: inherit; font-size: 14px; color: var(--ms-ink-2); background: transparent; cursor: pointer; }
+.ms-link:hover { color: var(--ms-ink); }
+.ms-link[aria-current="page"] { color: var(--ms-ink); text-decoration: underline; text-decoration-color: var(--ms-accent); text-underline-offset: 7px; text-decoration-thickness: 1.5px; }
+.ms-links-sep { flex: none; width: 1px; height: 18px; margin: 0 8px; background: var(--ms-line); }
+.ms-header-end { display: flex; align-items: center; gap: 12px; margin-left: auto; flex: none; }
+.ms-logo:focus-visible, .ms-link:focus-visible, .ms-bag-btn:focus-visible, .ms-swatch:focus-visible, .ms-card-stage:focus-visible, .ms-room:focus-visible, .ms-slot:focus-visible, .ms-stage-top button:focus-visible { outline: 2px solid var(--ms-accent); outline-offset: 2px; }
+.ms-bag-btn { display: flex; align-items: center; gap: 9px; height: 38px; padding: 0 8px 0 12px; border: 0; font: inherit; font-size: 14px; color: var(--ms-ink); background: var(--ms-panel); box-shadow: inset 0 0 0 1px var(--ms-line); cursor: pointer; }
+.ms-bag-count { min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; font: 500 12px/22px var(--lucid-font-mono); text-align: center; color: #fbf8f3; background: var(--ms-accent); }
 .ms-bag-count[data-empty] { color: var(--ms-ink-3); background: transparent; box-shadow: inset 0 0 0 1px var(--ms-line); }
-.ms-rail-foot { display: flex; flex-direction: column; gap: 10px; padding-top: 12px; }
-.ms-appearance { display: flex; align-items: center; justify-content: space-between; padding: 0 6px; font-size: 12px; color: var(--ms-ink-3); }
 
-.ms-main { display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: auto; }
+.ms-main { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: auto; }
 .ms-product { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(360px, 1fr); flex: 1; min-height: 0; }
 .ms-stage { position: relative; display: flex; flex-direction: column; justify-content: center; min-height: 560px; padding: 28px 40px; overflow: hidden; background: var(--ms-wall); }
 .ms-floor { fill: color-mix(in oklab, var(--ms-wall) 84%, #8a6a4a); }
-.ms-stage-top { z-index: 1; position: absolute; top: 24px; left: 32px; display: flex; gap: 8px; font-size: 12.5px; color: var(--ms-ink-3); }
-.ms-stage-foot { z-index: 1; position: absolute; bottom: 22px; left: 32px; right: 32px; display: flex; gap: 22px; font: 500 12px var(--lucid-font-mono); color: var(--ms-ink-2); }
+.ms-stage-top { z-index: 1; position: absolute; top: 24px; left: 32px; display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ms-ink-3); }
+.ms-stage-top button { padding: 0; border: 0; font: inherit; color: var(--ms-ink-2); background: none; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--ms-line); }
+.ms-stage-top button:hover { color: var(--ms-ink); }
+.ms-stage-foot { z-index: 1; position: absolute; bottom: 22px; left: 32px; right: 32px; display: flex; justify-content: flex-end; gap: 22px; font: 500 12px var(--lucid-font-mono); color: var(--ms-ink-2); }
 .ms-sofa { display: block; width: 100%; max-height: 62vh; overflow: visible; }
 .ms-anim { transition: x 620ms cubic-bezier(.22, .9, .24, 1), width 620ms cubic-bezier(.22, .9, .24, 1), rx 620ms, fill 520ms ease, opacity 400ms ease; }
 .ms-frame { fill: light-dark(#fffaf1, #3a322b); stroke: light-dark(#cdbfa9, #4c4239); stroke-width: 2; }
@@ -117,11 +123,58 @@ body { background: var(--ms-bg); color: var(--ms-ink); }
   .ms-panel { box-shadow: inset 0 1px 0 var(--ms-line); }
 }
 @media (max-width: 860px) {
-  .ms-app { grid-template-columns: minmax(0, 1fr); height: auto; }
-  .ms-rail { order: 2; overflow: visible; }
+  .ms-app { height: auto; min-height: 100dvh; }
+  .ms-header { position: sticky; top: 0; }
   .ms-main { overflow: visible; }
   .ms-stage { min-height: 300px; padding: 52px 12px 48px; }
   .ms-stage-foot { gap: 12px; flex-wrap: wrap; font-size: 11px; }
   .ms-panel { padding: 30px 20px; }
 }
 @media (prefers-reduced-motion: reduce) { .ms-anim { transition: none; } }
+
+.ms-collection, .ms-showroom { padding: 44px 40px 200px; }
+.ms-col-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; margin-bottom: 30px; }
+.ms-col-title { margin: 6px 0 0; font: 400 clamp(38px, 5vw, 58px)/1 var(--ms-serif); letter-spacing: -.025em; font-variation-settings: "opsz" 144; }
+.ms-col-sub { margin: 12px 0 0; max-width: 520px; font-size: 15px; line-height: 1.55; color: var(--ms-ink-2); }
+.ms-col-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.ms-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 28px 22px; margin: 0; padding: 0; list-style: none; }
+.ms-card { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.ms-card-stage { position: relative; display: grid; place-items: center; aspect-ratio: 5 / 4; padding: 0; border: 0; background: var(--ms-wall); cursor: pointer; overflow: hidden; }
+.ms-thumb { width: 78%; transition: transform 600ms cubic-bezier(.22, .9, .24, 1); }
+.ms-card-stage:hover .ms-thumb { transform: scale(1.05) translateY(-2px); }
+.ms-tag { position: absolute; top: 12px; left: 12px; padding: 4px 8px; font: 500 11px/1 var(--lucid-font-mono); letter-spacing: .02em; color: var(--ms-ink); background: var(--ms-panel); }
+.ms-card-copy { display: flex; flex-direction: column; gap: 8px; }
+.ms-card-copy > div { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.ms-card-copy b { font-size: 15px; font-weight: 500; }
+.ms-card-dots { display: flex; gap: 5px; }
+.ms-card-dots i { width: 11px; height: 11px; border-radius: 50%; background: var(--s); box-shadow: inset 0 0 0 1px rgb(0 0 0 / .12); }
+.ms-card-buy > span { font: 500 14px var(--lucid-font-mono); color: var(--ms-ink-2); }
+
+.ms-showroom { max-width: 980px; }
+.ms-show-hero { margin-bottom: 34px; }
+.ms-show-form { display: flex; flex-direction: column; gap: 34px; }
+.ms-show-step h2 { display: flex; align-items: center; gap: 12px; margin: 0 0 16px; font-size: 16px; font-weight: 600; }
+.ms-show-step h2 span { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; font: 500 12px/1 var(--lucid-font-mono); color: var(--ms-ink); box-shadow: inset 0 0 0 1px var(--ms-line); }
+.ms-rooms { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.ms-room { display: flex; flex-direction: column; gap: 4px; padding: 18px; border: 0; font: inherit; text-align: left; color: var(--ms-ink-2); background: var(--ms-panel); box-shadow: inset 0 0 0 1px var(--ms-line); cursor: pointer; transition: box-shadow 200ms; }
+.ms-room b { font: 400 24px/1.1 var(--ms-serif); color: var(--ms-ink); margin-bottom: 6px; }
+.ms-room-hours { font-size: 12.5px; color: var(--ms-ink-3); }
+.ms-room[aria-checked="true"] { box-shadow: inset 0 0 0 1.5px var(--ms-accent); }
+.ms-when { display: flex; align-items: flex-start; gap: 18px; flex-wrap: wrap; }
+.ms-slots { display: grid; grid-template-columns: repeat(3, 92px); gap: 8px; }
+.ms-slot { height: 38px; border: 0; font: 500 13px var(--lucid-font-mono); color: var(--ms-ink); background: var(--ms-panel); box-shadow: inset 0 0 0 1px var(--ms-line); cursor: pointer; }
+.ms-slot[aria-checked="true"] { color: #fbf8f3; background: var(--ms-ink); box-shadow: none; }
+.ms-slot:disabled { color: var(--ms-ink-3); text-decoration: line-through; cursor: not-allowed; opacity: .6; }
+.ms-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; max-width: 620px; }
+.ms-show-submit { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.ms-show-done { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 32px; background: var(--ms-panel); box-shadow: inset 0 0 0 1px var(--ms-line); }
+.ms-show-done > .lucid-icon { color: var(--ms-accent); }
+.ms-show-done h2 { margin: 0; font: 400 32px/1.1 var(--ms-serif); }
+.ms-show-done p { margin: 0 0 8px; max-width: 520px; line-height: 1.55; color: var(--ms-ink-2); }
+
+@media (max-width: 900px) {
+  .ms-header { gap: 14px; padding: 0 16px; }
+  .ms-bag-label, .ms-header-end .lucid-seg { display: none; }
+  .ms-collection, .ms-showroom { padding: 28px 16px 96px; }
+  .ms-rooms, .ms-fields { grid-template-columns: minmax(0, 1fr); }
+}
