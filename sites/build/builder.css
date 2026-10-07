@@ -255,3 +255,9 @@ body.builder {
   .b-ways, .b-tips ul { grid-template-columns: minmax(0, 1fr); }
   .b-guide-note { display: none; }
 }
+
+.b-full { height: 95vh; max-height: 95vh; }
+.b-full .lucid-dialog-head { display: none; }
+.b-full .lucid-dialog-body { display: flex; flex-direction: column; padding: 0; overflow: hidden; }
+.b-full-bar { display: flex; align-items: center; gap: 10px; flex: none; height: 46px; padding: 0 10px 0 16px; box-shadow: inset 0 -1px 0 var(--lucid-line); }
+.b-full-frame { flex: 1; width: 100%; border: 0; background: var(--lucid-surface); }

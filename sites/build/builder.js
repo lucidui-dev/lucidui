@@ -12,13 +12,15 @@ const store = {
 
 const byKey = Object.fromEntries(TEMPLATES.map(t => [t.value, t]));
 const template = signal(byKey[store.get("template")] ? store.get("template") : TEMPLATES[0].value);
-const code = signal(store.get(`draft:${template.peek()}`, byKey[template.peek()].code));
+const code = signal(store.get(`draft2:${template.peek()}`, byKey[template.peek()].code));
 const auto = signal(store.get("auto", "on") === "on");
 const logs = signal([]);
 const runs = signal(0);
 const status = signal("idle");
 const agentOpen = signal(false);
 const guideOpen = signal(store.get("guide") !== "seen");
+const fullOpen = signal(false);
+try { Object.keys(localStorage).filter(key => key.startsWith("lucid-builder:draft:")).forEach(key => localStorage.removeItem(key)); } catch {}
 const dirty = computed(() => code.value !== byKey[template.value].code);
 
 let frame;
@@ -29,8 +31,8 @@ effect(() => store.set("template", template.value));
 effect(() => store.set("auto", auto.value ? "on" : "off"));
 effect(() => {
   const value = code.value;
-  if (value === byKey[template.peek()].code) store.drop(`draft:${template.peek()}`);
-  else store.set(`draft:${template.peek()}`, value);
+  if (value === byKey[template.peek()].code) store.drop(`draft2:${template.peek()}`);
+  else store.set(`draft2:${template.peek()}`, value);
 });
 
 const resolvedTheme = () => (theme.value === "system" ? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : theme.value);
@@ -178,7 +180,8 @@ function ExportMenu() {
     trigger: Button({ size: "sm", icon: "download", class: "b-export", aria: { label: "Export" } }, h("span", { class: "b-hide-sm" }, "Export")),
     items: [
       { group: "View" },
-      { label: "Open in a new tab", icon: "external", hint: "Full screen", onSelect: exportActions.open },
+      { label: "Full screen", icon: "maximize", hint: "⇧⌘F", onSelect: () => { fullOpen.value = true; } },
+      { label: "Open in a new tab", icon: "external", hint: "⇧⌘O", onSelect: exportActions.open },
       { separator: true },
       { group: "Take it with you" },
       { label: "Download index.html", icon: "download", hint: "Runs anywhere", onSelect: exportActions.html },
@@ -318,7 +321,8 @@ function Preview() {
       h("span", { class: "b-url" }, Icon({ name: "lock", size: 11 }), "preview.local"),
       h("span", { class: "lucid-spacer" }),
       h("span", { class: "b-status", "data-status": status }, h("span", { class: "b-status-dot" }), () => ({ idle: "Ready", running: "Running", ok: "Live", error: "Error" })[status.value]),
-      Tooltip({ label: "Reload preview" }, Button({ variant: "ghost", size: "xs", icon: "zap", class: "b-ghost", aria: { label: "Reload preview" }, onClick: run }))),
+      Tooltip({ label: "Reload preview" }, Button({ variant: "ghost", size: "xs", icon: "zap", class: "b-ghost", aria: { label: "Reload preview" }, onClick: run })),
+      Tooltip({ label: "Full screen", kbd: ["mod", "shift", "F"] }, Button({ variant: "ghost", size: "xs", icon: "maximize", class: "b-ghost", aria: { label: "Full screen preview" }, onClick: () => { fullOpen.value = true; } }))),
     h("div", { class: "b-stage" },
       h("iframe", { class: "b-frame", title: "Preview", ref: el => { frame = el; } })));
 }
@@ -465,6 +469,30 @@ function AgentDialog() {
     h("p", { class: "b-manual-note" }, "Paste what your agent writes into the editor. The console shows each diagnostic and its fix to hand back.")));
 }
 
+function FullPreview() {
+  let full;
+  const titleOf = source => (/<title>([^<]*)<\/title>/.exec(standalone(source)) ?? [])[1] ?? "Lucid UI app";
+  effect(() => {
+    if (!fullOpen.value) return;
+    queueMicrotask(() => {
+      if (!full) return;
+      full.onload = () => {
+        const doc = full.contentDocument?.documentElement;
+        if (doc) doc.dataset.theme = resolvedTheme();
+      };
+      full.srcdoc = standalone(code.peek(), { local: true });
+    });
+  });
+  return Dialog({ open: fullOpen, class: "b-full", width: "95vw", aria: { label: "Full screen preview" } },
+    h("div", { class: "b-full-bar" },
+      h("span", { class: "b-lights", "aria-hidden": "true" }, h("i"), h("i"), h("i")),
+      h("span", { class: "b-url" }, Icon({ name: "lock", size: 11 }), () => (fullOpen.value ? titleOf(code.value) : "")),
+      h("span", { class: "lucid-spacer" }),
+      Button({ variant: "ghost", size: "sm", icon: "external", onClick: exportActions.open }, h("span", { class: "b-hide-sm" }, "Open in a new tab")),
+      Tooltip({ label: "Exit full screen", kbd: "esc" }, Button({ variant: "ghost", size: "sm", icon: "minimize", aria: { label: "Exit full screen" }, onClick: () => { fullOpen.value = false; } }))),
+    h("iframe", { class: "b-full-frame", title: "Full screen preview", ref: el => { full = el; } }));
+}
+
 function GuideDialog() {
   const close = () => { guideOpen.value = false; store.set("guide", "seen"); };
   const way = (n, icon, title, text, action) => h("li", { class: "b-way" },
@@ -539,7 +567,7 @@ function Bar() {
       aria: { label: "Template" },
       options: TEMPLATES.map(({ value, label, icon, note }) => ({ value, label, icon, keywords: note })),
       onChange: next => {
-        code.value = store.get(`draft:${next}`, byKey[next].code);
+        code.value = store.get(`draft2:${next}`, byKey[next].code);
         queueMicrotask(run);
       }
     }),
@@ -568,6 +596,7 @@ function Bar() {
 function App() {
   hotkey("mod+enter", run, { inputs: true });
   hotkey("mod+shift+o", exportActions.open, { inputs: true });
+  hotkey("mod+shift+f", () => { fullOpen.value = !fullOpen.peek(); }, { inputs: true });
   queueMicrotask(run);
   queueMicrotask(() => {
     const fromHash = readPairing(location.hash);
@@ -597,7 +626,8 @@ function App() {
       h("a", { href: "https://sandbox.lucidui.dev" }, "Sandbox"),
       h("a", { href: "https://lucidui.dev" }, "lucidui.dev")),
     AgentDialog(),
-    GuideDialog());
+    GuideDialog(),
+    FullPreview());
 }
 
 mount(App, "#app");

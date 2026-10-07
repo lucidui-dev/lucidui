@@ -61,10 +61,13 @@ const paths = {
   mail: ["M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z", "m3 7 9 6 9-6"],
   star: ["m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9L12 3Z"],
   heart: ["M12 20s-7.5-4.6-9.3-9.2C1.6 7.9 3.4 4.5 6.7 4.5c2 0 3.6 1.1 5.3 3 1.7-1.9 3.3-3 5.3-3 3.3 0 5.1 3.4 4 6.3C19.5 15.4 12 20 12 20Z"],
-  eye: ["M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z", "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"]
+  eye: ["M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z", "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"],
+  maximize: ["M15 3h6v6", "M9 21H3v-6", "M21 3l-7 7", "M3 21l7-7"],
+  minimize: ["M4 14h6v6", "M20 10h-6V4", "M14 10l7-7", "M3 21l7-7"]
 };
 
 const aliases = {
+  fullscreen: "maximize", enlarge: "maximize", shrink: "minimize", "exit-fullscreen": "minimize",
   close: "x", cancel: "x", add: "plus", new: "plus", edit: "pen", pencil: "pen", delete: "trash", remove: "trash", bin: "trash",
   gear: "settings", cog: "settings", preferences: "sliders", house: "home", dashboard: "board", email: "mail", envelope: "mail",
   favorite: "star", like: "heart", view: "eye", show: "eye", notification: "bell", notifications: "bell", alert: "alert-circle",

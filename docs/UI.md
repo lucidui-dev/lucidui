@@ -136,7 +136,7 @@ Menus, selects and tooltips use the browser's popover layer, so they are never c
 
 Every `icon` prop and `Icon({ name })` takes one of these names. Use only these; an unknown name draws a placeholder and reports `unknown-icon`.
 
-`plus`, `x`, `check`, `chevron-down`, `chevron-right`, `chevron-left`, `chevrons-up-down`, `search`, `filter`, `list`, `board`, `inbox`, `user`, `users`, `layers`, `chart`, `sun`, `moon`, `monitor`, `calendar`, `tag`, `more`, `message`, `clock`, `command`, `table`, `sidebar`, `link`, `trash`, `hash`, `zap`, `target`, `bell`, `pen`, `copy`, `arrow-up`, `arrow-down`, `arrow-right`, `corner-down-left`, `trending-up`, `trending-down`, `hexagon`, `check-circle`, `alert-circle`, `info`, `sliders`, `menu`, `sparkles`, `lock`, `image`, `type`, `download`, `external`, `grip`, `home`, `settings`, `mail`, `star`, `heart`, `eye`
+`plus`, `x`, `check`, `chevron-down`, `chevron-right`, `chevron-left`, `chevrons-up-down`, `search`, `filter`, `list`, `board`, `inbox`, `user`, `users`, `layers`, `chart`, `sun`, `moon`, `monitor`, `calendar`, `tag`, `more`, `message`, `clock`, `command`, `table`, `sidebar`, `link`, `trash`, `hash`, `zap`, `target`, `bell`, `pen`, `copy`, `arrow-up`, `arrow-down`, `arrow-right`, `corner-down-left`, `trending-up`, `trending-down`, `hexagon`, `check-circle`, `alert-circle`, `info`, `sliders`, `menu`, `sparkles`, `lock`, `image`, `type`, `download`, `external`, `grip`, `home`, `settings`, `mail`, `star`, `heart`, `eye`, `maximize`, `minimize`
 
 Common words also work: `close`, `add`, `edit`, `delete`, `gear`, `email`, `favorite`, `notification`, `warning`, `success`, `person`, `team`, `chat`, `analytics`, `share` and `grid` map to the icon you'd expect.
 
