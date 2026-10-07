@@ -254,10 +254,10 @@ const POSTER = "/media/video/builder-agent-poster.jpg";
 const CHAPTERS = [
   [0, "Pairs with Builder"],
   [2, "Asked for a wind farm dashboard"],
-  [26, "The dashboard lands"],
-  [35, "Charts and the turbine table"],
-  [44, "Acknowledges alerts, with Undo"],
-  [52, "Filters to one site"]
+  [6, "The dashboard lands"],
+  [15, "Charts and the turbine table"],
+  [24, "Acknowledges alerts, with Undo"],
+  [32, "Filters to one site"]
 ];
 const clock = t => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, "0")}`;
 
@@ -294,11 +294,11 @@ function Watch() {
                 class: "watch-video", src: VIDEO, poster: POSTER, controls: true, playsinline: true, preload: "auto",
                 ref: el => { video = el; start(el); },
                 onTimeupdate: event => { now.value = event.target.currentTime; },
-                aria: { label: "Claude building a wind farm dashboard in Lucid Builder, 67 seconds" }
+                aria: { label: "Claude building a wind farm dashboard in Lucid Builder, 47 seconds" }
               })
-            : h("button", { type: "button", class: "watch-poster", aria: { label: "Play the 67-second video" }, onClick: () => play(0) },
+            : h("button", { type: "button", class: "watch-poster", aria: { label: "Play the 47-second video" }, onClick: () => play(0) },
                 h("img", { src: POSTER, alt: "", loading: "lazy", width: 1920, height: 1080 }),
-                h("span", { class: "watch-play" }, h("span", { class: "watch-play-icon", "aria-hidden": "true" }), h("span", { class: "watch-play-text" }, h("b", "Play"), h("small", "67 seconds")))))),
+                h("span", { class: "watch-play" }, h("span", { class: "watch-play-icon", "aria-hidden": "true" }), h("span", { class: "watch-play-text" }, h("b", "Play"), h("small", "47 seconds")))))),
       h("ol", { class: "watch-chapters", aria: { label: "Chapters" } }, CHAPTERS.map(([t, label], i) => h("li",
         h("button", {
           type: "button", class: "watch-chapter",
