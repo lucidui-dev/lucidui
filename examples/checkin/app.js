@@ -25,6 +25,7 @@ const STEPS = [
   { id: "done", label: "Boarding pass" }
 ];
 const step = signal("find");
+const section = signal("checkin");
 const stepIndex = computed(() => STEPS.findIndex(s => s.id === step.value));
 const go = id => {
   step.value = id;
@@ -56,15 +57,15 @@ function Mark() {
 }
 
 function Rail() {
-  const item = (icon, label, { active, soon } = {}) => Tooltip({ label, placement: "right" },
+  const item = (icon, label, { target, soon } = {}) => Tooltip({ label, placement: "right" },
     h("button", {
       type: "button",
       class: "ci-nav-item",
-      "aria-current": active ? "page" : undefined,
+      "aria-current": () => (target && section.value === target ? "page" : undefined),
       "aria-disabled": soon ? "true" : undefined,
       aria: { label },
       onClick: () => {
-        if (active) go("find");
+        if (target) { section.value = target; document.querySelector(".ci-main")?.scrollTo({ top: 0 }); }
         else toast(soon ? `${label} is coming soon` : `${label} isn't part of this demo`, { icon: soon ? "lock" : "info" });
       }
     },
@@ -74,7 +75,7 @@ function Rail() {
   const cycle = () => { theme.value = { light: "dark", dark: "system", system: "light" }[theme.peek()]; };
   return h("aside", { class: "ci-rail", "data-collapsed": collapsed },
     h("div", { class: "ci-rail-head" },
-      h("a", { class: "ci-brand", href: "#", aria: { label: "Celadon Air home" }, onClick: e => { e.preventDefault(); go("find"); } },
+      h("a", { class: "ci-brand", href: "#", aria: { label: "Celadon Air home" }, onClick: e => { e.preventDefault(); section.value = "checkin"; go("find"); } },
         Mark(), h("span", { class: "ci-brand-word" }, h("b", "Celadon"), " Air")),
       Tooltip({ label: () => (collapsed.value ? "Expand menu" : "Collapse menu"), kbd: ["["], placement: "right" },
         Button({
@@ -84,9 +85,9 @@ function Rail() {
           onClick: () => { collapsed.value = !collapsed.peek(); }
         }))),
     h("nav", { class: "ci-nav", aria: { label: "Main" } },
-      item("check-circle", "Check-in", { active: true }),
-      item("calendar", "My trips"),
-      item("clock", "Flight status"),
+      item("check-circle", "Check-in", { target: "checkin" }),
+      item("calendar", "My trips", { target: "trips" }),
+      item("clock", "Flight status", { target: "status" }),
       item("sparkles", "Lounges", { soon: true }),
       item("message", "Help")),
     h("div", { class: "lucid-spacer" }),
@@ -478,17 +479,108 @@ function Done() {
 
 const VIEWS = { find: Find, trip: Trip, seats: Seats, bags: Bags, review: Review, done: Done };
 
+const TRIPS = [
+  { id: "t1", flight: "CE 017", from: FLIGHT.from, to: FLIGHT.to, date: "Sat, 10 Oct", depart: "14:40", arrive: "09:55", pax: 3, state: "open", note: "Check-in is open" },
+  { id: "t2", flight: "CE 204", from: { code: "LAX", city: "Los Angeles" }, to: { code: "SFO", city: "San Francisco" }, date: "Wed, 21 Oct", depart: "08:15", arrive: "09:40", pax: 3, state: "soon", note: "Check-in opens 20 Oct, 08:15" },
+  { id: "t3", flight: "CE 018", from: FLIGHT.to, to: FLIGHT.from, date: "Mon, 2 Nov", depart: "11:30", arrive: "17:05 +1", pax: 3, state: "soon", note: "Check-in opens 1 Nov, 11:30" }
+];
+const PAST = [["CE 101", "ICN → NRT", "14 Aug"], ["CE 033", "ICN → SIN", "2 Jun"], ["CE 006", "JFK → ICN", "19 Mar"]];
+
+function MiniRoute() {
+  return h("svg", { class: "ci-mini-route", viewBox: "0 0 120 24", "aria-hidden": "true" },
+    Array.from({ length: 11 }, (_, i) => h("circle", { cx: 6 + i * 10.8, cy: 18 - Math.sin((i / 10) * Math.PI) * 12, r: i === 0 || i === 10 ? 3 : 1.4, class: i === 0 || i === 10 ? "ci-route-end" : "ci-route-dot" })));
+}
+
+function Trips() {
+  return h("div", { class: "ci-view ci-trips" },
+    h("p", { class: "ci-kicker" }, "My trips"),
+    h("h1", { tabindex: -1 }, "Three flights coming up."),
+    h("p", { class: "ci-lede" }, "Everything booked under reference CE7K2Q. Check in from 48 hours before departure."),
+    h("ul", { class: "ci-trip-list" }, TRIPS.map(t => h("li", { class: "ci-card ci-trip", "data-state": t.state },
+      h("div", { class: "ci-trip-when" }, h("b", t.date), h("span", t.flight)),
+      h("div", { class: "ci-trip-route" },
+        h("div", { class: "ci-port" }, h("b", t.from.code), h("span", t.from.city), h("strong", t.depart)),
+        MiniRoute(),
+        h("div", { class: "ci-port ci-port-to" }, h("b", t.to.code), h("span", t.to.city), h("strong", t.arrive))),
+      h("div", { class: "ci-trip-side" },
+        h("span", { class: "ci-trip-note", "data-open": t.state === "open" }, h("i"), t.note),
+        h("div", { class: "ci-trip-actions" },
+          t.state === "open"
+            ? Button({ variant: "primary", iconRight: "arrow-right", onClick: () => { section.value = "checkin"; go(step.peek() === "done" ? "done" : "find"); } }, "Check in")
+            : Button({ onClick: () => toast(`Seats for ${t.flight}`, { icon: "info", description: "Seat changes open with check-in." }) }, "Choose seats"),
+          Button({ variant: "ghost", onClick: () => toast(`${t.flight} trip details`, { icon: "calendar", description: `${t.from.city} to ${t.to.city}, ${t.pax} passengers` }) }, "Details")))))),
+    h("details", { class: "ci-past" },
+      h("summary", "Past trips", h("span", `${PAST.length}`)),
+      h("ul", PAST.map(([flight, route, date]) => h("li", h("b", flight), h("span", route), h("span", date))))));
+}
+
+const BOARD = [
+  { time: "13:05", flight: "CE 911", to: "Tokyo Narita", gate: "231", status: "departed" },
+  { time: "13:40", flight: "CE 451", to: "Singapore", gate: "244", status: "boarding" },
+  { time: "14:10", flight: "CE 087", to: "San Francisco", gate: "252", status: "delayed", note: "New time 14:55" },
+  { time: "14:40", flight: "CE 017", to: "Los Angeles", gate: "248", status: "ontime", mine: true },
+  { time: "15:05", flight: "CE 305", to: "Vancouver", gate: "233", status: "ontime" },
+  { time: "15:30", flight: "CE 721", to: "Paris CDG", gate: "260", status: "ontime" },
+  { time: "16:20", flight: "CE 133", to: "Sydney", gate: "241", status: "ontime" },
+  { time: "17:00", flight: "CE 055", to: "New York JFK", gate: "250", status: "gate", note: "Gate changed from 238" }
+];
+const STATUS_LABEL = { departed: "Departed", boarding: "Boarding", delayed: "Delayed", ontime: "On time", gate: "Gate change" };
+
+function Status() {
+  const query = signal("");
+  const picked = signal("CE 017");
+  const rows = computed(() => {
+    const q = query.value.trim().toLowerCase().replace(/\s/g, "");
+    return BOARD.filter(r => !q || r.flight.toLowerCase().replace(/\s/g, "").includes(q) || r.to.toLowerCase().includes(q));
+  });
+  const row = computed(() => BOARD.find(r => r.flight === picked.value));
+  return h("div", { class: "ci-view ci-status-view" },
+    h("p", { class: "ci-kicker" }, "Flight status"),
+    h("h1", { tabindex: -1 }, "Departures from Incheon."),
+    h("p", { class: "ci-lede" }, "Terminal 2, today. Search by flight number or city."),
+    h("div", { class: "ci-status-search" }, Input({ bind: query, icon: "search", placeholder: "CE 017 or Los Angeles", aria: { label: "Search departures" } })),
+    h("div", { class: "ci-status-split" },
+      h("section", { class: "ci-card ci-board" },
+        h("div", { class: "ci-board-head", "aria-hidden": "true" }, h("span", "Time"), h("span", "Flight"), h("span", "To"), h("span", "Gate"), h("span", "Status")),
+        () => rows.value.length
+          ? h("ul", rows.value.map(r => h("li", h("button", {
+              type: "button", class: "ci-board-row", "data-status": r.status, "aria-pressed": () => String(picked.value === r.flight),
+              aria: { label: `${r.flight} to ${r.to}, ${STATUS_LABEL[r.status]}` }, onClick: () => { picked.value = r.flight; }
+            },
+            h("span", { class: "ci-board-time" }, r.time),
+            h("b", r.flight, r.mine ? h("span", { class: "ci-board-mine" }, "Your flight") : null),
+            h("span", r.to),
+            h("span", { class: "ci-board-gate" }, r.gate),
+            h("span", { class: "ci-board-status" }, h("i"), STATUS_LABEL[r.status])))))
+          : h("p", { class: "ci-board-empty" }, "No departures match that search.")),
+      () => {
+        const r = row.value;
+        const progress = { departed: 100, boarding: 70, delayed: 20, ontime: 35, gate: 25 }[r.status];
+        return h("section", { class: "ci-card ci-status-card", "data-status": r.status },
+          h("div", { class: "ci-flight-top" }, h("span", { class: "ci-flight-no" }, r.flight), h("span", "Today"), h("span", { class: "lucid-spacer" }), h("span", { class: "ci-board-status" }, h("i"), STATUS_LABEL[r.status])),
+          h("h2", `Incheon to ${r.to}`),
+          r.note ? h("p", { class: "ci-status-note" }, Icon({ name: "alert-circle", size: 14 }), r.note) : null,
+          h("div", { class: "ci-status-progress" }, h("span", "Check-in"), h("span", "Boarding"), h("span", "Departed")),
+          DotMeter({ value: progress, max: 100, dots: 24, color: "var(--ci-sky)", label: `${r.flight} progress` }),
+          h("dl", { class: "ci-status-facts" },
+            h("div", h("dt", "Scheduled"), h("dd", r.time)),
+            h("div", h("dt", "Gate"), h("dd", r.gate)),
+            h("div", h("dt", "Terminal"), h("dd", "T2"))),
+          Button({ onClick: () => toast(`Alerts on for ${r.flight}`, { tone: "success", description: "We'll text you about gate and time changes." }) }, Icon({ name: "bell", size: 15 }), "Get alerts"));
+      }));
+}
+
 function App() {
   hotkey("[", () => { collapsed.value = !collapsed.peek(); });
   return h("div", { class: "ci-app", "data-collapsed": collapsed },
     Rail(),
     h("main", { class: "ci-main" },
       h("header", { class: "ci-top" },
-        Steps(),
+        () => (section.value === "checkin" ? Steps() : h("div", { class: "ci-top-title" }, section.value === "trips" ? "My trips" : "Flight status")),
         h("div", { class: "ci-top-right" },
           h("span", { class: "ci-flight-chip" }, h("b", FLIGHT.number), `${FLIGHT.from.code} → ${FLIGHT.to.code}`),
           Tooltip({ label: "Language" }, Button({ variant: "ghost", size: "sm", aria: { label: "Language: English" }, onClick: () => toast("한국어 is coming soon", { icon: "message" }) }, "EN")))),
-      h("div", { class: "ci-stage" }, () => VIEWS[step.value]()),
+      h("div", { class: "ci-stage" }, () => (section.value === "trips" ? Trips() : section.value === "status" ? Status() : VIEWS[step.value]())),
       h("footer", { class: "ci-foot" }, "Celadon Air is a fictional airline. Flights, bookings and people here are invented for a Lucid UI demo.")));
 }
 
