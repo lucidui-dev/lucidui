@@ -48,6 +48,29 @@ export function links(site) {
   };
 }
 
+export const BRIEF = "Build this with Lucid UI from lucidui.dev, the npm package @lucidui-dev/core. Before writing any code, open https://lucidui.dev/llms-full.txt and read all of it: it is the complete documentation. If that link won't open, use https://cdn.jsdelivr.net/npm/@lucidui-dev/core@0.3/llms-full.txt instead. Do not web-search for \"Lucid UI\": unrelated projects share the name, such as AppNexus's React library lucid-ui, and their APIs are different. If you can't open either link, tell me rather than guess. When Lucid reports a diagnostic, apply the fix it gives.";
+
+export function copyBrief() {
+  navigator.clipboard?.writeText(BRIEF).then(
+    () => toast("Agent brief copied", { tone: "success", description: "Paste it into your agent's prompt." }),
+    () => toast("Couldn't copy", { tone: "danger", description: BRIEF }));
+}
+
+const AGENTS = [
+  "Claude Code", "Cursor", "GitHub Copilot", "OpenAI Codex", "ChatGPT", "Windsurf", "Cline", "Roo Code", "Aider",
+  "Continue", "Zed", "Gemini CLI", "Replit Agent", "Bolt", "Lovable", "v0", "Amazon Q Developer", "Junie",
+  "Devin", "Amp", "Kilo Code", "Warp", "Augment Code", "OpenHands", "Tabnine", "Qwen Code", "DeepSeek"
+];
+
+function AgentTicker() {
+  const run = hidden => h("ul", { class: "ticker-run", "aria-hidden": hidden ? "true" : undefined },
+    AGENTS.map(name => h("li", h("span", { class: "ticker-dot" }), name)));
+  return h("div", { class: "ticker" },
+    h("p", { class: "ticker-label" }, `Works with ${AGENTS.length} coding agents, and any that can read a web page`),
+    h("div", { class: "ticker-track", role: "region", aria: { label: "Coding agents that work with Lucid UI" } },
+      h("div", { class: "ticker-belt" }, run(false), run(true))));
+}
+
 export function DownloadButton({ size = "md", variant = "primary", label = "Download" } = {}) {
   return Button({ variant, size, icon: "download", href: DOWNLOAD }, label);
 }

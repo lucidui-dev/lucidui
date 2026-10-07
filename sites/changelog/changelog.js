@@ -3,6 +3,8 @@ import { Badge } from "/lucid/ui/index.js";
 import { mountPage, SectionHead } from "/shared/chrome.js";
 
 const UPDATES = [
+  { date: "6 October 2026", area: "Site", kind: "New", title: "A 404 page worth getting lost on", text: "Every Lucid UI site now has its own 404: a dot graph gets chomped away until only the error is left, with links to the site, the Builder, the sandbox, the docs and the changelog." },
+  { date: "6 October 2026", area: "Site", kind: "New", title: "Start in 60 seconds, and answers to common questions", text: "The docs open with a copy-and-open HTML file, a real screen built from components, and the agent brief. A questions section covers licensing, browsers, agents, theming and how this Lucid UI differs from AppNexus's lucid-ui." },
   { date: "6 October 2026", area: "Site", kind: "New", title: "Works with every coding agent", text: "The homepage now lists 27 coding agents that can build with Lucid UI, from Claude Code and Cursor to Qwen Code and DeepSeek, and any agent that can read a web page." },
   { date: "6 October 2026", area: "Site", kind: "New", title: "Downloads are open, and the docs are public", text: "Download Lucid UI and the WordPress plugin from every site, read the full guides on docs.lucidui.dev, and copy a one-line brief from the homepage to point your AI agent at llms.txt." },
   { date: "6 October 2026", area: "Library", kind: "New", title: "Lucid UI is on npm", text: "Install it with npm i @lucidui-dev/core. The package includes the source modules, the one-file bundle and the docs." },

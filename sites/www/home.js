@@ -4,7 +4,7 @@ import {
   Icon, Tooltip, toast, form, required, email
 } from "/lucid/ui/index.js";
 import { StatTile, DotSparkline, DotColumns, Waffle, DotDumbbell, DotCalendar, ChartCard } from "/lucid/viz/index.js";
-import { mountPage, commandOpen, SectionHead, jump, DownloadButton } from "/shared/chrome.js";
+import { mountPage, commandOpen, SectionHead, jump, DownloadButton, copyBrief } from "/shared/chrome.js";
 import { CodeWindow } from "/shared/code.js";
 import { DotField } from "/shared/field.js";
 
@@ -90,14 +90,6 @@ function HeroStage() {
       "Live components, not a screenshot. Change the period, switch teams, ship a release."));
 }
 
-const BRIEF = "Build this with Lucid UI from lucidui.dev, the npm package @lucidui-dev/core. Before writing any code, open https://lucidui.dev/llms-full.txt and read all of it: it is the complete documentation. If that link won't open, use https://cdn.jsdelivr.net/npm/@lucidui-dev/core@0.3/llms-full.txt instead. Do not web-search for \"Lucid UI\": unrelated projects share the name, such as AppNexus's React library lucid-ui, and their APIs are different. If you can't open either link, tell me rather than guess. When Lucid reports a diagnostic, apply the fix it gives.";
-
-function briefAgent() {
-  navigator.clipboard?.writeText(BRIEF).then(
-    () => toast("Agent brief copied", { tone: "success", description: "Paste it into your agent's prompt." }),
-    () => toast("Couldn't copy", { tone: "danger", description: BRIEF }));
-}
-
 const AGENTS = [
   "Claude Code", "Cursor", "GitHub Copilot", "OpenAI Codex", "ChatGPT", "Windsurf", "Cline", "Roo Code", "Aider",
   "Continue", "Zed", "Gemini CLI", "Replit Agent", "Bolt", "Lovable", "v0", "Amazon Q Developer", "Junie",
@@ -129,7 +121,7 @@ function Hero() {
       h("div", { class: "hero-ctas" },
         DownloadButton({ size: "lg", label: "Download Lucid UI" }),
         Button({ variant: "secondary", size: "lg", href: LINKS.playground, iconRight: "arrow-right" }, "Open the sandbox")),
-      h("button", { class: "hero-agent", type: "button", onClick: briefAgent },
+      h("button", { class: "hero-agent", type: "button", onClick: copyBrief },
         Icon({ name: "sparkles", size: 14 }),
         h("span", { class: "hero-agent-ask" }, "Building with an agent? Tell it:"),
         h("code", "Read lucidui.dev/llms-full.txt first"),

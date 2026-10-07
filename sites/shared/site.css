@@ -373,6 +373,25 @@ body.site { background: var(--lucid-surface); min-height: 100dvh; overflow-x: cl
 .guide-closed:hover { transform: none; box-shadow: 0 0 0 1px var(--lucid-line), var(--lucid-shadow-xs); }
 .guide-closed .guide-text { color: var(--lucid-ink-3); }
 .docs-cta { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 40px; }
+.docs-h2 { margin: 0 0 24px; font-size: clamp(24px, 3vw, 32px); font-weight: 600; letter-spacing: -.03em; color: var(--lucid-ink); }
+.qs { margin-top: 96px; scroll-margin-top: 80px; }
+.qs-steps { display: grid; gap: 40px; margin: 0; padding: 0; list-style: none; }
+.qs-step { display: grid; gap: 16px; min-width: 0; }
+.qs-head { display: flex; gap: 14px; align-items: flex-start; }
+.qs-n { flex: none; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; font: 600 13px/1 var(--lucid-font-mono); color: var(--site-obsidian); background: var(--site-champagne); }
+.qs-title { margin: 3px 0 0; font-size: 17px; font-weight: 600; letter-spacing: -.015em; color: var(--lucid-ink); }
+.qs-text { margin: 4px 0 0; font-size: 14.5px; line-height: 1.55; color: var(--lucid-ink-2); }
+.qs-brief { display: flex; flex-wrap: wrap; gap: 10px; padding-left: 42px; }
+.faq { margin-top: 96px; scroll-margin-top: 80px; }
+.faq-list { border-radius: 18px; background: var(--lucid-surface); box-shadow: 0 0 0 1px var(--lucid-line), var(--lucid-shadow-xs); overflow: hidden; }
+.faq-item + .faq-item { border-top: 1px solid var(--lucid-line); }
+.faq-item summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 22px; font-size: 15.5px; font-weight: 500; color: var(--lucid-ink); cursor: pointer; list-style: none; }
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary:hover { background: var(--lucid-hover); }
+.faq-item summary:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--site-champagne); }
+.faq-item summary > svg { flex: none; color: var(--lucid-ink-3); transition: rotate 220ms var(--lucid-ease-out); }
+.faq-item[open] summary > svg { rotate: 45deg; }
+.faq-item p { margin: 0; padding: 0 22px 20px; max-width: 680px; font-size: 14.5px; line-height: 1.6; color: var(--lucid-ink-2); }
 
 .updates { margin-top: 56px; }
 .updates-head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px 24px; padding-bottom: 20px; }

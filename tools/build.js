@@ -93,6 +93,10 @@ async function site(name, from, { shared = true, lucid = true, extras = [], file
   if (shared) await cp(join(root, "sites/shared"), join(out, "shared"), { recursive: true, filter: skip });
   for (const [source, target] of extras) await cp(join(root, source), join(out, target), { recursive: true, filter: skip });
   for (const [target, content] of Object.entries(files)) await writeFile(join(out, target), content);
+  await cp(join(root, "sites/notfound/404.html"), join(out, "404.html"));
+  const access = join(out, ".htaccess");
+  const rules = await readFile(access, "utf8").catch(() => "");
+  await writeFile(access, `${rules}${rules && !rules.endsWith("\n") ? "\n" : ""}ErrorDocument 404 /404.html\n`);
   await stamp(out);
   const archive = join(releases, `${name}-${pkg.version}.zip`);
   await rm(archive, { force: true });
