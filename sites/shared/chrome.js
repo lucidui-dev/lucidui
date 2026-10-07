@@ -17,7 +17,7 @@ export const dark = () => (theme.value === "system" ? prefersDark.value : theme.
 
 export const commandOpen = signal(false);
 
-export const LAUNCH_NOTE = "Downloads open at launch";
+export const DOWNLOAD = `https://github.com/lucidui-dev/lucidui/releases/download/v${version}/lucidui-${version}.zip`;
 
 export function links(site) {
   const www = path => (["www", "privacy", "license", "press", "case"].includes(site) ? path : `https://lucidui.dev${path}`);
@@ -50,18 +50,7 @@ export function links(site) {
 }
 
 export function DownloadButton({ size = "md", variant = "primary", label = "Download" } = {}) {
-  return Tooltip({ label: LAUNCH_NOTE }, Button({
-    variant,
-    size,
-    icon: "lock",
-    "aria-disabled": "true",
-    aria: { label: `${label}. ${LAUNCH_NOTE}.` },
-    class: "site-locked",
-    onClick: event => {
-      event.preventDefault();
-      toast(LAUNCH_NOTE, { icon: "lock", description: "Lucid UI is still being built. Follow @lucidui_ to hear first." });
-    }
-  }, label));
+  return Button({ variant, size, icon: "download", href: DOWNLOAD }, label);
 }
 
 const bumperOpen = signal(false);
@@ -315,9 +304,7 @@ function Social(L) {
 function Footer(L) {
   const column = (title, items) => h("div", { class: "foot-col" },
     h("div", { class: "foot-title" }, title),
-    items.map(([label, href]) => (href
-      ? h("a", { href }, label)
-      : h("span", { class: "foot-locked", title: LAUNCH_NOTE }, Icon({ name: "lock", size: 12 }), label))));
+    items.map(([label, href]) => h("a", { href }, label)));
   return h("footer", { class: "site-foot" },
     h("div", { class: "site-wrap foot-inner" },
       h("div", { class: "foot-brand" },
@@ -325,7 +312,7 @@ function Footer(L) {
         h("p", "Interfaces with taste, in a few kilobytes."),
         h("p", { class: "foot-meta" }, `v${version} · MIT licensed · Built with Lucid UI`),
         Social(L)),
-      column("Product", [["The Case for Lucid", L.case], ["Sandbox", L.playground], ["Builder", L.builder], ["Docs", L.docs], ["Changelog", L.changelog], ["Download", null]]),
+      column("Product", [["The Case for Lucid", L.case], ["Sandbox", L.playground], ["Builder", L.builder], ["Docs", L.docs], ["Changelog", L.changelog], ["Download", DOWNLOAD]]),
       column("Source", [["Page source", L.source], ["Core runtime", L.core], ["llms.txt", L.llms]]),
       column("Contact", [["hello@lucidui.dev", L.hello], ["press@lucidui.dev", L.press_mail], ["security@lucidui.dev", L.security]]),
       column("Company", [["Press", L.press], ["Privacy", L.privacy], ["License", L.license], ["legal@lucidui.dev", L.legal]])),
@@ -353,7 +340,7 @@ function Commands(L, extra) {
       { group: "Go to", label: "Docs", icon: "hash", run: go(L.docs) },
       { group: "Go to", label: "Changelog", icon: "clock", run: go(L.changelog) },
       { group: "Go to", label: "Press kit", icon: "image", run: go(L.press) },
-      { group: "Go to", label: "Download", icon: "lock", hint: "At launch", run: () => toast(LAUNCH_NOTE, { icon: "lock" }) },
+      { group: "Go to", label: "Download", icon: "download", hint: `v${version}`, run: go(DOWNLOAD) },
       ...extra,
       { group: "Appearance", label: "Light theme", icon: "sun", run: () => { theme.value = "light"; } },
       { group: "Appearance", label: "Dark theme", icon: "moon", run: () => { theme.value = "dark"; } },

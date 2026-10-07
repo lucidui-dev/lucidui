@@ -73,6 +73,12 @@ body.site { background: var(--lucid-surface); min-height: 100dvh; overflow-x: cl
 .hero-line { display: block; }
 .hero-sub { margin: 26px 0 0; max-width: 640px; font-size: clamp(17px, 1.6vw, 19.5px); line-height: 1.55; letter-spacing: -.012em; color: var(--lucid-ink-2); text-wrap: pretty; }
 .hero-ctas { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 36px; }
+.hero-agent { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; margin-top: 22px; padding: 7px 12px 7px 11px; border: 0; border-radius: 999px; font: inherit; font-size: 13px; color: var(--lucid-ink-2); background: var(--lucid-surface); box-shadow: 0 0 0 1px var(--lucid-line), var(--lucid-shadow-xs); cursor: pointer; transition: box-shadow 160ms var(--lucid-ease-out), color 160ms var(--lucid-ease-out); }
+.hero-agent:hover { color: var(--lucid-ink); box-shadow: 0 0 0 1px var(--site-champagne), var(--lucid-shadow-xs); }
+.hero-agent:focus-visible { outline: 2px solid var(--site-champagne); outline-offset: 2px; }
+.hero-agent > svg:first-child { color: var(--site-eyebrow); flex: none; }
+.hero-agent > svg:last-child { color: var(--lucid-ink-3); flex: none; }
+.hero-agent code { font: 500 12.5px/1 var(--lucid-font-mono); color: var(--lucid-ink); white-space: nowrap; }
 .hero-facts { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 22px; margin: 28px 0 0; padding: 0; list-style: none; font-size: 13.5px; color: var(--lucid-ink-3); }
 .hero-facts li { display: inline-flex; align-items: center; gap: 4px; }
 .hero-facts li + li::before { content: ""; width: 3px; height: 3px; margin-right: 16px; border-radius: 50%; background: var(--lucid-ink-4); }
@@ -381,8 +387,6 @@ body.site { background: var(--lucid-surface); min-height: 100dvh; overflow-x: cl
 .release-items li { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 12px; align-items: start; color: var(--lucid-ink-2); line-height: 1.55; }
 .release-items .lucid-badge { justify-self: start; margin-top: 2px; }
 
-.foot-locked { display: inline-flex; align-items: center; gap: 6px; color: var(--lucid-ink-3); cursor: not-allowed; }
-.site-locked { cursor: not-allowed; }
 
 .bumper {
   position: fixed; inset: 0; z-index: 200; overflow-y: auto;
@@ -532,6 +536,7 @@ body.site { background: var(--lucid-surface); min-height: 100dvh; overflow-x: cl
   .hero { padding: 40px 0 72px; }
   .hero-chip { font-size: 12px; }
   .hero-line { display: inline; }
+  .hero-agent-ask { display: none; }
   .hero-facts { display: grid; grid-template-columns: repeat(2, auto); gap: 8px 28px; }
   .hero-facts li + li::before { display: none; }
   .stage { margin-top: 48px; padding: 12px; border-radius: 22px; }

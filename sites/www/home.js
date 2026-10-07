@@ -90,6 +90,14 @@ function HeroStage() {
       "Live components, not a screenshot. Change the period, switch teams, ship a release."));
 }
 
+const BRIEF = "Before writing any Lucid UI code, read https://lucidui.dev/llms.txt and every page it links, starting with the API reference. When Lucid reports a diagnostic, apply the fix it gives.";
+
+function briefAgent() {
+  navigator.clipboard?.writeText(BRIEF).then(
+    () => toast("Agent brief copied", { tone: "success", description: "Paste it into your agent's prompt." }),
+    () => toast("Couldn't copy", { tone: "danger", description: BRIEF }));
+}
+
 function Hero() {
   return h("section", { class: "hero" },
     DotField(),
@@ -102,15 +110,20 @@ function Hero() {
         Icon({ name: "arrow-right", size: 13 })),
       h("h1", { class: "hero-title" }, h("span", { class: "hero-line" }, "Interfaces with taste,"), " ", h("span", { class: "hero-line" }, "in a few kilobytes.")),
       h("p", { class: "hero-sub" },
-        "Lucid UI is a small, dependency-free UI runtime for the web. Signals, finished components and charts made of dots, with an API small enough for an AI agent to learn in a single read."),
+        "The UI runtime your AI agent can learn in a single read. The entire API is ", FACTS.tokens, " tokens, and every mistake comes back with a code and a fix, so agents repair their own work instead of guessing."),
       h("div", { class: "hero-ctas" },
         DownloadButton({ size: "lg", label: "Download Lucid UI" }),
         Button({ variant: "secondary", size: "lg", href: LINKS.playground, iconRight: "arrow-right" }, "Open the sandbox")),
+      h("button", { class: "hero-agent", type: "button", onClick: briefAgent },
+        Icon({ name: "sparkles", size: 14 }),
+        h("span", { class: "hero-agent-ask" }, "Building with an agent? Tell it:"),
+        h("code", "Read lucidui.dev/llms.txt first"),
+        Icon({ name: "copy", size: 13 })),
       h("ul", { class: "hero-facts", aria: { label: "At a glance" } },
         h("li", h("b", FACTS.core), " core, gzipped"),
+        h("li", h("b", `${FACTS.tokens}-token`), " API"),
         h("li", h("b", FACTS.deps), " dependencies"),
-        h("li", h("b", "No"), " build step"),
-        h("li", h("b", "MIT"), " licensed"))),
+        h("li", h("b", "No"), " build step"))),
     h("div", { class: "site-wrap" }, HeroStage()));
 }
 
@@ -203,7 +216,7 @@ function Agents() {
 
 > A small, dependency-free UI runtime for the web.
 
-Read docs/API.md in full before writing Lucid UI code.
+Read https://docs.lucidui.dev/docs/API.md in full before writing Lucid UI code.
 It is the complete API and is kept short so it fits in context.
 `;
   return h("section", { class: "section section-tint", id: "agents" },
@@ -317,8 +330,8 @@ function Charts() {
     h("div", { class: "site-wrap" },
       SectionHead({
         eyebrow: "charts",
-        title: "Charts, made of dots.",
-        lead: "Bars, lines and pies are replaced by one calm, countable mark. Every chart has a tooltip, a legend and a table view, and every palette is checked for colour blindness in light and dark.",
+        title: "Charts that stay calm.",
+        lead: "Drawn with one countable mark instead of bars and pies. Every chart has a tooltip, a legend and a table view, and every palette is checked for colour blindness in light and dark.",
         align: "center"
       }),
       h("div", { class: "chart-grid" },
@@ -516,8 +529,9 @@ function Anywhere() {
             h("ol", { class: "anywhere-steps" }, p.steps.map((text, i) => h("li", h("span", String(i + 1)), text))));
         },
         h("p", { class: "anywhere-note" },
-          Icon({ name: "lock", size: 12 }),
-          "The WordPress plugin arrives at launch. WordPress, Shopify and Squarespace are trademarks of their owners; Lucid UI is independent and not affiliated with them."))));
+          Icon({ name: "download", size: 12 }),
+          h("a", { href: `https://github.com/lucidui-dev/lucidui/releases/download/v${version}/lucid-ui-wordpress-${version}.zip` }, "Get the WordPress plugin"),
+          ". WordPress, Shopify and Squarespace are trademarks of their owners; Lucid UI is independent and not affiliated with them."))));
 }
 
 function Start() {

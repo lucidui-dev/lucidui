@@ -2,7 +2,7 @@
 
 > A small, dependency-free UI runtime for the web. Fine-grained signals, plain DOM output, components that run once, and coded diagnostics that explain every mistake with a fix.
 
-Read docs/API.md in full before writing Lucid UI code. It is the complete API and is kept short so it fits in context.
+Read https://docs.lucidui.dev/docs/API.md in full before writing Lucid UI code. It is the complete API and is kept short so it fits in context.
 
 Key rules:
 - Props are optional and always the first argument, as the only plain object.
@@ -10,14 +10,14 @@ Key rules:
 - A function child or prop is a live expression. Event handlers are props starting with `on`.
 - Pass `Show` branches as functions. Give `For` a `key` when items have ids.
 - Use `button` for actions and `a` for navigation, never a clickable `div`.
-- When you see a diagnostic code, look it up in docs/DIAGNOSTICS.md and apply the fix it gives.
+- When you see a diagnostic code, look it up in https://docs.lucidui.dev/docs/DIAGNOSTICS.md and apply the fix it gives.
 
 Single file: `@lucidui-dev/core/bundle` (bundle/lucid.js plus bundle/lucid.css) exports everything from @lucidui-dev/core, @lucidui-dev/core/ui and @lucidui-dev/core/viz in one module, for pages without a bundler or import map (Shopify themes, Squarespace code blocks, plain HTML). In WordPress, the Lucid UI plugin registers @lucidui-dev/core, @lucidui-dev/core/ui and @lucidui-dev/core/viz as script modules; an app is a file in the theme's lucid/ folder whose default export is a component, used with [lucid app="name"].
 
 ## Docs
 
-- [API](docs/API.md): the complete API
-- [Components](docs/UI.md): styled, accessible components (@lucidui-dev/core/ui)
-- [Charts](docs/VIZ.md): dot-based data visualisation (@lucidui-dev/core/viz)
-- [Diagnostics](docs/DIAGNOSTICS.md): every warning and error code, with the fix
-- [Vision](docs/VISION.md): goals, principles and roadmap
+- [API](https://docs.lucidui.dev/docs/API.md): the complete API
+- [Components](https://docs.lucidui.dev/docs/UI.md): styled, accessible components (@lucidui-dev/core/ui)
+- [Charts](https://docs.lucidui.dev/docs/VIZ.md): charts with tooltips, legends and table views (@lucidui-dev/core/viz)
+- [Diagnostics](https://docs.lucidui.dev/docs/DIAGNOSTICS.md): every warning and error code, with the fix
+- [Vision](https://docs.lucidui.dev/docs/VISION.md): goals, principles and roadmap

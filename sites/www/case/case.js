@@ -17,7 +17,7 @@ const LUCID_LAYER = [
   ["zap", "Signals", "State and updates, built in"],
   ["layers", "Components", "Finished, accessible, themed"],
   ["sparkles", "Design language", "Tokens for light and dark"],
-  ["chart", "Dot charts", "With tooltips and tables"],
+  ["chart", "Charts", "With tooltips and tables"],
   ["alert-circle", "Diagnostics", "Every mistake, with its fix"],
   ["hash", "One-page API", "About 1,140 tokens, whole"]
 ];
@@ -39,7 +39,7 @@ const ROWS = [
   ["Renders the interface", ["good", "Yes"], ["good", "Yes"], ["none", "No, styling only"], ["partial", "Through React"], ["good", "Yes"], ["none", "No"]],
   ["A finished visual design", ["good", "Built in"], ["none", "Bring your own"], ["partial", "Utilities, you design"], ["good", "Yes, copied in"], ["none", "Bring your own"], ["none", "You write it"]],
   ["Accessible components", ["good", "Built in, checked"], ["none", "Up to you"], ["none", "Up to you"], ["good", "Yes, via Radix"], ["none", "Up to you"], ["none", "Up to you"]],
-  ["Charts", ["good", "Dot charts"], ["none", "Add a library"], ["none", "Add a library"], ["partial", "Via Recharts"], ["none", "Add a library"], ["none", "Add a library"]],
+  ["Charts", ["good", "Built in"], ["none", "Add a library"], ["none", "Add a library"], ["partial", "Via Recharts"], ["none", "Add a library"], ["none", "Add a library"]],
   ["Update model", ["good", "Fine-grained signals"], ["partial", "Re-renders, virtual DOM"], ["none", "Not applicable"], ["partial", "As React"], ["good", "Compiled, fine-grained"], ["none", "Not applicable"]],
   ["Whole API in an agent's context", ["good", "About 1,140 tokens"], ["partial", "Core, yes; ecosystem, no"], ["partial", "Large class vocabulary"], ["partial", "Per component"], ["partial", "Compact, plus compiler rules"], ["none", "Vast"]],
   ["Mistakes explained with a fix", ["good", "Coded diagnostics"], ["partial", "Dev warnings"], ["partial", "Build errors"], ["partial", "As React"], ["partial", "Compiler warnings"], ["none", "Silent"]],

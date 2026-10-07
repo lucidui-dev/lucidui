@@ -11,7 +11,7 @@ const GUIDES = [
   { href: "/docs/VISION.md", icon: "target", title: "Vision", text: "What Lucid UI is for, its principles, and where it is going next." }
 ];
 
-const GUIDES_OPEN = false;
+const GUIDES_OPEN = true;
 
 mountPage({
   site: "docs",
