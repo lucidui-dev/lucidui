@@ -385,6 +385,7 @@ function Principles() {
         title: "Nothing between you and the browser.",
         lead: "Lucid outputs ordinary DOM from ordinary JavaScript modules. No compiler, no bundler, no runtime you can't read in an afternoon."
       }),
+      h("a", { class: "manifesto-link", href: LINKS.manifesto }, h("span", { class: "manifesto-link-dot" }), "Read the manifesto: nine things Lucid believes", Icon({ name: "arrow-right", size: 14 })),
       h("ul", { class: "principles" },
         item("monitor", "Browser-native", "Plain elements and plain events. What you write is what the browser runs."),
         item("zap", "No build step", "Import the modules in a script tag and start. Tooling is always optional."),

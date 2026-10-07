@@ -593,3 +593,10 @@ body.site { background: var(--lucid-surface); min-height: 100dvh; overflow-x: cl
   .release-meta { position: static; flex-direction: row; align-items: center; gap: 12px; }
   .foot-brand { grid-column: 1 / -1; }
 }
+
+.manifesto-link { display: inline-flex; align-items: center; gap: 10px; margin: -8px 0 28px; padding: 8px 14px 8px 10px; border-radius: 999px; font-size: 14px; font-weight: 500; color: var(--lucid-ink); text-decoration: none; background: var(--lucid-surface); box-shadow: 0 0 0 1px var(--lucid-line), var(--lucid-shadow-xs); transition: box-shadow 200ms; }
+.manifesto-link:hover { box-shadow: 0 0 0 1px var(--site-champagne), var(--lucid-shadow-xs); }
+.manifesto-link:focus-visible { outline: 2px solid var(--site-champagne); outline-offset: 2px; }
+.manifesto-link .lucid-icon { color: var(--lucid-ink-3); transition: transform 200ms; }
+.manifesto-link:hover .lucid-icon { transform: translateX(2px); }
+.manifesto-link-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--site-champagne); box-shadow: 0 0 0 3px rgb(232 214 168 / .25); }

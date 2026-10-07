@@ -3,6 +3,8 @@ import { Badge } from "/lucid/ui/index.js";
 import { mountPage, SectionHead } from "/shared/chrome.js";
 
 const UPDATES = [
+  { date: "6 October 2026", area: "Site", kind: "New", title: "The Lucid UI manifesto", text: "Nine things Lucid UI believes, from small is a feature to never the browser's grey box, and why a designer built it for the community. Read it at lucidui.dev/manifesto." },
+  { date: "6 October 2026", area: "Sandbox", kind: "Improved", title: "Orbitry has its own address, and the sandbox opens on the picker", text: "Orbitry now lives at sandbox.lucidui.dev/tracker/ like every other demo, and sandbox.lucidui.dev opens the demo picker." },
   { date: "6 October 2026", area: "Sandbox", kind: "Improved", title: "Every demo has its own layout, and more to explore", text: "Maison is now a storefront with a collection and showroom booking. Race Center reads like a newsroom, with an election-night count. Stride gets workouts, sleep and trends. Dotwave gets a mixer and a pattern library. Headway becomes a control room with lines, alerts and ridership. Celadon adds your trips and live departures, Juniper adds messages, and every side panel now collapses." },
   { date: "6 October 2026", area: "Sandbox", kind: "New", title: "Five demos on the way", text: "Coming to the sandbox: Tally for personal finance, Harbor for shipping, Kiln for deploys, Folio for writing, and Tablekeep for restaurants." },
   { date: "6 October 2026", area: "Site", kind: "New", title: "A 404 page worth getting lost on", text: "Every Lucid UI site now has its own 404: a dot graph gets chomped away until only the error is left, with links to the site, the Builder, the sandbox, the docs and the changelog." },
