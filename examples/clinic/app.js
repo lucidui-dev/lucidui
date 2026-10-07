@@ -1,5 +1,5 @@
 import { signal, computed, effect, h, mount } from "/lucid/index.js";
-import { Button, Tooltip, Icon, toast, hotkey } from "/lucid/ui/index.js";
+import { Button, Tooltip, Icon, Textarea, toast, hotkey } from "/lucid/ui/index.js";
 import { DotSparkline, DotMeter, DotColumns } from "/lucid/viz/index.js";
 import { ExitCard } from "/exit.js";
 import { CLINICIANS, CLINICIAN, PATIENTS, ROOMS, LABS, APPOINTMENTS, WEEK } from "./data.js";
@@ -13,7 +13,10 @@ effect(() => {
 });
 
 const screen = signal("today");
-const tab = signal({ today: "overview", schedule: "day", patients: "overview" });
+const sideOpen = signal(stored("side") !== "closed");
+const rightOpen = signal(stored("right") !== "closed");
+effect(() => { try { localStorage.setItem("lucid-clinic:side", sideOpen.value ? "open" : "closed"); localStorage.setItem("lucid-clinic:right", rightOpen.value ? "open" : "closed"); } catch {} });
+const tab = signal({ today: "overview", schedule: "day", patients: "overview", messages: "conversation" });
 const patients = signal(PATIENTS.map(p => ({ ...p })));
 const selected = signal("p2");
 const appt = signal(1);
@@ -61,7 +64,7 @@ function Rail() {
     item("today", "hexagon", "Today"),
     item("schedule", "calendar", "Schedule"),
     item("patients", "users", "Patients"),
-    item(null, "message", "Messages"),
+    item("messages", "message", "Messages"),
     item(null, "sliders", "Settings"),
     h("span", { class: "lucid-spacer" }),
     ExitCard({ compact: true }),
@@ -70,12 +73,22 @@ function Rail() {
     Tooltip({ label: "Dr. Amara Rahman", placement: "right" }, h("span", { class: "cl-me", tabindex: 0, aria: { label: "Signed in as Dr. Amara Rahman" } }, "AR")));
 }
 
+function PanelToggle(sig, label, key, side) {
+  return Tooltip({ label, kbd: [key] }, h("button", {
+    type: "button", class: "cl-panel-toggle", "data-side": side, "aria-pressed": () => String(sig.value), aria: { label },
+    onClick: () => { sig.value = !sig.peek(); }
+  }, Icon({ name: "sidebar", size: 16 })));
+}
+
 function Tabs(items) {
   const key = screen.peek();
-  return h("div", { class: "cl-tabs", role: "tablist" }, items.map(([id, label, count]) => h("button", {
-    type: "button", role: "tab", class: "cl-tab", "aria-selected": () => tab.value[key] === id,
-    onClick: () => { tab.value = { ...tab.peek(), [key]: id }; }
-  }, label, count != null ? h("span", { class: "cl-tab-count" }, count) : null)));
+  return h("div", { class: "cl-tabbar" },
+    PanelToggle(sideOpen, "List panel", "[", "left"),
+    h("div", { class: "cl-tabs", role: "tablist" }, items.map(([id, label, count]) => h("button", {
+      type: "button", role: "tab", class: "cl-tab", "aria-selected": () => tab.value[key] === id,
+      onClick: () => { tab.value = { ...tab.peek(), [key]: id }; }
+    }, label, count != null ? h("span", { class: "cl-tab-count" }, count) : null))),
+    PanelToggle(rightOpen, "Details panel", "]", "right"));
 }
 
 function QueueSidebar() {
@@ -300,17 +313,79 @@ function PatientsRight() {
   });
 }
 
+const THREADS = signal([
+  { id: "t1", patient: "p1", unread: true, messages: [
+    { from: "patient", at: "7:58", text: "Hi, the cough is keeping me up at night now. Should I still come in at 9 or is there anything I can take before?" },
+    { from: "clinic", at: "8:06", text: "Please still come in at 9, Maya. Honey in warm water can ease it tonight. We'll check your chest when you're here." },
+    { from: "patient", at: "8:40", text: "Thank you. I'm in the waiting room now." }] },
+  { id: "t2", patient: "p8", unread: true, messages: [
+    { from: "patient", at: "8:55", text: "Running about ten minutes late, sorry! Traffic on the bridge." }] },
+  { id: "t3", patient: "p5", unread: false, messages: [
+    { from: "clinic", at: "Yesterday", text: "Reminder: please bring all your current medications to tomorrow's review, including anything over the counter." },
+    { from: "patient", at: "Yesterday", text: "Will do. My daughter is bringing me." }] },
+  { id: "t4", patient: "p3", unread: false, messages: [
+    { from: "patient", at: "Wed", text: "Lily's fever came back last night, 38.6. Can we see Dr. Marsh?" },
+    { from: "clinic", at: "Wed", text: "We've booked Lily with Dr. Marsh on Friday at 8:30. If the fever goes above 39.5 before then, call us." }] }
+]);
+const thread = signal("t1");
+const current = computed(() => THREADS.value.find(t => t.id === thread.value));
+const P = id => patients.value.find(p => p.id === id);
+
+function MessagesSidebar() {
+  return h("aside", { class: "cl-side" },
+    h("div", { class: "cl-side-head" }, h("b", "Messages"), h("span", { class: "cl-pill" }, () => `${THREADS.value.filter(t => t.unread).length} new`)),
+    h("ul", { class: "cl-list" }, () => THREADS.value.map(t => {
+      const p = P(t.patient);
+      const last = t.messages[t.messages.length - 1];
+      return h("li", h("button", { type: "button", class: "cl-row cl-thread", "data-unread": t.unread, "aria-current": () => (thread.value === t.id ? "true" : undefined),
+        onClick: () => { thread.value = t.id; selected.value = t.patient; THREADS.value = THREADS.peek().map(x => (x.id === t.id ? { ...x, unread: false } : x)); } },
+        Avatar(p),
+        h("span", { class: "cl-row-copy" }, h("b", p.name), h("span", last.text)),
+        h("span", { class: "cl-row-meta" }, h("span", last.at), t.unread ? h("i", { class: "cl-unread" }) : null)));
+    })));
+}
+
+function MessagesMain() {
+  const draft = signal("");
+  const send = () => {
+    const text = draft.peek().trim();
+    if (!text) return;
+    THREADS.value = THREADS.peek().map(t => (t.id === thread.peek() ? { ...t, messages: [...t.messages, { from: "clinic", at: "Now", text }] } : t));
+    draft.value = "";
+    toast("Message sent", { tone: "success", description: `To ${P(current.peek().patient).name}` });
+  };
+  const quick = ["Please come straight to reception.", "Your results are back and look normal.", "We're running about 10 minutes behind."];
+  return h("div", { class: "cl-main-inner" },
+    Tabs([["conversation", "Conversation"]]),
+    () => {
+      const t = current.value;
+      const p = P(t.patient);
+      return h("div", { class: "cl-thread-view" },
+        h("header", { class: "cl-thread-head" }, Avatar(p, 40), h("div", h("b", p.name), h("span", `${p.reason} · ${STATUS[p.status]}`))),
+        h("ol", { class: "cl-messages" }, t.messages.map(m => h("li", { class: "cl-msg", "data-from": m.from }, h("p", m.text), h("small", m.from === "clinic" ? `Juniper Clinic · ${m.at}` : m.at)))),
+        h("div", { class: "cl-quick" }, quick.map(q => h("button", { type: "button", class: "cl-chip cl-quick-chip", onClick: () => { draft.value = q; } }, q))),
+        h("form", { class: "cl-compose", onSubmit: e => { e.preventDefault(); send(); } },
+          Textarea({ bind: draft, rows: 2, placeholder: `Reply to ${p.name.split(" ")[0]}`, aria: { label: "Reply" }, onKeydown: e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); send(); } } }),
+          Button({ variant: "primary", icon: "arrow-right", type: "submit" }, "Send")));
+    });
+}
+
 const VIEWS = {
   today: { side: QueueSidebar, main: TodayMain, right: PatientPanel },
   schedule: { side: ScheduleSidebar, main: ScheduleMain, right: ScheduleRight },
-  patients: { side: PatientsSidebar, main: PatientsMain, right: PatientsRight }
+  patients: { side: PatientsSidebar, main: PatientsMain, right: PatientsRight },
+  messages: { side: MessagesSidebar, main: MessagesMain, right: PatientPanel }
 };
 
 function App() {
   hotkey("1", () => { screen.value = "today"; });
   hotkey("2", () => { screen.value = "schedule"; });
   hotkey("3", () => { screen.value = "patients"; });
-  return h("div", { class: "cl-app" },
+  hotkey("4", () => { screen.value = "messages"; });
+  effect(() => { if (screen.value === "messages") selected.value = current.value.patient; });
+  hotkey("[", () => { sideOpen.value = !sideOpen.peek(); });
+  hotkey("]", () => { rightOpen.value = !rightOpen.peek(); });
+  return h("div", { class: "cl-app", "data-side": sideOpen, "data-right": rightOpen },
     Rail(),
     () => VIEWS[screen.value].side(),
     h("main", { class: "cl-main", "data-screen": screen }, () => VIEWS[screen.value].main()),
@@ -321,7 +396,7 @@ function App() {
       h("span", () => `${waiting.value.length} waiting · ${6 - freeRooms.value.length} of 6 rooms in use`),
       h("span", { class: "lucid-spacer" }),
       h("span", "Juniper Clinic is fictional. Patients and data are invented for a Lucid UI demo."),
-      h("span", "1 2 3 switch screens")));
+      h("span", "1 to 4 switch screens · [ ] panels")));
 }
 
 mount(App, "#app");
