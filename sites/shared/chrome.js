@@ -220,14 +220,15 @@ function PlaygroundCard(L) {
     h("div", { class: "pg-card-head" },
       h("img", { class: "mark-ring", src: "/media/logo/lucidui-icon.svg", alt: "", width: 32, height: 32 }),
       h("div", { class: "pg-card-title" }, h("b", "Sandbox"), h("span", "sandbox.lucidui.dev"))),
-    h("p", { class: "pg-card-text" }, "A working issue tracker built entirely with Lucid UI. Drag cards across the board, open an issue, filter the list, press ⌘K, and undo anything."),
+    h("p", { class: "pg-card-text" }, "Eight complete apps built only with Lucid UI, each with its own layout: a transit control room, an election-night newsroom, a clinic console, an issue tracker and more. Click through, press ⌘K and undo anything."),
     h("ul", { class: "pg-card-points" },
+      h("li", Icon({ name: "board", size: 13 }), "Eight apps, no two laid out alike"),
       h("li", Icon({ name: "monitor", size: 13 }), "Runs entirely in your browser"),
       h("li", Icon({ name: "lock", size: 13 }), "Nothing you do is saved or sent"),
       h("li", Icon({ name: "layers", size: 13 }), "Every component is Lucid UI")),
     h("div", { class: "pg-card-foot" },
       h("span", { class: "pg-card-dots", "aria-hidden": "true" }, Array.from({ length: 5 }, () => h("i"))),
-      "Click to open",
+      "Open the picker",
       Icon({ name: "arrow-right", size: 13 })));
   let anchor = null;
   let timer = 0;
