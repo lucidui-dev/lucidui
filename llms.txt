@@ -49,6 +49,7 @@ If you can use MCP tools, the Lucid bridge renders your code in the user's Lucid
 - [Components](https://docs.lucidui.dev/docs/UI.md): styled, accessible components (@lucidui-dev/core/ui)
 - [Charts](https://docs.lucidui.dev/docs/VIZ.md): charts with tooltips, legends and table views (@lucidui-dev/core/viz)
 - [Build with an agent](https://docs.lucidui.dev/docs/AGENTS.md): connect to Lucid Builder with the bridge, or use the brief
+- [WordPress](https://docs.lucidui.dev/docs/WORDPRESS.md): the plugin, the [lucid] shortcode, apps as theme files, props and WordPress content
 - [Recipes](https://docs.lucidui.dev/docs/RECIPES.md): complete settings, dashboard and list pages to start from
 - [Diagnostics](https://docs.lucidui.dev/docs/DIAGNOSTICS.md): every warning and error code, with the fix
 - [Vision](https://docs.lucidui.dev/docs/VISION.md): goals, principles and roadmap

@@ -527,7 +527,7 @@ function Board() {
       h("div", { class: "st-board-head" },
         Head("Services", "Every heartbeat, as it lands.", "The last 40 checks for each service. Taller means slower. Hover any beat to read it."),
         h("div", { class: "st-board-actions" },
-          Button({ variant: "primary", icon: "zap", onClick: () => { runRound(); toast({ title: `Checking all ${COUNT} now` }); } }, "Check now"),
+          Button({ variant: "primary", icon: "zap", onClick: () => { runRound(); toast(`Checking all ${COUNT} now`); } }, "Check now"),
           Button({ variant: "ghost", icon: "clock", onClick: () => { paused.value = !paused.peek(); if (!paused.peek()) runRound(); else { clearTimeout(roundTimer); nextAt.value = Infinity; } } }, () => (paused.value ? "Resume" : "Pause")))),
       groups.map(group => h("div", { class: "st-group" },
         h("h3", { class: "st-group-title" }, group, h("span", () => {

@@ -8,6 +8,7 @@ const GUIDES = [
   { href: "/docs/UI.md", icon: "layers", title: "Components", text: "Buttons, inputs, selects, date picker, menus, dialogs, forms, undo and long lists." },
   { href: "/docs/AGENTS.md", icon: "link", title: "Build with an agent", text: "Connect Claude Code, Cursor or any MCP agent to Builder, or use the brief. Setup, pairing and troubleshooting." },
   { href: "/docs/RECIPES.md", icon: "layers", title: "Recipes", text: "Complete settings, dashboard and list pages built only from Lucid components." },
+  { href: "/docs/WORDPRESS.md", icon: "download", title: "WordPress", text: "Install the plugin, write apps as theme files, pass props, read WordPress content and troubleshoot." },
   { href: "/docs/VIZ.md", icon: "chart", title: "Charts", text: "Dot columns, dumbbells, waffles, unit rows, calendars and stat tiles." },
   { href: "/docs/DIAGNOSTICS.md", icon: "alert-circle", title: "Diagnostics", text: "Every warning and error code Lucid reports, with the fix for each." },
   { href: "/llms.txt", icon: "sparkles", title: "llms.txt", text: "The entry point for AI agents, pointing at everything above." },
@@ -54,7 +55,7 @@ const FAQ = [
   ["What is the Builder?", "Builder, at build.lucidui.dev, is a workbench that runs entirely in your browser. Pick a template or paste code, and the preview reruns as you type, with every error and Lucid diagnostic explained in the console. Nothing you write is uploaded."],
   ["Can my AI agent build in the Builder directly?", "Yes. Add the Lucid bridge to your agent once (for Claude Code: claude mcp add --scope user lucid -- npx -y @lucidui-dev/bridge), then ask it to connect to Lucid Builder and open the link it gives you. Your agent renders into the Builder, reads the diagnostics and fixes its own mistakes. It all runs on your computer."],
   ["Which browsers does it support?", "Current versions of Chrome, Edge, Safari and Firefox. Lucid UI uses modern platform features such as popovers, the dialog element and light-dark colours, so very old browsers are not supported."],
-  ["Can I use it in WordPress, Shopify or Squarespace?", "Yes. The one-file build works anywhere a script tag does, and there is a WordPress plugin with a [lucid] shortcode on the download page."],
+  ["Can I use it in WordPress, Shopify or Squarespace?", "Yes. The one-file build works anywhere a script tag does. For WordPress there is a plugin with a [lucid] shortcode; the WordPress guide covers installing it and writing apps."],
   ["Can I change the look?", "Yes. Every colour, space, radius and font is a --lucid-* custom property, and light and dark are built in. A theme is a short list of overrides."],
   ["Is it ready for production?", "Lucid UI is young and its version is below 1.0, so some APIs may still change. Pin an exact version, and read the changelog before upgrading."],
   ["Where do I report a bug or ask for a feature?", "Open an issue on GitHub at github.com/lucidui-dev/lucidui. The changelog lists everything that has shipped."]

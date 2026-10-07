@@ -602,6 +602,8 @@ function Anywhere() {
         h("p", { class: "anywhere-note" },
           Icon({ name: "download", size: 12 }),
           h("a", { href: `https://github.com/lucidui-dev/lucidui/releases/download/v${version}/lucid-ui-wordpress-${version}.zip` }, "Get the WordPress plugin"),
+          " and read ",
+          h("a", { href: "https://docs.lucidui.dev/docs/WORDPRESS.md" }, "the WordPress guide"),
           ". WordPress, Shopify and Squarespace are trademarks of their owners; Lucid UI is independent and not affiliated with them."))));
 }
 

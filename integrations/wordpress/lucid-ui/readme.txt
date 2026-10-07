@@ -16,7 +16,9 @@ Lucid UI is a small, dependency-free UI runtime: signals, components, a UI kit a
 
 * Add `[lucid app="counter"]` to any post, page or Shortcode block to see it work.
 * Write your own apps as plain JavaScript files. No build step, no npm.
-* Any script module can import `lucidui`, `lucidui/ui` and `lucidui/viz` by declaring them as dependencies.
+* Any script module can import `@lucidui-dev/core`, `@lucidui-dev/core/ui` and `@lucidui-dev/core/viz` by declaring them as dependencies.
+
+The full guide, with examples that read WordPress content and a troubleshooting list: https://docs.lucidui.dev/docs/WORDPRESS.md
 
 == Writing an app ==
 

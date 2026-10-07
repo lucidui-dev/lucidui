@@ -1,4 +1,4 @@
 .lucid-ui-embed { background: transparent; margin-block: 1.5em; }
 .lucid-ui-embed[data-theme="dark"] { background: var(--lucid-bg); padding: 20px; border-radius: 14px; }
 .lucid-ui-embed:empty { min-height: 1px; }
-.lucid-ui-missing { padding: 10px 14px; border-radius: 8px; font-size: 14px; color: #8a4b00; background: #fff4e3; }
+.lucid-ui-missing { padding: 10px 14px; border-radius: 8px; font-size: 14px; color: #4a3c14; background: #f6efdc; box-shadow: inset 0 0 0 1px #e8d6a8; }

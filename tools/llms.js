@@ -1,7 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-export const LLMS_DOCS = ["API", "UI", "RECIPES", "VIZ", "DIAGNOSTICS"];
+export const LLMS_DOCS = ["API", "UI", "RECIPES", "VIZ", "DIAGNOSTICS", "WORDPRESS"];
 
 export const pinVersion = (text, version) => text.replaceAll("@lucidui-dev/core@0.3/", `@lucidui-dev/core@${version}/`);
 
