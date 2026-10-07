@@ -1,0 +1,7 @@
+AddType "text/markdown; charset=utf-8" .md
+AddType "text/plain; charset=utf-8" .txt
+<IfModule mod_headers.c>
+  <FilesMatch "\.(md|txt)$">
+    Header set Access-Control-Allow-Origin "*"
+  </FilesMatch>
+</IfModule>
