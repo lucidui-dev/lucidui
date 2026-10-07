@@ -76,18 +76,19 @@
 .usage-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 16px; align-items: stretch; }
 .clearspace { margin: 0; display: flex; flex-direction: column; gap: 14px; padding: 28px; border-radius: 24px; background: var(--lucid-surface); box-shadow: 0 0 0 1px var(--lucid-line), var(--lucid-shadow-xs); }
 .clearspace figcaption { font-size: 13.5px; color: var(--lucid-ink-3); text-align: center; }
-.clearspace-box { position: relative; flex: 1; display: grid; place-items: center; min-height: 300px; }
+.clearspace-box { flex: 1; display: grid; place-items: center; min-height: 300px; }
+.clearspace-frame { position: relative; display: grid; place-items: center; width: min(100%, 300px); aspect-ratio: 1; }
 .clearspace-zone {
-  position: absolute; inset: 14%; border-radius: 50%;
+  position: absolute; inset: 0; border-radius: 50%;
   background: repeating-linear-gradient(135deg, rgb(232 214 168 / .16) 0 6px, transparent 6px 12px);
   box-shadow: inset 0 0 0 1.5px rgb(232 214 168 / .7);
 }
-.clearspace-box img { position: relative; width: 44%; aspect-ratio: 1; }
+.clearspace-frame img { position: relative; width: 66.667%; aspect-ratio: 1; }
 .clearspace-x { position: absolute; font: 600 12px/1 var(--lucid-font-mono); color: var(--site-eyebrow); letter-spacing: 0; }
-.clearspace-top { top: 17%; left: 50%; transform: translateX(-50%); }
-.clearspace-bottom { bottom: 17%; left: 50%; transform: translateX(-50%); }
-.clearspace-left { left: 17%; top: 50%; transform: translateY(-50%); }
-.clearspace-right { right: 17%; top: 50%; transform: translateY(-50%); }
+.clearspace-top { top: 8.333%; left: 50%; transform: translate(-50%, -50%); }
+.clearspace-bottom { bottom: 8.333%; left: 50%; transform: translate(-50%, 50%); }
+.clearspace-left { left: 8.333%; top: 50%; transform: translate(-50%, -50%); }
+.clearspace-right { right: 8.333%; top: 50%; transform: translate(50%, -50%); }
 .rules { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .rule { margin: 0; display: flex; flex-direction: column; overflow: hidden; border-radius: 20px; background: var(--lucid-surface); box-shadow: 0 0 0 1px var(--lucid-line), var(--lucid-shadow-xs); }
 .rule-stage { display: grid; place-items: center; aspect-ratio: 4 / 3; overflow: hidden; background: #111111; padding: 0 14%; }
