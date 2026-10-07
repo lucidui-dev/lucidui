@@ -1,5 +1,5 @@
 import { signal, computed, effect, h, mount, For, Show, version } from "/lucid/index.js";
-import { Button, Select, Segmented, Dialog, Tooltip, Kbd, Icon, hotkey, toast } from "/lucid/ui/index.js";
+import { Button, Select, Segmented, Dialog, Tooltip, Kbd, Icon, Menu, hotkey, toast } from "/lucid/ui/index.js";
 import { theme, dark } from "/shared/chrome.js";
 import { highlight } from "/shared/code.js";
 import { TEMPLATES } from "/templates.js";
@@ -101,6 +101,91 @@ function documentFor(source, run) {
 window.__lucidReady?.();</script>
 </body>
 </html>`;
+}
+
+function standalone(source, { local = false } = {}) {
+  const base = local ? `${location.origin}/lucid` : `https://cdn.jsdelivr.net/npm/@lucidui-dev/core@${version}/src`;
+  const v = local ? `?v=${version}` : "";
+  const core = `${base}/index.js${v}`;
+  const ui = `${base}/ui/index.js${v}`;
+  const viz = `${base}/viz/index.js${v}`;
+  const bundle = local
+    ? `data:text/javascript,${encodeURIComponent(`export * from "${core}"; export * from "${ui}"; export * from "${viz}";`)}`
+    : `https://cdn.jsdelivr.net/npm/@lucidui-dev/core@${version}/bundle/lucid.js`;
+  const map = JSON.stringify({ imports: { "@lucidui-dev/core": core, "@lucidui-dev/core/ui": ui, "@lucidui-dev/core/viz": viz, "@lucidui-dev/core/bundle": bundle } }, null, 2);
+  const title = (/h\(\s*["']h1["'][^"']*["']([^"']{2,60})["']/.exec(source) ?? /Heading\([^)]*\)?,?\s*["']([^"']{2,60})["']/.exec(source) ?? [])[1] ?? "Lucid UI app";
+  const safe = text => text.replace(/<\/script/gi, "<\\/script");
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${title.replace(/[<>&]/g, "")}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Geist+Mono:wght@400..600&display=swap">
+<link rel="stylesheet" href="${base}/ui/lucid.css${v}">
+<style>
+  html, body { margin: 0; min-height: 100%; }
+  body { padding: 28px; background: var(--lucid-surface); color: var(--lucid-ink); font-family: Geist, system-ui, sans-serif; }
+  .demo-title { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+  .demo-card { max-width: 380px; padding: 24px; border-radius: 16px; background: var(--lucid-surface-raised); box-shadow: 0 0 0 1px var(--lucid-line), var(--lucid-shadow-sm); }
+</style>
+<script type="importmap">
+${map}
+</script>
+</head>
+<body class="lucid-app">
+<div id="app"></div>
+<script type="module">
+${safe(source.trim())}
+</script>
+</body>
+</html>
+`;
+}
+
+function save(name, text, type) {
+  const url = URL.createObjectURL(new Blob([text], { type }));
+  h("a", { href: url, download: name }).click();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+
+const exportActions = {
+  open() {
+    const url = URL.createObjectURL(new Blob([standalone(code.peek(), { local: true })], { type: "text/html" }));
+    const tab = window.open(url, "_blank");
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    if (!tab) toast("Your browser blocked the new tab", { tone: "danger", description: "Allow pop-ups for build.lucidui.dev, or download index.html instead." });
+  },
+  html() {
+    save("index.html", standalone(code.peek()), "text/html");
+    toast("index.html downloaded", { tone: "success", description: `Opens anywhere. Lucid UI ${version} loads from the CDN.` });
+  },
+  js() {
+    save("app.js", code.peek(), "text/javascript");
+    toast("app.js downloaded", { tone: "success", description: "Import it from a page that maps @lucidui-dev/core, or use it in your project." });
+  },
+  copy() {
+    navigator.clipboard?.writeText(code.peek()).then(() => toast("Code copied", { tone: "success" }), () => toast("Copy failed", { tone: "danger" }));
+  }
+};
+
+function ExportMenu() {
+  return Menu({
+    placement: "bottom-end",
+    width: "260px",
+    trigger: Button({ size: "sm", icon: "download", class: "b-export", aria: { label: "Export" } }, h("span", { class: "b-hide-sm" }, "Export")),
+    items: [
+      { group: "View" },
+      { label: "Open in a new tab", icon: "external", hint: "Full screen", onSelect: exportActions.open },
+      { separator: true },
+      { group: "Take it with you" },
+      { label: "Download index.html", icon: "download", hint: "Runs anywhere", onSelect: exportActions.html },
+      { label: "Download app.js", icon: "download", hint: "Just the code", onSelect: exportActions.js },
+      { label: "Copy code", icon: "copy", onSelect: exportActions.copy }
+    ]
+  });
 }
 
 let pending = 0;
@@ -400,7 +485,7 @@ function GuideDialog() {
     ]
   },
   h("ol", { class: "b-ways" },
-    way("01", "layers", "Start from a template", "Pick one from the menu at the top: a counter, a sign-up form, a dot chart or the diagnostics tour. Edit the code on the left, and the preview reruns as you type."),
+    way("01", "layers", "Start from a template", "Seven starters in the menu at the top: a dashboard, a settings page, a task list, a sign-up form, dialogs, a counter and a diagnostics tour. Edit the code on the left, and the preview reruns as you type."),
     way("02", "copy", "Paste code from anywhere", "Drop in what an AI chat, a doc or a teammate wrote. If something is off, the console names the problem and gives you the fix."),
     way("03", "link", "Connect your coding agent", "Claude Code, Cursor and other agents can render straight into this tab, read the diagnostics and fix their own mistakes until the page is clean.",
       h("div", { class: "b-way-actions" },
@@ -413,7 +498,7 @@ function GuideDialog() {
       tip([h("code", "@lucidui-dev/core")], "Imports work as they would in your project, including /ui and /viz."),
       tip([Icon({ name: "command", size: 13 })], "The console shows logs, errors and every Lucid diagnostic with its fix."),
       tip([Icon({ name: "moon", size: 13 })], "The preview follows the theme switch, so check light and dark."),
-      tip([Icon({ name: "copy", size: 13 })], "Copy the code from the editor and it runs anywhere Lucid UI does."),
+      tip([Icon({ name: "download", size: 13 })], "Export opens your build full-screen, or downloads it as a page that runs anywhere."),
       tip([Icon({ name: "clock", size: 13 })], "Each template keeps your draft in this browser until you reset it."))));
 }
 
@@ -467,6 +552,7 @@ function Bar() {
       h("input", { type: "checkbox", role: "switch", checked: auto, onChange: event => { auto.value = event.target.checked; } }),
       h("span", { class: "lucid-switch-track", "aria-hidden": "true" }),
       h("span", { class: "b-hide-sm" }, "Auto-run")),
+    ExportMenu(),
     Button({ variant: "primary", size: "sm", icon: "zap", class: "b-run", kbd: ["mod", "enter"], onClick: run }, "Run"),
     Segmented({
       value: theme,
@@ -481,6 +567,7 @@ function Bar() {
 
 function App() {
   hotkey("mod+enter", run, { inputs: true });
+  hotkey("mod+shift+o", exportActions.open, { inputs: true });
   queueMicrotask(run);
   queueMicrotask(() => {
     const fromHash = readPairing(location.hash);
