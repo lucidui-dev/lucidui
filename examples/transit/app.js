@@ -1,7 +1,7 @@
 import { signal, computed, effect, h, mount, For } from "/lucid/index.js";
 import { Button, Segmented, Select, Dialog, Field, Input, Icon, Tooltip, Kbd, Switch, toast, hotkey } from "/lucid/ui/index.js";
 import { StatTile, DotColumns, Waffle, UnitRows, DotMeter, DotSparkline, ChartCard } from "/lucid/viz/index.js";
-import { ExitCard } from "/exit.js";
+import { ExitDock } from "/exit.js";
 import { LINES, LINE, STATIONS, HOURS } from "./data.js";
 import {
   theme, focusLine, selected, hovered, labels, showTrains, showCrowds, composing, draft, clock, alerts, postAlert, resolveAlert,
@@ -26,54 +26,55 @@ const ago = at => {
 const short = name => (name === "Vaughan Metropolitan Centre" ? "Vaughan Metro Centre" : name);
 const range = a => (a.from === a.to ? short(LINE[a.line].stations[a.from].name) : `${short(LINE[a.line].stations[a.from].name)} to ${short(LINE[a.line].stations[a.to].name)}`);
 
-function Rail() {
-  const lineCard = line => h("button", {
-    type: "button",
-    class: "tr-line-card",
-    "aria-pressed": () => focusLine.value === line.id,
-    style: { "--c": line.color },
-    onClick: () => { focusLine.value = focusLine.peek() === line.id ? null : line.id; }
-  },
-  LineBadge(line.id, 22),
-  h("span", { class: "tr-line-copy" },
-    h("b", `Line ${line.id}`, h("span", line.name)),
-    h("span", { class: "tr-line-status", "data-tone": () => STATUS[lineStatus.value[line.id]].tone },
-      h("i"), () => STATUS[lineStatus.value[line.id]].label)),
-  h("span", { class: "tr-line-headway" }, () => `${fleet.value[line.id].headway.toFixed(1)}′`));
+const screen = signal((() => { try { return localStorage.getItem("lucid-transit:screen") ?? "network"; } catch { return "network"; } })());
+const panel = signal((() => { try { return localStorage.getItem("lucid-transit:panel") !== "closed"; } catch { return true; } })());
+effect(() => { try { localStorage.setItem("lucid-transit:screen", screen.value); localStorage.setItem("lucid-transit:panel", panel.value ? "open" : "closed"); } catch {} });
+const resolvedLog = signal([]);
+const resolve = a => {
+  resolveAlert(a.id);
+  resolvedLog.value = [{ ...a, resolvedAt: clock.peek().getTime() }, ...resolvedLog.peek()].slice(0, 12);
+  toast("Alert resolved", { tone: "success", description: `Line ${a.line} · ${range(a)}` });
+};
+const SCREENS = [
+  { value: "network", label: "Network", icon: "target" },
+  { value: "lines", label: "Lines", icon: "list" },
+  { value: "alerts", label: "Alerts", icon: "alert-circle" },
+  { value: "ridership", label: "Ridership", icon: "chart" }
+];
 
-  return h("aside", { class: "tr-rail" },
+function TopBar() {
+  const options = [...STATIONS.values()].map(s => ({ value: s.name, label: short(s.name), keywords: `line ${s.lines.join(" ")}` })).sort((a, b) => a.label.localeCompare(b.label));
+  const find = signal(null);
+  effect(() => { if (find.value) { selected.value = find.value; screen.value = "network"; find.value = null; } });
+  return h("header", { class: "tr-top" },
     h("div", { class: "tr-brand" },
       h("span", { class: "tr-mark", "aria-hidden": "true" }, h("i"), h("i"), h("i")),
       h("span", { class: "tr-brand-copy" }, h("b", "Headway"), h("span", "Service control"))),
-    h("div", { class: "tr-rail-label" }, "Lines", h("span", "Headway")),
-    h("div", { class: "tr-lines" }, LINES.map(lineCard)),
-    h("div", { class: "tr-rail-label" }, "Map layers"),
-    h("div", { class: "tr-layers" },
-      Switch({ label: "Trains", checked: showTrains, onChange: e => { showTrains.value = e.target.checked; } }),
-      Switch({ label: "Crowding", checked: showCrowds, onChange: e => { showCrowds.value = e.target.checked; } }),
-      h("div", { class: "tr-layer-row" }, "Labels",
-        Segmented({ value: labels, size: "sm", aria: { label: "Station labels" }, options: [{ value: "key", label: "Key" }, { value: "all", label: "All" }] }))),
-    h("div", { class: "lucid-spacer" }),
-    h("div", { class: "tr-rail-foot" },
-      ExitCard(),
-      h("div", { class: "tr-appearance" }, "Appearance",
-        Segmented({
-          value: theme, size: "sm", iconOnly: true, aria: { label: "Theme" },
-          options: [{ value: "light", label: "Light", icon: "sun" }, { value: "dark", label: "Dark", icon: "moon" }, { value: "system", label: "System", icon: "monitor" }]
-        }))));
+    h("nav", { class: "tr-tabs", aria: { label: "Screens" } }, SCREENS.map(sc => h("button", {
+      type: "button", class: "tr-tab", "aria-current": () => (screen.value === sc.value ? "page" : undefined), onClick: () => { screen.value = sc.value; }
+    }, Icon({ name: sc.icon, size: 15 }), h("span", sc.label), sc.value === "alerts" ? h("span", { class: "tr-tab-count", "data-zero": () => alerts.value.length === 0 }, () => alerts.value.length) : null))),
+    h("span", { class: "lucid-spacer" }),
+    h("span", { class: "tr-live" }, h("i"), "Live", h("span", { class: "tr-clock" }, () => time(clock.value))),
+    Select({ value: find, options, searchable: true, placeholder: "Find a station", searchPlaceholder: "Station or line", icon: "search", size: "md", width: 240, aria: { label: "Find a station" } }),
+    Button({ variant: "primary", icon: "plus", kbd: "A", onClick: () => openComposer() }, "Post alert"),
+    Segmented({
+      value: theme, size: "sm", iconOnly: true, aria: { label: "Theme" },
+      options: [{ value: "light", label: "Light", icon: "sun" }, { value: "dark", label: "Dark", icon: "moon" }, { value: "system", label: "System", icon: "monitor" }]
+    }));
 }
 
-function Header() {
-  const options = [...STATIONS.values()].map(s => ({ value: s.name, label: short(s.name), keywords: `line ${s.lines.join(" ")}` })).sort((a, b) => a.label.localeCompare(b.label));
-  const find = signal(null);
-  effect(() => { if (find.value) { selected.value = find.value; find.value = null; } });
-  return h("header", { class: "tr-head" },
-    h("div", { class: "tr-title" },
-      h("h1", "Network"),
-      h("span", { class: "tr-live" }, h("i"), "Live", h("span", { class: "tr-clock" }, () => time(clock.value)))),
-    h("span", { class: "lucid-spacer" }),
-    Select({ value: find, options, searchable: true, placeholder: "Find a station", searchPlaceholder: "Station or line", icon: "search", size: "md", width: 260, aria: { label: "Find a station" } }),
-    Button({ variant: "primary", icon: "plus", kbd: "A", onClick: () => openComposer() }, "Post alert"));
+function LineChips() {
+  return h("div", { class: "tr-chips", role: "group", aria: { label: "Focus a line" } }, LINES.map(line => h("button", {
+    type: "button", class: "tr-chip", style: { "--c": line.color }, "aria-pressed": () => focusLine.value === line.id,
+    onClick: () => { focusLine.value = focusLine.peek() === line.id ? null : line.id; }
+  }, LineBadge(line.id, 18), h("span", { class: "tr-line-status", "data-tone": () => STATUS[lineStatus.value[line.id]].tone }, h("i"), () => STATUS[lineStatus.value[line.id]].label))));
+}
+
+function Layers() {
+  return h("div", { class: "tr-layers" },
+    Switch({ label: "Trains", checked: showTrains, onChange: e => { showTrains.value = e.target.checked; } }),
+    Switch({ label: "Crowding", checked: showCrowds, onChange: e => { showCrowds.value = e.target.checked; } }),
+    Segmented({ value: labels, size: "sm", aria: { label: "Station labels" }, options: [{ value: "key", label: "Key stops" }, { value: "all", label: "All stops" }] }));
 }
 
 function openComposer(prefill) {
@@ -83,20 +84,22 @@ function openComposer(prefill) {
 
 function MapCard() {
   return h("section", { class: "tr-card tr-map-card", aria: { label: "Network map" } },
-    h("header", { class: "tr-card-head" },
-      h("div", h("h2", "Subway network"), h("p", () => `${totals.value.running} trains in service · ${alerts.value.length} active alert${alerts.value.length === 1 ? "" : "s"}`)),
+    h("header", { class: "tr-card-head tr-map-head" },
+      LineChips(),
       h("span", { class: "lucid-spacer" }),
-      h("div", { class: "tr-legend" },
-        h("span", h("i", { class: "tr-key-train" }), "Train"),
-        h("span", h("i", { class: "tr-key-late" }), "Delayed"),
-        h("span", h("i", { class: "tr-key-crowd" }), "Crowding"),
-        h("span", h("i", { class: "tr-key-alert" }), "Alert"))),
+      Layers(),
+      Tooltip({ label: "Side panel", kbd: "P" }, Button({ variant: "ghost", size: "sm", icon: "sidebar", class: "tr-panel-toggle", "aria-pressed": () => String(panel.value), aria: { label: "Side panel" }, onClick: () => { panel.value = !panel.peek(); } }))),
     NetworkMap(),
     h("footer", { class: "tr-map-foot" },
       h("span", Kbd("←"), Kbd("→"), " move along a line"),
       h("span", Kbd("L"), " switch line"),
       h("span", Kbd("enter"), " open station"),
       h("span", { class: "lucid-spacer" }),
+      h("div", { class: "tr-legend" },
+        h("span", h("i", { class: "tr-key-train" }), "Train"),
+        h("span", h("i", { class: "tr-key-late" }), "Delayed"),
+        h("span", h("i", { class: "tr-key-crowd" }), "Crowding"),
+        h("span", h("i", { class: "tr-key-alert" }), "Alert")),
       h("span", { class: "tr-disclaimer" }, "Simulated data. Inspired by Toronto's subway; not affiliated with the TTC.")));
 }
 
@@ -109,7 +112,7 @@ function AlertItem(a) {
       h("small", () => `${a.cause} · ${ago(a.at)}`)),
     Tooltip({ label: "Resolve" }, Button({
       variant: "ghost", size: "xs", icon: "check", aria: { label: `Resolve ${TYPE_TITLE[a.type]} at ${range(a)}` },
-      onClick: () => { resolveAlert(a.id); toast("Alert resolved", { tone: "success", description: `Line ${a.line} · ${range(a)}` }); }
+      onClick: () => resolve(a)
     })));
 }
 
@@ -257,18 +260,86 @@ function Composer() {
     Field({ label: "Cause" }, Select({ value: cause, options: CAUSES.map(c => ({ value: c, label: c })), size: "md", aria: { label: "Cause" } }))));
 }
 
+function Lines() {
+  return h("div", { class: "tr-screen" },
+    h("div", { class: "tr-screen-head" }, h("h1", "Lines"), h("p", () => `${totals.value.running} trains in service across ${LINES.length} lines`)),
+    h("div", { class: "tr-line-grid" }, LINES.map(line => {
+      const f = () => fleet.value[line.id];
+      const st = () => STATUS[lineStatus.value[line.id]];
+      const lineAlerts = computed(() => alerts.value.filter(a => a.line === line.id));
+      return h("section", { class: "tr-card tr-line-panel", style: { "--c": line.color } },
+        h("header", { class: "tr-line-panel-head" },
+          LineBadge(line.id, 34),
+          h("div", h("h2", `Line ${line.id} ${line.name}`), h("span", { class: "tr-line-status", "data-tone": () => st().tone }, h("i"), () => st().label)),
+          h("span", { class: "lucid-spacer" }),
+          h("div", { class: "tr-line-headway-big" }, h("b", () => f().headway.toFixed(1)), h("span", "min headway"))),
+        h("div", { class: "tr-line-fleet" },
+          h("div", { class: "tr-line-fleet-dots", role: "img", aria: { label: () => `${f().onTime} on time, ${f().delayed} delayed, ${f().held} held` } },
+            () => Array.from({ length: f().total }, (_, i) => h("i", { "data-state": i < f().onTime ? "ok" : i < f().onTime + f().delayed ? "late" : "held" }))),
+          h("div", { class: "tr-line-fleet-key" },
+            h("span", h("i", { "data-state": "ok" }), () => `${f().onTime} on time`),
+            h("span", h("i", { "data-state": "late" }), () => `${f().delayed} delayed`),
+            h("span", h("i", { "data-state": "held" }), () => `${f().held} held`))),
+        h("div", { class: "tr-line-facts" },
+          h("span", h("b", `${line.stations.length}`), " stations"),
+          h("span", h("b", `${line.minutes}`), " min between stops"),
+          h("span", h("b", () => `${lineAlerts.value.length}`), " active alerts")),
+        h("footer", { class: "tr-line-actions" },
+          Button({ size: "sm", icon: "target", onClick: () => { focusLine.value = line.id; screen.value = "network"; } }, "Show on map"),
+          Button({ size: "sm", variant: "ghost", icon: "alert-circle", onClick: () => openComposer({ line: line.id, from: 0, to: Math.min(3, line.stations.length - 1) }) }, "Post alert")));
+    })));
+}
+
+function Alerts() {
+  const which = signal("all");
+  const shown = computed(() => alerts.value.filter(a => which.value === "all" || a.line === which.value));
+  return h("div", { class: "tr-screen" },
+    h("div", { class: "tr-screen-head" },
+      h("div", h("h1", "Alerts"), h("p", () => (alerts.value.length ? `${alerts.value.length} live on platforms, apps and screens` : "All lines running normally"))),
+      h("span", { class: "lucid-spacer" }),
+      Segmented({ value: which, size: "sm", aria: { label: "Line" }, options: [{ value: "all", label: "All lines" }, ...LINES.map(l => ({ value: l.id, label: `Line ${l.id}` }))] }),
+      Button({ variant: "primary", icon: "plus", onClick: () => openComposer() }, "Post alert")),
+    h("div", { class: "tr-alerts-split" },
+      h("section", { class: "tr-card" },
+        h("header", { class: "tr-card-head" }, h("div", h("h2", "Live"), h("p", "Resolve an alert once service is back"))),
+        () => shown.value.length
+          ? h("ul", { class: "tr-alert-list" }, For({ each: shown, key: a => a.id }, AlertItem))
+          : h("div", { class: "tr-empty" }, Icon({ name: "check-circle", size: 18 }), "Nothing live on this line")),
+      h("section", { class: "tr-card" },
+        h("header", { class: "tr-card-head" }, h("div", h("h2", "Resolved today"), h("p", "Your desk's log, newest first"))),
+        () => resolvedLog.value.length
+          ? h("ul", { class: "tr-log" }, resolvedLog.value.map(a => h("li", LineBadge(a.line, 18), h("div", h("b", TYPE_TITLE[a.type]), h("span", range(a))), h("small", time(new Date(a.resolvedAt))))))
+          : h("div", { class: "tr-empty" }, Icon({ name: "clock", size: 18 }), "Resolved alerts will show here"))));
+}
+
+function Ridership() {
+  const t = () => totals.value;
+  return h("div", { class: "tr-screen" },
+    h("div", { class: "tr-screen-head" }, h("h1", "Ridership"), h("p", "Taps, platforms and the fleet, updated live")),
+    h("div", { class: "tr-stats tr-stats-wide" },
+      StatTile({ label: "On time", value: () => t().punctuality, unit: "%", trend: () => trends.value.onTime, trendColor: "#1fa463" }),
+      StatTile({ label: "Avg headway", value: () => Math.round(t().headway * 10) / 10, unit: "min", trend: () => trends.value.headway, trendColor: "#f2c200", format: v => v.toFixed(1) }),
+      StatTile({ label: "Trains running", value: () => t().running }),
+      StatTile({ label: "Riders this hour", value: () => t().riders, trend: () => trends.value.riders, trendColor: "#a7479c" })),
+    Charts());
+}
+
+function Network() {
+  return h("div", { class: "tr-network", "data-panel": panel },
+    MapCard(),
+    h("aside", { class: "tr-side", inert: () => !panel.value, aria: { label: "Details" } }, () => (selected.value ? StationPanel() : NetworkPanel())));
+}
+
 function App() {
   hotkey("a", () => openComposer());
+  hotkey("p", () => { panel.value = !panel.peek(); });
   hotkey("escape", () => { if (selected.peek() && !composing.peek()) selected.value = null; });
+  effect(() => { if (selected.value) panel.value = true; });
   return h("div", { class: "tr-app" },
-    Rail(),
-    h("main", { class: "tr-main" },
-      Header(),
-      h("div", { class: "tr-grid" },
-        MapCard(),
-        h("div", { class: "tr-side" }, () => (selected.value ? StationPanel() : NetworkPanel()))),
-      Charts()),
-    Composer());
+    TopBar(),
+    h("main", { class: "tr-main" }, () => ({ network: Network, lines: Lines, alerts: Alerts, ridership: Ridership }[screen.value] ?? Network)()),
+    Composer(),
+    ExitDock());
 }
 
 mount(App, "#app");
