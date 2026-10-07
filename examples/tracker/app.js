@@ -10,7 +10,7 @@ import { InsightsView } from "./views/insights.js";
 import { IssueSheet, NewIssue } from "./views/issue.js";
 import { ActivityView, activity } from "./views/activity.js";
 import { InviteDialog } from "./views/invite.js";
-import { ExitCard } from "./exit.js";
+import { ExitCard } from "/exit.js";
 
 const openCount = predicate => computed(() => issues.value.filter(issue => predicate(issue) && !["done", "canceled"].includes(issue.status)).length);
 

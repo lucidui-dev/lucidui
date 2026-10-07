@@ -110,7 +110,7 @@ const built = [
   await site("lucidui.dev", "sites/www", {
     extras: [["LICENSE", "LICENSE.txt"], ["llms.txt", "llms.txt"], ["llms-full.txt", "llms-full.txt"]]
   }),
-  await site("sandbox.lucidui.dev", "examples/tracker", { shared: false, extras: [["examples/transit", "transit"], ["examples/campaign", "campaign"], ["examples/checkin", "checkin"], ["examples/fitness", "fitness"], ["examples/beats", "beats"], ["examples/maison", "maison"], ["examples/clinic", "clinic"]] }),
+  await site("sandbox.lucidui.dev", "examples/sandbox", { shared: false, extras: [["examples/tracker", "tracker"], ["examples/transit", "transit"], ["examples/campaign", "campaign"], ["examples/checkin", "checkin"], ["examples/fitness", "fitness"], ["examples/beats", "beats"], ["examples/maison", "maison"], ["examples/clinic", "clinic"]] }),
   await site("docs.lucidui.dev", "sites/docs", {
     extras: /GUIDES_OPEN = true/.test(await readFile(join(root, "sites/docs/docs.js"), "utf8")) ? [["docs", "docs"], ["llms.txt", "llms.txt"], ["llms-full.txt", "llms-full.txt"]] : []
   }),

@@ -3,6 +3,7 @@ $root = dirname(__DIR__);
 $path = rawurldecode(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '/');
 $docroot = $_SERVER['DOCUMENT_ROOT'];
 $map = [
+    '/tracker/' => $root . '/examples/tracker/',
     '/transit/' => $root . '/examples/transit/',
     '/campaign/' => $root . '/examples/campaign/',
     '/checkin/' => $root . '/examples/checkin/',
