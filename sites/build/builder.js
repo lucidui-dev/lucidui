@@ -63,13 +63,13 @@ const BOOT = `
 `;
 
 const HOOK = `
-import { onDiagnostic } from "@lucidui/core";
+import { onDiagnostic } from "@lucidui-dev/core";
 onDiagnostic(d => parent.postMessage({ lucidBuilder: __RUN__, kind: "diagnostic", level: d.level, code: d.code, text: d.message, fix: d.fix, tag: d.element?.tagName?.toLowerCase() }, "*"));
 `;
 
 function documentFor(source, run) {
   const origin = location.origin;
-  const map = JSON.stringify({ imports: { "@lucidui/core": `${origin}/lucid/index.js`, "@lucidui/core/ui": `${origin}/lucid/ui/index.js`, "@lucidui/core/viz": `${origin}/lucid/viz/index.js` } });
+  const map = JSON.stringify({ imports: { "@lucidui-dev/core": `${origin}/lucid/index.js`, "@lucidui-dev/core/ui": `${origin}/lucid/ui/index.js`, "@lucidui-dev/core/viz": `${origin}/lucid/viz/index.js` } });
   const safe = text => text.replace(/<\/script/gi, "<\\/script");
   return `<!doctype html>
 <html lang="en" data-theme="${resolvedTheme()}">

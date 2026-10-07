@@ -102,8 +102,8 @@ export function Counter() {
 `;
 
 const LUCID_CODE = `
-import { signal, mount } from "@lucidui/core";
-import { Button } from "@lucidui/core/ui";
+import { signal, mount } from "@lucidui-dev/core";
+import { Button } from "@lucidui-dev/core/ui";
 
 function Counter() {
   const count = signal(0);

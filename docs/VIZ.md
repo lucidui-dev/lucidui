@@ -3,7 +3,7 @@
 Lucid UI draws data with dots. Bars, lines and pies are replaced by forms built from one consistent mark, so every chart in a Lucid UI app reads as part of the same system, and none of them look like a default chart library.
 
 ```js
-import { DotColumns, DotDumbbell, Waffle, UnitRows, DotCalendar, DotSparkline, StatTile, DotMeter, ChartCard } from "@lucidui/core/viz";
+import { DotColumns, DotDumbbell, Waffle, UnitRows, DotCalendar, DotSparkline, StatTile, DotMeter, ChartCard } from "@lucidui-dev/core/viz";
 ```
 
 Every chart sizes itself to its container, re-renders when its data signals change, animates its dots in, and has a hover and keyboard tooltip.

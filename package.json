@@ -1,5 +1,5 @@
 {
-  "name": "@lucidui/core",
+  "name": "@lucidui-dev/core",
   "version": "0.3.0",
   "description": "A small, dependency-free UI runtime for the web, built for people and AI agents.",
   "license": "MIT",

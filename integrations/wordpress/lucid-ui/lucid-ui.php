@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Lucid UI
  * Plugin URI: https://lucidui.dev
- * Description: Mount Lucid UI apps anywhere with the [lucid] shortcode, and use @lucidui/core, @lucidui/core/ui and @lucidui/core/viz from any script module.
+ * Description: Mount Lucid UI apps anywhere with the [lucid] shortcode, and use @lucidui-dev/core, @lucidui-dev/core/ui and @lucidui-dev/core/viz from any script module.
  * Version: 0.3.0
  * Requires at least: 6.5
  * Requires PHP: 7.4
@@ -16,7 +16,7 @@
 defined('ABSPATH') || exit;
 
 const LUCID_UI_VERSION = '0.3.0';
-const LUCID_UI_MODULES = ['@lucidui/core', '@lucidui/core/ui', '@lucidui/core/viz'];
+const LUCID_UI_MODULES = ['@lucidui-dev/core', '@lucidui-dev/core/ui', '@lucidui-dev/core/viz'];
 
 function lucid_ui_register()
 {
@@ -25,8 +25,8 @@ function lucid_ui_register()
         wp_register_script_module($id, $assets . 'lucid.js', [], LUCID_UI_VERSION);
     }
     wp_register_script_module('lucidui/mount', $assets . 'mount.js', LUCID_UI_MODULES, LUCID_UI_VERSION);
-    wp_register_style('@lucidui/core', $assets . 'lucid.css', [], LUCID_UI_VERSION);
-    wp_register_style('lucidui-embed', $assets . 'embed.css', ['@lucidui/core'], LUCID_UI_VERSION);
+    wp_register_style('@lucidui-dev/core', $assets . 'lucid.css', [], LUCID_UI_VERSION);
+    wp_register_style('lucidui-embed', $assets . 'embed.css', ['@lucidui-dev/core'], LUCID_UI_VERSION);
     add_shortcode('lucid', 'lucid_ui_shortcode');
 }
 add_action('init', 'lucid_ui_register');
