@@ -88,6 +88,11 @@ const DEMOS = [
   { key: "transit", icon: "target", title: "Headway", kind: "Operations", tags: ["Operations", "Data viz"], text: "A live subway network: trains, crowding and service alerts, with zoom and drag.", shows: ["Live animated map", "Zoom, tilt and pan", "Service alerts"], open: true, path: "/transit/" },
   { key: "tracker", icon: "board", title: "Orbitry", kind: "Productivity", tags: ["Operations", "Data viz"], text: "An issue tracker with list and board views, drag and drop, sub-issues and Insights.", shows: ["Board drag and drop", "Command menu", "Insights dashboard"], open: true, path: "/" },
 
+  { key: "tally", icon: "trending-up", title: "Tally", kind: "Finance", tags: ["Consumer", "Data viz"], text: "A personal finance app: accounts, budgets that fill like dot jars, and a month of spending at a glance.", shows: ["Budget dot jars", "Transaction search and rules", "Cash-flow calendar"] },
+  { key: "harbor", icon: "list", title: "Harbor", kind: "Logistics", tags: ["Operations", "Data viz"], text: "A shipping control tower: containers on a dot route map, port congestion and late-arrival alerts.", shows: ["Live route map", "Exception queue", "Port capacity meters"] },
+  { key: "kiln", icon: "command", title: "Kiln", kind: "Developer", tags: ["Operations"], text: "A deploy console for engineering teams: pipelines, build logs, rollbacks and uptime.", shows: ["Streaming build log", "One-click rollback with ask()", "Uptime dot strip"] },
+  { key: "folio", icon: "pen", title: "Folio", kind: "Writing", tags: ["Creative", "Consumer"], text: "A calm writing app: drafts, an outline rail, focus mode and a publish checklist.", shows: ["Collapsible outline rail", "Focus mode", "Publish checklist"] },
+  { key: "tablekeep", icon: "calendar", title: "Tablekeep", kind: "Hospitality", tags: ["Commerce", "Operations"], text: "A restaurant host stand: tonight's bookings, a live floor plan and a waitlist.", shows: ["Drag-to-seat floor plan", "Covers by the hour", "Waitlist with texts"] },
   { key: "landing", icon: "monitor", title: "Landing page", kind: "Marketing", tags: ["Commerce"], text: "A marketing homepage composed from Lucid components.", shows: [] }
 ];
 
