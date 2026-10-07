@@ -227,7 +227,7 @@
         Button({ variant: "primary", href: home, icon: "chevron-left" }, site === "lucidui" || site === "www" ? "Back to Lucid UI" : `Back to ${site}`),
         still ? null : Button({ icon: "zap", onClick: reset }, "Chomp again")),
       h("nav", { class: "nf-links", aria: { label: "Lucid UI sites" } },
-        [["Site", "https://lucidui.dev"], ["Builder", "https://build.lucidui.dev"], ["Sandbox", "https://sandbox.lucidui.dev"], ["Docs", "https://docs.lucidui.dev"], ["Changelog", "https://changelog.lucidui.dev"]]
+        [["Site", "https://lucidui.dev"], ["Builder", "https://build.lucidui.dev"], ["Sandbox", "https://sandbox.lucidui.dev"], ["Docs", "https://docs.lucidui.dev"], ["Changelog", "https://changelog.lucidui.dev"], ["Status", "https://lucidui.dev/status/"]]
           .map(([label, href]) => h("a", { href }, label)))), "#app");
 
     measure();

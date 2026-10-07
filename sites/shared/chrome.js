@@ -20,11 +20,12 @@ export const commandOpen = signal(false);
 export const DOWNLOAD = `https://github.com/lucidui-dev/lucidui/releases/download/v${version}/lucidui-${version}.zip`;
 
 export function links(site) {
-  const www = path => (["www", "privacy", "license", "press", "case", "manifesto"].includes(site) ? path : `https://lucidui.dev${path}`);
+  const www = path => (["www", "privacy", "license", "press", "case", "manifesto", "status"].includes(site) ? path : `https://lucidui.dev${path}`);
   return {
     home: www("/"),
     case: www("/case/"),
     manifesto: www("/manifesto/"),
+    status: www("/status/"),
     press: www("/press/"),
     privacy: www("/privacy/"),
     license: www("/license/"),
@@ -340,7 +341,7 @@ function Footer(L) {
         h("p", "Interfaces with taste, in a few kilobytes."),
         h("p", { class: "foot-meta" }, `v${version} · MIT licensed · Built with Lucid UI`),
         Social(L)),
-      column("Product", [["Manifesto", L.manifesto], ["The Case for Lucid", L.case], ["Sandbox", L.playground], ["Builder", L.builder], ["Docs", L.docs], ["Changelog", L.changelog], ["Download", DOWNLOAD]]),
+      column("Product", [["Manifesto", L.manifesto], ["The Case for Lucid", L.case], ["Sandbox", L.playground], ["Builder", L.builder], ["Docs", L.docs], ["Changelog", L.changelog], ["Status", L.status], ["Download", DOWNLOAD]]),
       column("Source", [["Page source", L.source], ["Core runtime", L.core], ["llms.txt", L.llms]]),
       column("Contact", [["hello@lucidui.dev", L.hello], ["press@lucidui.dev", L.press_mail], ["security@lucidui.dev", L.security]]),
       column("Company", [["Press", L.press], ["Privacy", L.privacy], ["License", L.license], ["legal@lucidui.dev", L.legal]])),
@@ -368,6 +369,7 @@ function Commands(L, extra) {
       { group: "Go to", label: "Builder", icon: "command", hint: "Preview", keywords: "console editor agent code", run: go(L.builder) },
       { group: "Go to", label: "Docs", icon: "hash", run: go(L.docs) },
       { group: "Go to", label: "Changelog", icon: "clock", run: go(L.changelog) },
+      { group: "Go to", label: "Status", icon: "zap", keywords: "uptime health live down outage cdn npm", run: go(L.status) },
       { group: "Go to", label: "Press kit", icon: "image", run: go(L.press) },
       { group: "Go to", label: "Download", icon: "download", hint: `v${version}`, run: go(DOWNLOAD) },
       ...extra,

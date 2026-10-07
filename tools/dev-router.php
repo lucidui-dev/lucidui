@@ -19,6 +19,7 @@ $map = [
 ];
 $files = [
     '/llms.txt' => $root . '/llms.txt',
+    '/llms-full.txt' => $root . '/llms-full.txt',
     '/LICENSE.txt' => $root . '/LICENSE',
 ];
 $base = $docroot . '/';
