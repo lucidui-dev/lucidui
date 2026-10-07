@@ -3,7 +3,7 @@ import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import { bundle } from "./bundle.js";
-import { llmsFull } from "./llms.js";
+import { llmsFull, pinVersion } from "./llms.js";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const pkg = JSON.parse(await readFile(join(root, "package.json"), "utf8"));
@@ -73,9 +73,9 @@ async function stamp(dir) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
     const path = join(dir, entry.name);
     if (entry.isDirectory()) await stamp(path);
-    else if (/\.(js|html|css)$/.test(entry.name)) {
+    else if (/\.(js|html|css|md|txt)$/.test(entry.name)) {
       const text = await readFile(path, "utf8");
-      let next = text.replace(MEDIA_REF, (_, lead) => `${lead}${MEDIA}/`);
+      let next = pinVersion(text, pkg.version).replace(MEDIA_REF, (_, lead) => `${lead}${MEDIA}/`);
       if (entry.name.endsWith(".js")) next = next.replace(JS_REF, (_, lead, quote, ref) => `${lead}${quote}${ref}?v=${STAMP}${quote}`);
       if (entry.name.endsWith(".html")) {
         next = next.replace(HTML_REF, (_, lead, ref) => `${lead}${ref}?v=${STAMP}"`);

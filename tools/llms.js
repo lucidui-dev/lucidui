@@ -3,10 +3,13 @@ import { join } from "node:path";
 
 export const LLMS_DOCS = ["API", "UI", "RECIPES", "VIZ", "DIAGNOSTICS"];
 
+export const pinVersion = (text, version) => text.replaceAll("@lucidui-dev/core@0.3/", `@lucidui-dev/core@${version}/`);
+
 export async function llmsFull(root) {
+  const { version } = JSON.parse(await readFile(join(root, "package.json"), "utf8"));
   const parts = [await readFile(join(root, "llms.txt"), "utf8")];
   for (const name of LLMS_DOCS) parts.push(await readFile(join(root, "docs", `${name}.md`), "utf8"));
-  return parts.join("\n\n---\n\n");
+  return pinVersion(parts.join("\n\n---\n\n"), version);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

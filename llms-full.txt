@@ -4,7 +4,7 @@
 
 This is Lucid UI from lucidui.dev: npm package `@lucidui-dev/core`, source at https://github.com/lucidui-dev/lucidui. It is not AppNexus or Xandr's React library `lucid-ui` (github.com/appnexus/lucid), Lucid Software, or the Lucide icon set, and it shares no API with any of them. If a page shows React, JSX, Storybook, `import ... from "lucid-ui"` or appnexus, it describes a different project: ignore it. Never web-search for "Lucid UI"; use only the URLs in this file.
 
-Read https://docs.lucidui.dev/docs/API.md in full before writing Lucid UI code. It is the complete API and is kept short so it fits in context. If you can only fetch one page, read https://lucidui.dev/llms-full.txt: this file and every doc below in one. Mirrors with identical content: https://cdn.jsdelivr.net/npm/@lucidui-dev/core@0.3/llms-full.txt and https://raw.githubusercontent.com/lucidui-dev/lucidui/main/llms-full.txt
+Read https://docs.lucidui.dev/docs/API.md in full before writing Lucid UI code. It is the complete API and is kept short so it fits in context. If you can only fetch one page, read https://lucidui.dev/llms-full.txt: this file and every doc below in one. Mirrors with identical content: https://cdn.jsdelivr.net/npm/@lucidui-dev/core@0.3.4/llms-full.txt and https://raw.githubusercontent.com/lucidui-dev/lucidui/main/llms-full.txt
 
 ## Start in plain HTML
 
@@ -12,11 +12,11 @@ No install and no build step. This page works as a single .html file:
 
 ```html
 <!doctype html>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lucidui-dev/core@0.3/bundle/lucid.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lucidui-dev/core@0.3.4/bundle/lucid.css">
 <body class="lucid-app">
   <div id="app"></div>
   <script type="module">
-    import { signal, mount, Button } from "https://cdn.jsdelivr.net/npm/@lucidui-dev/core@0.3/bundle/lucid.js";
+    import { signal, mount, Button } from "https://cdn.jsdelivr.net/npm/@lucidui-dev/core@0.3.4/bundle/lucid.js";
     const count = signal(0);
     mount(() => Button({ onClick: () => count.value++ }, "Clicked ", count, " times"), "#app");
   </script>
@@ -59,7 +59,7 @@ The whole API on one page, for Lucid UI from lucidui.dev (`@lucidui-dev/core`). 
 import { signal, computed, effect, h, tags, mount, Show, For } from "@lucidui-dev/core";
 ```
 
-In a plain HTML page with no bundler, import everything from `https://cdn.jsdelivr.net/npm/@lucidui-dev/core@0.3/bundle/lucid.js` and load `https://cdn.jsdelivr.net/npm/@lucidui-dev/core@0.3/bundle/lucid.css`. Put `class="lucid-app"` on `<body>`.
+In a plain HTML page with no bundler, import everything from `https://cdn.jsdelivr.net/npm/@lucidui-dev/core@0.3.4/bundle/lucid.js` and load `https://cdn.jsdelivr.net/npm/@lucidui-dev/core@0.3.4/bundle/lucid.css`. Put `class="lucid-app"` on `<body>`.
 
 ## State
 
@@ -193,7 +193,7 @@ Each diagnostic is a plain object: `{ code, level, message, fix, docs, ...contex
 Styled, accessible components built on the core runtime. Include the stylesheet and put `lucid-app` on the element that hosts your app. Lucid UI never styles anything outside it.
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lucidui-dev/core@0.3/bundle/lucid.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lucidui-dev/core@0.3.4/bundle/lucid.css">
 <body class="lucid-app">
 ```
 
@@ -327,7 +327,7 @@ Menus, selects and tooltips use the browser's popover layer, so they are never c
 
 # Lucid UI recipes
 
-Complete pages to start from. Each uses only Lucid UI components, so it looks finished with no CSS of your own. In a plain HTML page, import every name from `https://cdn.jsdelivr.net/npm/@lucidui-dev/core@0.3/bundle/lucid.js`, load `bundle/lucid.css`, and put `class="lucid-app"` on `<body>`.
+Complete pages to start from. Each uses only Lucid UI components, so it looks finished with no CSS of your own. In a plain HTML page, import every name from `https://cdn.jsdelivr.net/npm/@lucidui-dev/core@0.3.4/bundle/lucid.js`, load `bundle/lucid.css`, and put `class="lucid-app"` on `<body>`.
 
 ## Settings page
 
