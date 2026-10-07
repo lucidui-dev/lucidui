@@ -6,3 +6,4 @@ _INTERNAL/
 .claude/
 CHANGELOG-RAW.md
 bundle/
+media/video/*.mp4

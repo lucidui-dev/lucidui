@@ -249,6 +249,67 @@ It is the complete API and is kept short so it fits in context.
               .map(text => h("li", Icon({ name: "check-circle", size: 15 }), text)))))));
 }
 
+const VIDEO = "/media/video/builder-agent.mp4";
+const POSTER = "/media/video/builder-agent-poster.jpg";
+const CHAPTERS = [
+  [0, "Pairs with Builder"],
+  [8, "Asked to rethink an X feed"],
+  [16, "Builds it live"],
+  [40, "Tries the reply dialog"],
+  [48, "Reaches the end of the feed"]
+];
+const clock = t => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, "0")}`;
+
+function Watch() {
+  const started = signal(false);
+  const now = signal(0);
+  let video;
+  let pending = null;
+  const start = el => {
+    const at = pending;
+    pending = null;
+    const go = () => { if (at != null) el.currentTime = at; el.play().catch(() => {}); };
+    if (el.readyState >= 1) go();
+    else el.addEventListener("loadedmetadata", go, { once: true });
+  };
+  const play = (at = 0) => {
+    pending = at;
+    if (video) start(video);
+    else started.value = true;
+  };
+  return h("section", { class: "section watch", id: "watch" },
+    h("div", { class: "site-wrap" },
+      SectionHead({
+        eyebrow: "see it work",
+        title: "Watch Claude build a feed, live.",
+        lead: "One prompt in Claude: rethink the X feed. It renders straight into Lucid Builder, reads every diagnostic Lucid sends back, and fixes its own code until the feed has an end.",
+        align: "center"
+      }),
+      h("div", { class: "watch-frame" },
+        h("div", { class: "watch-chrome", "aria-hidden": "true" }, h("i"), h("i"), h("i"), h("span", "build.lucidui.dev")),
+        h("div", { class: "watch-stage" },
+          () => started.value
+            ? h("video", {
+                class: "watch-video", src: VIDEO, poster: POSTER, controls: true, playsinline: true, preload: "auto",
+                ref: el => { video = el; start(el); },
+                onTimeupdate: event => { now.value = event.target.currentTime; },
+                aria: { label: "Claude building a feed in Lucid Builder, 70 seconds" }
+              })
+            : h("button", { type: "button", class: "watch-poster", aria: { label: "Play the 70-second video" }, onClick: () => play(0) },
+                h("img", { src: POSTER, alt: "", loading: "lazy", width: 1920, height: 1080 }),
+                h("span", { class: "watch-play" }, h("span", { class: "watch-play-icon", "aria-hidden": "true" }), h("span", { class: "watch-play-text" }, h("b", "Play"), h("small", "70 seconds · timelapse")))))),
+      h("ol", { class: "watch-chapters", aria: { label: "Chapters" } }, CHAPTERS.map(([t, label], i) => h("li",
+        h("button", {
+          type: "button", class: "watch-chapter",
+          "aria-current": () => (started.value && now.value >= t && now.value < (CHAPTERS[i + 1]?.[0] ?? Infinity) ? "true" : undefined),
+          onClick: () => play(t)
+        }, h("span", { class: "watch-time" }, clock(t)), label)))),
+      h("div", { class: "watch-ctas" },
+        Button({ variant: "primary", size: "lg", href: "https://docs.lucidui.dev/docs/AGENTS.md", icon: "link" }, "Connect your agent"),
+        Button({ size: "lg", href: LINKS.builder, iconRight: "arrow-right" }, "Open Builder")),
+      h("p", { class: "watch-note" }, "Runs on your computer through the Lucid bridge. Nothing is uploaded.")));
+}
+
 function Components() {
   const assignee = signal("priya");
   const due = signal(null);
@@ -563,11 +624,12 @@ mountPage({
   site: "www",
   main: L => {
     LINKS = L;
-    return [Hero(), Signals(), Agents(), Components(), Charts(), Principles(), Anywhere(), Start()];
+    return [Hero(), Signals(), Agents(), Watch(), Components(), Charts(), Principles(), Anywhere(), Start()];
   },
   commands: [
     { group: "On this page", label: "Signals", icon: "zap", run: jump("signals") },
     { group: "On this page", label: "Made for agents", icon: "sparkles", run: jump("agents") },
+    { group: "On this page", label: "Watch Claude build live", icon: "monitor", keywords: "video demo builder bridge", run: jump("watch") },
     { group: "On this page", label: "Components", icon: "layers", run: jump("components") },
     { group: "On this page", label: "Charts", icon: "chart", run: jump("charts") },
     { group: "On this page", label: "Principles", icon: "target", run: jump("principles") },

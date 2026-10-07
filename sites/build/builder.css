@@ -243,7 +243,7 @@ body.builder {
 .b-way-n { display: block; font: 500 11px/1 var(--lucid-font-mono); letter-spacing: .08em; color: var(--lucid-ink-3); }
 .b-way b { display: block; margin-top: 6px; font-size: 14.5px; font-weight: 600; letter-spacing: -.01em; }
 .b-way p { margin: 6px 0 0; font-size: 13px; line-height: 1.55; color: var(--lucid-ink-2); }
-.b-way .lucid-btn { margin-top: 12px; }
+.b-way-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
 .b-tips { margin-top: 18px; }
 .b-tips-title { margin: 0 0 10px; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--lucid-ink-3); }
 .b-tips ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 20px; margin: 0; padding: 0; list-style: none; }

@@ -71,7 +71,11 @@ onDiagnostic(d => parent.postMessage({ lucidBuilder: __RUN__, kind: "diagnostic"
 function documentFor(source, run) {
   const origin = location.origin;
   const v = `?v=${version}`;
-  const map = JSON.stringify({ imports: { "@lucidui-dev/core": `${origin}/lucid/index.js${v}`, "@lucidui-dev/core/ui": `${origin}/lucid/ui/index.js${v}`, "@lucidui-dev/core/viz": `${origin}/lucid/viz/index.js${v}` } });
+  const core = `${origin}/lucid/index.js${v}`;
+  const ui = `${origin}/lucid/ui/index.js${v}`;
+  const viz = `${origin}/lucid/viz/index.js${v}`;
+  const bundle = `data:text/javascript,${encodeURIComponent(`export * from "${core}"; export * from "${ui}"; export * from "${viz}";`)}`;
+  const map = JSON.stringify({ imports: { "@lucidui-dev/core": core, "@lucidui-dev/core/ui": ui, "@lucidui-dev/core/viz": viz, "@lucidui-dev/core/bundle": bundle } });
   const safe = text => text.replace(/<\/script/gi, "<\\/script");
   return `<!doctype html>
 <html lang="en" data-theme="${resolvedTheme()}">
@@ -399,7 +403,9 @@ function GuideDialog() {
     way("01", "layers", "Start from a template", "Pick one from the menu at the top: a counter, a sign-up form, a dot chart or the diagnostics tour. Edit the code on the left, and the preview reruns as you type."),
     way("02", "copy", "Paste code from anywhere", "Drop in what an AI chat, a doc or a teammate wrote. If something is off, the console names the problem and gives you the fix."),
     way("03", "link", "Connect your coding agent", "Claude Code, Cursor and other agents can render straight into this tab, read the diagnostics and fix their own mistakes until the page is clean.",
-      Button({ size: "sm", icon: "link", onClick: () => { close(); agentOpen.value = true; } }, "Connect an agent"))),
+      h("div", { class: "b-way-actions" },
+        Button({ size: "sm", icon: "link", onClick: () => { close(); agentOpen.value = true; } }, "Connect an agent"),
+        Button({ size: "sm", variant: "ghost", icon: "monitor", href: "https://lucidui.dev/#watch", target: "_blank" }, "Watch it (70s)")))),
   h("div", { class: "b-tips" },
     h("p", { class: "b-tips-title" }, "Good to know"),
     h("ul",
