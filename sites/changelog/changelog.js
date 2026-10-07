@@ -3,6 +3,8 @@ import { Badge } from "/lucid/ui/index.js";
 import { mountPage, SectionHead } from "/shared/chrome.js";
 
 const UPDATES = [
+  { date: "7 October 2026", area: "Site", kind: "New", title: "Watch Claude build live", text: "A new section on the homepage plays a 70-second recording of Claude rethinking the X feed inside Builder, with chapters to jump between moments. The Builder guide and the agent guide link to it." },
+  { date: "7 October 2026", area: "Builder", kind: "Fixed", title: "The one-file import works in Builder", text: "Code that imports @lucidui-dev/core/bundle, as the docs suggest for plain pages, now runs in Builder's preview too." },
   { date: "7 October 2026", area: "Site", kind: "New", title: "A guide to building with an agent", text: "One page on connecting Claude Code, Cursor or any MCP agent to Builder: setup, pairing, the render-and-fix loop and troubleshooting, plus the brief for agents without tools." },
   { date: "7 October 2026", area: "Builder", kind: "Fixed", title: "The preview always uses the current Lucid UI", text: "Builder's preview now asks for the exact version of Lucid UI's files, so a browser can't keep an older stylesheet that's missing new components." },
   { date: "7 October 2026", area: "Builder", kind: "New", title: "Connect your coding agent to Builder", text: "Add the Lucid bridge to Claude Code, Cursor or any MCP agent with one command. Your agent renders straight into Builder, gets every error and diagnostic back with its fix, and repairs its own code until the page is clean. It runs on your computer; nothing is uploaded." },
