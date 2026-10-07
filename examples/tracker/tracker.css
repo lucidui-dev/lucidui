@@ -6,6 +6,7 @@ body.lucid-app { overflow: hidden; }
   display: grid;
   grid-template-columns: 244px minmax(0, 1fr);
   height: 100dvh;
+  transition: grid-template-columns 380ms var(--lucid-ease-out);
   user-select: none;
   -webkit-user-select: none;
 }
@@ -58,6 +59,17 @@ body.lucid-app { overflow: hidden; }
 .tk-nav[aria-current="page"] .lucid-icon { color: var(--lucid-ink); }
 .tk-nav .tk-count { margin-left: auto; font-size: var(--lucid-text-xs); color: var(--lucid-ink-3); font-variant-numeric: tabular-nums; }
 .tk-nav .tk-mark { --s: 18px; }
+.tk-side-top { display: flex; align-items: center; gap: 4px; margin-bottom: 4px; }
+.tk-side-top .tk-workspace { flex: 1; min-width: 0; margin-bottom: 0; }
+.tk-slim-btn[aria-pressed="true"] { color: var(--lucid-ink); }
+.tk[data-slim] { grid-template-columns: 64px minmax(0, 1fr); }
+.tk[data-slim] .tk-side { padding-inline: 8px; overflow-x: hidden; }
+.tk[data-slim] .tk-side-top { flex-direction: column; gap: 6px; }
+.tk[data-slim] .tk-workspace { justify-content: center; padding: 0; width: 40px; flex: none; font-size: 0; }
+.tk[data-slim] .tk-workspace .lucid-chevron, .tk[data-slim] .tk-nav-label, .tk[data-slim] .tk-count, .tk[data-slim] .tk-search .lucid-kbd, .tk[data-slim] .tk-search kbd, .tk[data-slim] .tk-section, .tk[data-slim] .tk-appearance, .tk[data-slim] .tk-me > div { display: none; }
+.tk[data-slim] .tk-nav, .tk[data-slim] .tk-search { justify-content: center; padding: 0; gap: 0; }
+.tk[data-slim] .tk-me { justify-content: center; padding: 6px 0; }
+.tk[data-slim] .tk-section + .tk-nav { margin-top: 10px; }
 .tk-side-foot { margin-top: auto; padding-top: 12px; display: flex; flex-direction: column; gap: 10px; }
 .tk-me { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 10px; }
 .tk-appearance { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 8px; font-size: var(--lucid-text-xs); color: var(--lucid-ink-3); }
@@ -271,7 +283,8 @@ body.lucid-app { overflow: hidden; }
 .tk-backdrop { display: none; }
 
 @media (max-width: 860px) {
-  .tk { grid-template-columns: minmax(0, 1fr); }
+  .tk, .tk[data-slim] { grid-template-columns: minmax(0, 1fr); }
+  .tk-slim-btn { display: none; }
   .tk-side {
     position: fixed; z-index: 50; inset: 0 auto 0 0; width: min(284px, 86vw);
     background: var(--lucid-bg);

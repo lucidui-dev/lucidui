@@ -1,4 +1,4 @@
-import { computed, untrack, h, mount } from "/lucid/index.js";
+import { computed, untrack, h, mount, signal, effect } from "/lucid/index.js";
 import { Button, Segmented, Menu, CommandMenu, Kbd, Icon, Tooltip, toast, hotkey, isMac } from "/lucid/ui/index.js";
 import {
   route, go, view, theme, composing, commandOpen, inviting, navOpen, selectedId, issues, scope, visible, me, history
@@ -14,16 +14,20 @@ import { ExitCard } from "./exit.js";
 
 const openCount = predicate => computed(() => issues.value.filter(issue => predicate(issue) && !["done", "canceled"].includes(issue.status)).length);
 
+const slim = signal((() => { try { return localStorage.getItem("lucid-tracker:slim") === "1"; } catch { return false; } })());
+effect(() => { try { localStorage.setItem("lucid-tracker:slim", slim.value ? "1" : "0"); } catch {} });
+
 function NavLink({ href, icon, label, count, active }) {
   return h("a", {
     href,
     class: "tk-nav",
+    title: () => (slim.value ? label : null),
     "aria-current": () => (active() ? "page" : false),
     draggable: "false",
     onClick: () => { navOpen.value = false; }
   },
   icon,
-  label,
+  h("span", { class: "tk-nav-label" }, label),
   count ? h("span", { class: "tk-count" }, count) : null);
 }
 
@@ -34,6 +38,7 @@ function Sidebar() {
     "Orbitry",
     Icon({ name: "chevrons-up-down", size: 14, class: "lucid-chevron" }));
   return h("nav", { class: "tk-side", aria: { label: "Workspace" } },
+    h("div", { class: "tk-side-top" },
     Menu({
       trigger: workspace,
       width: "232px",
@@ -47,9 +52,10 @@ function Sidebar() {
         { label: "Command menu", icon: "command", kbd: ["mod", "K"], onSelect: () => { commandOpen.value = true; } }
       ]
     }),
-    h("button", { type: "button", class: "tk-search", onClick: () => { commandOpen.value = true; navOpen.value = false; } },
+    Tooltip({ label: "Collapse sidebar", kbd: ["["] }, Button({ variant: "ghost", size: "sm", icon: "sidebar", class: "tk-slim-btn", "aria-pressed": () => String(slim.value), aria: { label: () => (slim.value ? "Expand sidebar" : "Collapse sidebar") }, onClick: () => { slim.value = !slim.peek(); } }))),
+    h("button", { type: "button", class: "tk-search", title: () => (slim.value ? "Search" : null), onClick: () => { commandOpen.value = true; navOpen.value = false; } },
       Icon({ name: "search", size: 15 }),
-      h("span", "Search or jump to…"),
+      h("span", { class: "tk-nav-label" }, "Search or jump to…"),
       Kbd("mod", "K")),
     NavLink({ href: "#/my", icon: Icon({ name: "user", size: 16 }), label: "My issues", count: openCount(issue => issue.assignee === me.id), active: () => page.value === "my" }),
     NavLink({ href: "#/issues", icon: Icon({ name: "layers", size: 16 }), label: "All issues", active: () => page.value === "issues" }),
@@ -64,7 +70,7 @@ function Sidebar() {
       active: () => page.value === "team" && route.value.id === team.id
     })),
     h("div", { class: "tk-side-foot" },
-      ExitCard(),
+      ExitCard({ compact: slim }),
       h("div", { class: "tk-appearance" },
         "Appearance",
         Segmented({
@@ -152,7 +158,8 @@ function App() {
     if (event.key === "Escape" && navOpen.peek()) navOpen.value = false;
   });
 
-  return h("div", { class: "tk", "data-nav-open": navOpen },
+  hotkey("[", () => { slim.value = !slim.peek(); });
+  return h("div", { class: "tk", "data-nav-open": navOpen, "data-slim": slim },
     Sidebar(),
     h("div", { class: "tk-backdrop", "aria-hidden": "true", onClick: () => { navOpen.value = false; } }),
     h("main", { class: "tk-main" },
