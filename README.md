@@ -2,8 +2,14 @@
 
 A small, dependency-free UI runtime for the web, built for people and AI agents.
 
+[![npm](https://img.shields.io/npm/v/@lucidui/core?color=111111&label=npm)](https://www.npmjs.com/package/@lucidui/core)
+
+```sh
+npm i @lucidui/core
+```
+
 ```js
-import { signal, tags, mount } from "lucidui";
+import { signal, tags, mount } from "@lucidui/core";
 
 const { button } = tags;
 
@@ -24,19 +30,19 @@ mount(Counter, "#app");
 
 ## Use it anywhere
 
-Lucid UI also ships as one file, `bundle/lucid.js` (with `bundle/lucid.css`), which exports everything from `lucidui`, `lucidui/ui` and `lucidui/viz`. Drop it into any page that allows a script tag:
+Lucid UI also ships as one file, `bundle/lucid.js` (with `bundle/lucid.css`), which exports everything from `@lucidui/core`, `@lucidui/core/ui` and `@lucidui/core/viz`. Drop it into any page that allows a script tag:
 
 ```html
 <div id="app" class="lucid-app"></div>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lucidui@0.3/bundle/lucid.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lucidui/core@0.3/bundle/lucid.css">
 <script type="module">
-  import { signal, mount, Button } from "https://cdn.jsdelivr.net/npm/lucidui@0.3/bundle/lucid.js";
+  import { signal, mount, Button } from "https://cdn.jsdelivr.net/npm/@lucidui/core@0.3/bundle/lucid.js";
   const count = signal(0);
   mount(() => Button({ onClick: () => count.value++ }, () => `Clicked ${count.value}`), "#app");
 </script>
 ```
 
-- **WordPress:** the plugin in [integrations/wordpress](integrations/wordpress/lucid-ui/readme.txt) adds a `[lucid app="..."]` shortcode and registers `lucidui`, `lucidui/ui` and `lucidui/viz` as script modules (WordPress 6.5+).
+- **WordPress:** the plugin in [integrations/wordpress](integrations/wordpress/lucid-ui/readme.txt) adds a `[lucid app="..."]` shortcode and registers `@lucidui/core`, `@lucidui/core/ui` and `@lucidui/core/viz` as script modules (WordPress 6.5+).
 - **Shopify:** upload `lucid.js` and `lucid.css` to your theme assets and import with `{{ 'lucid.js' | asset_url }}` in a section. Theme storefronts only; checkout does not allow custom scripts.
 - **Squarespace:** paste the snippet above into a Code block or Code Injection (plans with custom code).
 

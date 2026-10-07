@@ -3,12 +3,12 @@
 Styled, accessible components built on the core runtime. Include the stylesheet and put `lucid-app` on the element that hosts your app. Lucid UI never styles anything outside it.
 
 ```html
-<link rel="stylesheet" href="lucidui/src/ui/lucid.css">
+<link rel="stylesheet" href="node_modules/@lucidui/core/src/ui/lucid.css">
 <body class="lucid-app">
 ```
 
 ```js
-import { Button, Select, Dialog, toast } from "lucidui/ui";
+import { Button, Select, Dialog, toast } from "@lucidui/core/ui";
 ```
 
 Every component takes optional props first, then children, the same as `h`.

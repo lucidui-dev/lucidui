@@ -3,7 +3,7 @@
 The whole API on one page. This file is also the reference AI agents read, so it stays short on purpose.
 
 ```js
-import { signal, computed, effect, h, tags, mount, Show, For } from "lucidui";
+import { signal, computed, effect, h, tags, mount, Show, For } from "@lucidui/core";
 ```
 
 ## State
@@ -115,14 +115,14 @@ stop();
 
 ## Components and charts
 
-Styled components live in `lucidui/ui` ([UI.md](UI.md)) and dot-based charts in `lucidui/viz` ([VIZ.md](VIZ.md)).
+Styled components live in `@lucidui/core/ui` ([UI.md](UI.md)) and dot-based charts in `@lucidui/core/viz` ([VIZ.md](VIZ.md)).
 
 ## Diagnostics
 
 Lucid UI explains mistakes with a stable code, a message and a fix. See [DIAGNOSTICS.md](DIAGNOSTICS.md).
 
 ```js
-import { onDiagnostic, configure } from "lucidui";
+import { onDiagnostic, configure } from "@lucidui/core";
 
 onDiagnostic(d => report(d));
 configure({ console: false });

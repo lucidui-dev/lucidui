@@ -23,8 +23,8 @@ Lucid UI is a small, dependency-free UI runtime: signals, components, a UI kit a
 1. Create a `lucid` folder in your theme (or child theme).
 2. Add a file, for example `lucid/pricing.js`, that exports a component as its default export:
 
-    import { signal, h } from "lucidui";
-    import { Button } from "lucidui/ui";
+    import { signal, h } from "@lucidui/core";
+    import { Button } from "@lucidui/core/ui";
 
     export default function Pricing({ plan = "pro" }) {
       const yearly = signal(false);
@@ -41,8 +41,8 @@ Apps are only loaded from the `lucid` folder of the active theme, its parent the
 
 == Using Lucid UI from your own scripts ==
 
-    wp_enqueue_script_module('my-widget', get_theme_file_uri('js/widget.js'), ['lucidui', 'lucidui/ui']);
-    wp_enqueue_style('lucidui');
+    wp_enqueue_script_module('my-widget', get_theme_file_uri('js/widget.js'), ['@lucidui/core', '@lucidui/core/ui']);
+    wp_enqueue_style('@lucidui/core');
 
 == Themes ==
 
@@ -53,4 +53,4 @@ Lucid UI keeps its styles in a low-priority CSS layer so your theme stays in cha
 == Changelog ==
 
 = 0.3.0 =
-* First release: the [lucid] shortcode, script modules for lucidui, lucidui/ui and lucidui/viz, and a counter example.
+* First release: the [lucid] shortcode, script modules for @lucidui/core, @lucidui/core/ui and @lucidui/core/viz, and a counter example.

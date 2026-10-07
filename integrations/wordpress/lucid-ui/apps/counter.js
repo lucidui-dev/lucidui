@@ -1,5 +1,5 @@
-import { signal, h } from "lucidui";
-import { Button, Badge, Row, Stack } from "lucidui/ui";
+import { signal, h } from "@lucidui/core";
+import { Button, Badge, Row, Stack } from "@lucidui/core/ui";
 
 export default function Counter({ start = 0, label = "Clicks" }) {
   const count = signal(Number(start) || 0);

@@ -115,8 +115,8 @@ function Hero() {
 }
 
 const COUNTER = `
-import { signal, computed, mount } from "lucidui";
-import { Button, Text } from "lucidui/ui";
+import { signal, computed, mount } from "@lucidui/core";
+import { Button, Text } from "@lucidui/core/ui";
 
 function Counter() {
   const count = signal(0);
@@ -390,7 +390,7 @@ const IMPORT = `
 </script>
 `;
 
-const CDN = "https://cdn.jsdelivr.net/npm/lucidui@0.3/bundle";
+const CDN = "https://cdn.jsdelivr.net/npm/@lucidui/core@0.3/bundle";
 
 const PLATFORMS = [
   {
@@ -402,8 +402,8 @@ const PLATFORMS = [
     lang: "js",
     steps: ["Install the Lucid UI plugin", "Add an app to your theme's lucid folder", "Add [lucid app=\"hello\"] to any page"],
     code: `
-import { signal, h } from "lucidui";
-import { Button } from "lucidui/ui";
+import { signal, h } from "@lucidui/core";
+import { Button } from "@lucidui/core/ui";
 
 export default function Hello({ name = "there" }) {
   const waves = signal(0);

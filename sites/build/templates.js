@@ -4,8 +4,8 @@ export const TEMPLATES = [
     label: "Counter",
     icon: "plus",
     note: "Signals, computed values and a button",
-    code: `import { signal, computed, h, mount } from "lucidui";
-import { Button, Badge, Row, Stack } from "lucidui/ui";
+    code: `import { signal, computed, h, mount } from "@lucidui/core";
+import { Button, Badge, Row, Stack } from "@lucidui/core/ui";
 
 function Counter() {
   const count = signal(0);
@@ -28,8 +28,8 @@ console.log("Counter mounted");
     label: "Sign-up form",
     icon: "pen",
     note: "Fields, rules and inline errors",
-    code: `import { h, mount } from "lucidui";
-import { form, required, email, minLength, Field, Input, Button, Stack, toast } from "lucidui/ui";
+    code: `import { h, mount } from "@lucidui/core";
+import { form, required, email, minLength, Field, Input, Button, Stack, toast } from "@lucidui/core/ui";
 
 function SignUp() {
   const f = form({
@@ -60,9 +60,9 @@ mount(SignUp, "#app");
     label: "Dot chart",
     icon: "chart",
     note: "A live dot chart from the viz kit",
-    code: `import { signal, h, mount } from "lucidui";
-import { Segmented, Row, Stack } from "lucidui/ui";
-import { DotColumns, ChartCard } from "lucidui/viz";
+    code: `import { signal, h, mount } from "@lucidui/core";
+import { Segmented, Row, Stack } from "@lucidui/core/ui";
+import { DotColumns, ChartCard } from "@lucidui/core/viz";
 
 const DATA = {
   week: [4, 9, 14, 11, 6, 3],
@@ -97,8 +97,8 @@ mount(Chart, "#app");
     label: "Diagnostics",
     icon: "alert-circle",
     note: "See how Lucid explains mistakes",
-    code: `import { signal, h, mount, For } from "lucidui";
-import { Button, Stack } from "lucidui/ui";
+    code: `import { signal, h, mount, For } from "@lucidui/core";
+import { Button, Stack } from "@lucidui/core/ui";
 
 function Broken() {
   const items = signal([{ id: 1, name: "Alpha" }, { id: 1, name: "Beta" }]);

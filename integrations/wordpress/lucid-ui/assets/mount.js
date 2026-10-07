@@ -1,4 +1,4 @@
-import { mount } from "lucidui";
+import { mount } from "@lucidui/core";
 
 const start = async element => {
   if (element.dataset.lucidMounted) return;
