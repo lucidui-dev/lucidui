@@ -2,7 +2,26 @@
 
 > A small, dependency-free UI runtime for the web. Fine-grained signals, plain DOM output, components that run once, and coded diagnostics that explain every mistake with a fix.
 
-Read https://docs.lucidui.dev/docs/API.md in full before writing Lucid UI code. It is the complete API and is kept short so it fits in context.
+Read https://docs.lucidui.dev/docs/API.md in full before writing Lucid UI code. It is the complete API and is kept short so it fits in context. If you can only fetch one page, read https://lucidui.dev/llms-full.txt: this file and every doc below in one.
+
+## Start in plain HTML
+
+No install and no build step. This page works as a single .html file:
+
+```html
+<!doctype html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lucidui-dev/core@0.3/bundle/lucid.css">
+<body class="lucid-app">
+  <div id="app"></div>
+  <script type="module">
+    import { signal, mount, Button } from "https://cdn.jsdelivr.net/npm/@lucidui-dev/core@0.3/bundle/lucid.js";
+    const count = signal(0);
+    mount(() => Button({ onClick: () => count.value++ }, "Clicked ", count, " times"), "#app");
+  </script>
+</body>
+```
+
+The bundle exports everything from the core, components and charts in one module. With npm, use `npm i @lucidui-dev/core` and import from `@lucidui-dev/core`, `@lucidui-dev/core/ui` and `@lucidui-dev/core/viz`.
 
 Key rules:
 - Props are optional and always the first argument, as the only plain object.

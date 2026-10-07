@@ -42,6 +42,18 @@ const UPDATES = [
 
 const RELEASES = [
   {
+    version: "0.3.1",
+    date: "6 October 2026",
+    title: "Friendlier charts for people and agents",
+    summary: "We asked AI agents to build a dashboard from the docs alone and fixed everything they tripped on.",
+    items: [
+      ["Improved", "Series and segments without a colour now take the next colour of the palette instead of rendering black."],
+      ["Improved", "StatTile accepts a delta written as text, such as \"+15%\", as well as a number."],
+      ["Fixed", "DotColumns no longer crashes when unit is given as a number."],
+      ["Improved", "The docs show how to start in a plain HTML page from a CDN, and spell out every chart prop's type."]
+    ]
+  },
+  {
     version: "0.3.0",
     date: "2 October 2026",
     title: "Forms, dates, undo and virtual lists",

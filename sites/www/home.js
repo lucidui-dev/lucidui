@@ -90,7 +90,7 @@ function HeroStage() {
       "Live components, not a screenshot. Change the period, switch teams, ship a release."));
 }
 
-const BRIEF = "Before writing any Lucid UI code, read https://lucidui.dev/llms.txt and every page it links, starting with the API reference. When Lucid reports a diagnostic, apply the fix it gives.";
+const BRIEF = "Before writing any Lucid UI code, read https://lucidui.dev/llms-full.txt in full. It is the complete Lucid UI documentation in one file. When Lucid reports a diagnostic, apply the fix it gives.";
 
 function briefAgent() {
   navigator.clipboard?.writeText(BRIEF).then(
@@ -117,7 +117,7 @@ function Hero() {
       h("button", { class: "hero-agent", type: "button", onClick: briefAgent },
         Icon({ name: "sparkles", size: 14 }),
         h("span", { class: "hero-agent-ask" }, "Building with an agent? Tell it:"),
-        h("code", "Read lucidui.dev/llms.txt first"),
+        h("code", "Read lucidui.dev/llms-full.txt first"),
         Icon({ name: "copy", size: 13 })),
       h("ul", { class: "hero-facts", aria: { label: "At a glance" } },
         h("li", h("b", FACTS.core), " core, gzipped"),

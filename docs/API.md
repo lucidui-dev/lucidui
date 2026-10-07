@@ -6,6 +6,8 @@ The whole API on one page. This file is also the reference AI agents read, so it
 import { signal, computed, effect, h, tags, mount, Show, For } from "@lucidui-dev/core";
 ```
 
+In a plain HTML page with no bundler, import everything from `https://cdn.jsdelivr.net/npm/@lucidui-dev/core@0.3/bundle/lucid.js` and load `https://cdn.jsdelivr.net/npm/@lucidui-dev/core@0.3/bundle/lucid.css`. Put `class="lucid-app"` on `<body>`.
+
 ## State
 
 | Call | What it does |

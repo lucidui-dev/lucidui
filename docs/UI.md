@@ -3,7 +3,7 @@
 Styled, accessible components built on the core runtime. Include the stylesheet and put `lucid-app` on the element that hosts your app. Lucid UI never styles anything outside it.
 
 ```html
-<link rel="stylesheet" href="node_modules/@lucidui-dev/core/src/ui/lucid.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lucidui-dev/core@0.3/bundle/lucid.css">
 <body class="lucid-app">
 ```
 

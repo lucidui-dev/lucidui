@@ -12,6 +12,9 @@ const plain = new Intl.NumberFormat("en", { maximumFractionDigits: 1 });
 export const formatNumber = value => (Math.abs(value) >= 10000 ? compact.format(value) : plain.format(value));
 
 const fmt = (format, value) => (format ? format(value) : formatNumber(value));
+const paint = list => list.map((item, i) => (item.color ? item : { ...item, color: `var(--lucid-series-${(i % 8) + 1})` }));
+const text = value => (typeof value === "string" ? value : "");
+const percent = value => (typeof value === "string" ? Number.parseFloat(value.replace(/[%\s+]/g, "")) : value);
 
 function niceStep(raw) {
   if (raw <= 1) return 1;
@@ -155,7 +158,7 @@ export function DotSparkline({ data, height = 32, color = "var(--lucid-accent)",
 
 export function StatTile({ label, value, unit, delta, deltaLabel, upIsGood = true, trend, format, trendColor } = {}) {
   const deltaView = () => {
-    const d = read(delta);
+    const d = percent(read(delta));
     if (d == null || !Number.isFinite(d)) return null;
     const rounded = Math.round(d);
     const good = rounded === 0 || upIsGood == null ? null : (rounded > 0) === upIsGood;
@@ -172,8 +175,9 @@ export function StatTile({ label, value, unit, delta, deltaLabel, upIsGood = tru
       trend ? h("div", { style: { width: "96px", flex: "none" } }, DotSparkline({ data: trend, height: 28, color: trendColor, label: `${label} trend` })) : null));
 }
 
-export function DotColumns({ data, height = 200, unit = "", color = "var(--lucid-series-1)", format, label } = {}) {
+export function DotColumns({ data, height = 200, unit: unitProp = "", color = "var(--lucid-series-1)", format, label } = {}) {
   let root;
+  const unit = text(unitProp);
   root = frame({
     height: height + 28,
     aria: { label: label ?? "Dot column chart" },
@@ -239,7 +243,7 @@ export function DotDumbbell({ labels, series, height = 220, format, label } = {}
     aria: { label: label ?? "Dot dumbbell chart" },
     render: width => {
       const xs = read(labels) ?? [];
-      const set = read(series) ?? [];
+      const set = paint(read(series) ?? []);
       if (!xs.length || !set.length) return null;
       const gutter = 30;
       const right = 12;
@@ -307,7 +311,7 @@ export function Waffle({ segments, columns = 25, rows = 4, label } = {}) {
   root = frame({
     aria: { label: label ?? "Waffle chart" },
     render: width => {
-      const list = read(segments) ?? [];
+      const list = paint(read(segments) ?? []);
       const total = list.reduce((sum, s) => sum + s.value, 0);
       const cells = columns * rows;
       const counts = allocate(list.map(s => s.value), cells);
@@ -354,7 +358,7 @@ export function UnitRows({ rows, segments, label, max: cap } = {}) {
     aria: { label: label ?? "Unit chart" },
     render: width => {
       const list = read(rows) ?? [];
-      const keys = read(segments) ?? [];
+      const keys = paint(read(segments) ?? []);
       const labelW = Math.min(170, Math.max(110, width * 0.3));
       const countW = 34;
       const area = width - labelW - countW;

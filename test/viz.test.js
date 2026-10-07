@@ -2,7 +2,7 @@ import { test, beforeEach } from "node:test";
 import { setTimeout as wait } from "node:timers/promises";
 import assert from "node:assert/strict";
 import { mount } from "../src/index.js";
-import { DotDumbbell } from "../src/viz/index.js";
+import { DotDumbbell, DotColumns, Waffle, StatTile } from "../src/viz/index.js";
 
 let app;
 
@@ -52,4 +52,16 @@ test("DotDumbbell keeps the net row for exactly two series", async () => {
   mount(() => DotDumbbell({ labels: ["Mon"], series }), app);
   await wait(5);
   assert.ok(tipText(app.querySelector(".lucid-viz-hit")).includes("-4Net opened"));
+});
+
+test("charts accept common agent guesses without crashing", async () => {
+  mount(() => [
+    DotColumns({ data: [{ label: "a", value: 3 }, { label: "b", value: 5 }], unit: 1 }),
+    Waffle({ segments: [{ label: "x", value: 2 }, { label: "y", value: 3 }] }),
+    StatTile({ label: "Shipped", value: 38, delta: "+15%" })
+  ], app);
+  await wait(20);
+  const fills = [...app.querySelectorAll(".lucid-viz-dot")].map(dot => dot.getAttribute("fill")).filter(Boolean);
+  assert.ok(fills.some(fill => fill.includes("--lucid-series-2")));
+  assert.match(app.querySelector(".lucid-delta").textContent, /\+15%/);
 });

@@ -98,13 +98,17 @@ async function site(name, from, { shared = true, lucid = true, extras = [], file
   return archive;
 }
 
+const full = [await readFile(join(root, "llms.txt"), "utf8")];
+for (const name of ["API", "UI", "VIZ", "DIAGNOSTICS"]) full.push(await readFile(join(root, "docs", `${name}.md`), "utf8"));
+await writeFile(join(dist, "llms-full.txt"), full.join("\n\n---\n\n"));
+
 const built = [
   await site("lucidui.dev", "sites/www", {
-    extras: [["LICENSE", "LICENSE.txt"], ["llms.txt", "llms.txt"]]
+    extras: [["LICENSE", "LICENSE.txt"], ["llms.txt", "llms.txt"], ["dist/llms-full.txt", "llms-full.txt"]]
   }),
   await site("sandbox.lucidui.dev", "examples/tracker", { shared: false, extras: [["examples/transit", "transit"], ["examples/campaign", "campaign"], ["examples/checkin", "checkin"], ["examples/fitness", "fitness"], ["examples/beats", "beats"], ["examples/maison", "maison"], ["examples/clinic", "clinic"]] }),
   await site("docs.lucidui.dev", "sites/docs", {
-    extras: /GUIDES_OPEN = true/.test(await readFile(join(root, "sites/docs/docs.js"), "utf8")) ? [["docs", "docs"], ["llms.txt", "llms.txt"]] : []
+    extras: /GUIDES_OPEN = true/.test(await readFile(join(root, "sites/docs/docs.js"), "utf8")) ? [["docs", "docs"], ["llms.txt", "llms.txt"], ["dist/llms-full.txt", "llms-full.txt"]] : []
   }),
   await site("changelog.lucidui.dev", "sites/changelog"),
   await site("build.lucidui.dev", "sites/build"),
