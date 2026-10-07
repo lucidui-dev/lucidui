@@ -1,6 +1,6 @@
 # Build with an AI agent
 
-[Watch Claude build a feed in Builder, in 70 seconds.](https://lucidui.dev/#watch)
+[Watch Claude build a wind farm dashboard in Builder, in 67 seconds.](https://lucidui.dev/#watch)
 
 Lucid UI is made to be written by AI coding agents as well as people. There are two ways to work with one: give it the docs and paste what it writes, or connect it to Builder so it renders, reads its own mistakes and fixes them while you watch.
 

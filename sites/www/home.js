@@ -253,10 +253,11 @@ const VIDEO = "/media/video/builder-agent.mp4";
 const POSTER = "/media/video/builder-agent-poster.jpg";
 const CHAPTERS = [
   [0, "Pairs with Builder"],
-  [8, "Asked to rethink an X feed"],
-  [16, "Builds it live"],
-  [40, "Tries the reply dialog"],
-  [48, "Reaches the end of the feed"]
+  [2, "Asked for a wind farm dashboard"],
+  [26, "The dashboard lands"],
+  [35, "Charts and the turbine table"],
+  [44, "Acknowledges alerts, with Undo"],
+  [52, "Filters to one site"]
 ];
 const clock = t => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, "0")}`;
 
@@ -281,8 +282,8 @@ function Watch() {
     h("div", { class: "site-wrap" },
       SectionHead({
         eyebrow: "see it work",
-        title: "Watch Claude build a feed, live.",
-        lead: "One prompt in Claude: rethink the X feed. It renders straight into Lucid Builder, reads every diagnostic Lucid sends back, and fixes its own code until the feed has an end.",
+        title: "Watch Claude build a dashboard, live.",
+        lead: "One prompt in Claude: a dashboard for a wind farm operator. It renders straight into Lucid Builder, reads every diagnostic Lucid sends back, and fixes its own code until Vane runs clean: live output, every turbine, alerts with Undo.",
         align: "center"
       }),
       h("div", { class: "watch-frame" },
@@ -293,11 +294,11 @@ function Watch() {
                 class: "watch-video", src: VIDEO, poster: POSTER, controls: true, playsinline: true, preload: "auto",
                 ref: el => { video = el; start(el); },
                 onTimeupdate: event => { now.value = event.target.currentTime; },
-                aria: { label: "Claude building a feed in Lucid Builder, 70 seconds" }
+                aria: { label: "Claude building a wind farm dashboard in Lucid Builder, 67 seconds" }
               })
-            : h("button", { type: "button", class: "watch-poster", aria: { label: "Play the 70-second video" }, onClick: () => play(0) },
+            : h("button", { type: "button", class: "watch-poster", aria: { label: "Play the 67-second video" }, onClick: () => play(0) },
                 h("img", { src: POSTER, alt: "", loading: "lazy", width: 1920, height: 1080 }),
-                h("span", { class: "watch-play" }, h("span", { class: "watch-play-icon", "aria-hidden": "true" }), h("span", { class: "watch-play-text" }, h("b", "Play"), h("small", "70 seconds · timelapse")))))),
+                h("span", { class: "watch-play" }, h("span", { class: "watch-play-icon", "aria-hidden": "true" }), h("span", { class: "watch-play-text" }, h("b", "Play"), h("small", "67 seconds")))))),
       h("ol", { class: "watch-chapters", aria: { label: "Chapters" } }, CHAPTERS.map(([t, label], i) => h("li",
         h("button", {
           type: "button", class: "watch-chapter",

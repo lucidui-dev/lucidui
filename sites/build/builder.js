@@ -518,7 +518,7 @@ function GuideDialog() {
     way("03", "link", "Connect your coding agent", "Claude Code, Cursor and other agents can render straight into this tab, read the diagnostics and fix their own mistakes until the page is clean.",
       h("div", { class: "b-way-actions" },
         Button({ size: "sm", icon: "link", onClick: () => { close(); agentOpen.value = true; } }, "Connect an agent"),
-        Button({ size: "sm", variant: "ghost", icon: "monitor", href: "https://lucidui.dev/#watch", target: "_blank" }, "Watch it (70s)")))),
+        Button({ size: "sm", variant: "ghost", icon: "monitor", href: "https://lucidui.dev/#watch", target: "_blank" }, "Watch it (67s)")))),
   h("div", { class: "b-tips" },
     h("p", { class: "b-tips-title" }, "Good to know"),
     h("ul",

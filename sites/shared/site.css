@@ -609,7 +609,7 @@ body.site { background: var(--lucid-surface); min-height: 100dvh; overflow-x: cl
 .watch-chrome { display: flex; align-items: center; gap: 7px; height: 38px; padding: 0 14px; background: #1d1d1b; box-shadow: inset 0 -1px 0 rgb(245 242 234 / .07); }
 .watch-chrome i { width: 10px; height: 10px; border-radius: 50%; background: rgb(245 242 234 / .16); }
 .watch-chrome span { margin-left: 12px; padding: 4px 12px; border-radius: 7px; font: 500 11.5px/1 var(--lucid-font-mono); color: rgb(245 242 234 / .55); background: rgb(245 242 234 / .06); }
-.watch-stage { position: relative; aspect-ratio: 16 / 9; background: #000; }
+.watch-stage { position: relative; aspect-ratio: 1724 / 992; background: #000; }
 .watch-video, .watch-poster, .watch-poster img { display: block; width: 100%; height: 100%; }
 .watch-video { background: #000; }
 .watch-poster { position: relative; padding: 0; border: 0; cursor: pointer; background: #000; }
