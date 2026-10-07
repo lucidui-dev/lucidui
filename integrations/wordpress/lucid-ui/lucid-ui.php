@@ -3,7 +3,7 @@
  * Plugin Name: Lucid UI
  * Plugin URI: https://lucidui.dev
  * Description: Mount Lucid UI apps anywhere with the [lucid] shortcode, and use @lucidui-dev/core, @lucidui-dev/core/ui and @lucidui-dev/core/viz from any script module.
- * Version: 0.3.3
+ * Version: 0.3.4
  * Requires at least: 6.5
  * Requires PHP: 7.4
  * Author: Lucid UI contributors
@@ -15,7 +15,7 @@
 
 defined('ABSPATH') || exit;
 
-const LUCID_UI_VERSION = '0.3.3';
+const LUCID_UI_VERSION = '0.3.4';
 const LUCID_UI_MODULES = ['@lucidui-dev/core', '@lucidui-dev/core/ui', '@lucidui-dev/core/viz'];
 
 function lucid_ui_register()

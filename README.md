@@ -1,6 +1,6 @@
 # Lucid UI
 
-A small, dependency-free UI runtime for the web, built for people and AI agents.
+A small, dependency-free UI runtime for the web, built for people and AI agents. Published on npm as `@lucidui-dev/core`. Not related to AppNexus/Xandr's React library `lucid-ui`.
 
 [![npm](https://img.shields.io/npm/v/@lucidui-dev/core?color=111111&label=npm)](https://www.npmjs.com/package/@lucidui-dev/core)
 

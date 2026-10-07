@@ -43,6 +43,17 @@ const UPDATES = [
 
 const RELEASES = [
   {
+    version: "0.3.4",
+    date: "6 October 2026",
+    title: "Agents always find the right Lucid",
+    summary: "Another, unrelated project is also called Lucid UI. Agents that searched the web could land on it and write the wrong code. Now every path leads here.",
+    items: [
+      ["Improved", "The agent brief names the exact package, gives a mirror link, tells the agent not to search the web, and to ask rather than guess."],
+      ["Improved", "llms.txt, the API reference and the README say plainly which project this is and how to tell the other one apart."],
+      ["New", "llms-full.txt ships in the npm package and the GitHub repository, so it can be read from jsDelivr or GitHub when lucidui.dev can't be reached."]
+    ]
+  },
+  {
     version: "0.3.3",
     date: "6 October 2026",
     title: "Whole pages, crafted by default",

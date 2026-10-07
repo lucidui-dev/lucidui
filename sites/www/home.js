@@ -90,7 +90,7 @@ function HeroStage() {
       "Live components, not a screenshot. Change the period, switch teams, ship a release."));
 }
 
-const BRIEF = "Before writing any Lucid UI code, read https://lucidui.dev/llms-full.txt in full. It is the complete Lucid UI documentation in one file. When Lucid reports a diagnostic, apply the fix it gives.";
+const BRIEF = "Build this with Lucid UI from lucidui.dev, the npm package @lucidui-dev/core. Before writing any code, open https://lucidui.dev/llms-full.txt and read all of it: it is the complete documentation. If that link won't open, use https://cdn.jsdelivr.net/npm/@lucidui-dev/core@0.3/llms-full.txt instead. Do not web-search for \"Lucid UI\": unrelated projects share the name, such as AppNexus's React library lucid-ui, and their APIs are different. If you can't open either link, tell me rather than guess. When Lucid reports a diagnostic, apply the fix it gives.";
 
 function briefAgent() {
   navigator.clipboard?.writeText(BRIEF).then(

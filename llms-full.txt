@@ -1,0 +1,535 @@
+# Lucid UI
+
+> A small, dependency-free UI runtime for the web. Fine-grained signals, plain DOM output, components that run once, and coded diagnostics that explain every mistake with a fix.
+
+This is Lucid UI from lucidui.dev: npm package `@lucidui-dev/core`, source at https://github.com/lucidui-dev/lucidui. It is not AppNexus or Xandr's React library `lucid-ui` (github.com/appnexus/lucid), Lucid Software, or the Lucide icon set, and it shares no API with any of them. If a page shows React, JSX, Storybook, `import ... from "lucid-ui"` or appnexus, it describes a different project: ignore it. Never web-search for "Lucid UI"; use only the URLs in this file.
+
+Read https://docs.lucidui.dev/docs/API.md in full before writing Lucid UI code. It is the complete API and is kept short so it fits in context. If you can only fetch one page, read https://lucidui.dev/llms-full.txt: this file and every doc below in one. Mirrors with identical content: https://cdn.jsdelivr.net/npm/@lucidui-dev/core@0.3/llms-full.txt and https://raw.githubusercontent.com/lucidui-dev/lucidui/main/llms-full.txt
+
+## Start in plain HTML
+
+No install and no build step. This page works as a single .html file:
+
+```html
+<!doctype html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lucidui-dev/core@0.3/bundle/lucid.css">
+<body class="lucid-app">
+  <div id="app"></div>
+  <script type="module">
+    import { signal, mount, Button } from "https://cdn.jsdelivr.net/npm/@lucidui-dev/core@0.3/bundle/lucid.js";
+    const count = signal(0);
+    mount(() => Button({ onClick: () => count.value++ }, "Clicked ", count, " times"), "#app");
+  </script>
+</body>
+```
+
+The bundle exports everything from the core, components and charts in one module. With npm, use `npm i @lucidui-dev/core` and import from `@lucidui-dev/core`, `@lucidui-dev/core/ui` and `@lucidui-dev/core/viz`.
+
+Key rules:
+- Props are optional and always the first argument, as the only plain object.
+- Read and write signals with `.value`. Pass the signal itself (not `.value`) as a child or prop to keep it live.
+- A function child or prop is a live expression. Event handlers are props starting with `on`.
+- Pass `Show` branches as functions. Give `For` a `key` when items have ids.
+- Use `button` for actions and `a` for navigation, never a clickable `div`.
+- Never use browser controls or dialogs. Use `Select` (not `select`), `DatePicker` (not a date `input`), `Switch` and `Checkbox` (not hand-made toggles), `toast()` (not `alert()`) and `await ask({ title, confirm })` (not `confirm()`).
+- Use Lucid components for every control: `Input`, `Field`, `Button`, `Card`, `Badge`. Build screens from `AppShell`, `NavList`, `Page`, `Section` and `SettingRow`, and start from a recipe in RECIPES.md.
+- Write no CSS for colours, borders, radii, shadows or type: the components already look finished. Add CSS only for layout a component can't do.
+- Mount once, and switch views with a signal.
+- When you see a diagnostic code, look it up in https://docs.lucidui.dev/docs/DIAGNOSTICS.md and apply the fix it gives.
+
+Single file: `@lucidui-dev/core/bundle` (bundle/lucid.js plus bundle/lucid.css) exports everything from @lucidui-dev/core, @lucidui-dev/core/ui and @lucidui-dev/core/viz in one module, for pages without a bundler or import map (Shopify themes, Squarespace code blocks, plain HTML). In WordPress, the Lucid UI plugin registers @lucidui-dev/core, @lucidui-dev/core/ui and @lucidui-dev/core/viz as script modules; an app is a file in the theme's lucid/ folder whose default export is a component, used with [lucid app="name"].
+
+## Docs
+
+- [API](https://docs.lucidui.dev/docs/API.md): the complete API
+- [Components](https://docs.lucidui.dev/docs/UI.md): styled, accessible components (@lucidui-dev/core/ui)
+- [Charts](https://docs.lucidui.dev/docs/VIZ.md): charts with tooltips, legends and table views (@lucidui-dev/core/viz)
+- [Recipes](https://docs.lucidui.dev/docs/RECIPES.md): complete settings, dashboard and list pages to start from
+- [Diagnostics](https://docs.lucidui.dev/docs/DIAGNOSTICS.md): every warning and error code, with the fix
+- [Vision](https://docs.lucidui.dev/docs/VISION.md): goals, principles and roadmap
+
+
+---
+
+# Lucid UI API
+
+The whole API on one page, for Lucid UI from lucidui.dev (`@lucidui-dev/core`). Not AppNexus's React `lucid-ui`: no React, no JSX. This file is also the reference AI agents read, so it stays short on purpose.
+
+```js
+import { signal, computed, effect, h, tags, mount, Show, For } from "@lucidui-dev/core";
+```
+
+In a plain HTML page with no bundler, import everything from `https://cdn.jsdelivr.net/npm/@lucidui-dev/core@0.3/bundle/lucid.js` and load `https://cdn.jsdelivr.net/npm/@lucidui-dev/core@0.3/bundle/lucid.css`. Put `class="lucid-app"` on `<body>`.
+
+## State
+
+| Call | What it does |
+| --- | --- |
+| `signal(value)` | A value that can change. Read and write with `.value`. `.peek()` reads without subscribing. `.update(fn)` sets it from the old value. |
+| `signal(value, { equals: false })` | Notifies on every write, even the same value. Use it when you mutate an array or object in place. |
+| `computed(() => ...)` | A value derived from other signals. Lazy, cached, and only recalculates when something it read changes. |
+| `effect(() => ...)` | Runs now and again whenever a signal it read changes. Return a function to clean up before the next run. Returns `stop()`. |
+| `batch(() => ...)` | Makes several writes and updates the page once at the end. |
+| `untrack(() => ...)` | Reads signals without subscribing to them. |
+| `onCleanup(fn)` | Runs `fn` when the current component, effect or root is removed. |
+| `root(dispose => ...)` | Starts an independent scope. Calling `dispose()` stops everything created inside it. |
+
+```js
+const count = signal(0);
+const double = computed(() => count.value * 2);
+effect(() => console.log(double.value));
+count.value++;
+```
+
+## Elements
+
+`h(tag, props?, ...children)` creates an element. Props are optional and always come first, as the only plain object.
+
+```js
+h("p", "Hello");
+h("a", { href: "/docs" }, "Read the docs");
+```
+
+SVG elements get the SVG namespace automatically. Prefix a tag with `svg:` to force it, for example `h("svg:a")`.
+
+`tags` gives every element as a function:
+
+```js
+const { section, h2, p, button } = tags;
+section(h2("Title"), p("Body"));
+```
+
+### Children
+
+| Child | Result |
+| --- | --- |
+| text, number | text |
+| element | inserted as is |
+| array | each item, in order |
+| signal | text or content that updates in place |
+| `() => ...` | a live expression; re-evaluates when signals inside it change |
+| `null`, `false`, `true`, `undefined` | nothing |
+
+```js
+p("Clicked ", count, " times");
+p(() => (count.value > 9 ? "Lots" : "A few"));
+```
+
+### Props
+
+| Prop | Example |
+| --- | --- |
+| attributes | `{ id: "main", disabled: busy }` (any prop can be a signal or function) |
+| events | `{ onClick: () => count.value++ }`, `{ onInput: e => ... }` |
+| `class` | `"card"`, `["card", "wide"]`, `{ active: isActive }`, or a mix |
+| `style` | `{ width: 120, opacity: fade, "--accent": "teal" }` (numbers get `px` where CSS needs a unit) |
+| `aria` | `{ label: "Close", expanded: open }` becomes `aria-label`, `aria-expanded` |
+| `data` | `{ userId: 7 }` becomes `data-user-id` |
+| `bind` | `{ bind: name }` keeps an input, checkbox, radio, select or textarea in sync with a signal |
+| `ref` | `{ ref: el => ... }` gets the element after it is created |
+
+## Components
+
+A component is a function that returns elements. It runs once. Signals inside it keep the page up to date.
+
+```js
+const Counter = ({ label }) => {
+  const count = signal(0);
+  return button({ onClick: () => count.value++ }, label, ": ", count);
+};
+
+h(Counter, { label: "Clicks" });
+```
+
+## Control flow
+
+`Show` renders one branch or the other and fully removes the hidden one. Pass branches as functions so they are only built when shown.
+
+```js
+Show({ when: loggedIn, fallback: () => p("Please sign in") }, () => h(Dashboard));
+```
+
+`For` renders a list and keeps rows when the list changes. `key` identifies each item; without it, the item itself is the key. `index` is a signal.
+
+```js
+ul(For({ each: todos, key: todo => todo.id }, (todo, index) =>
+  li(() => index.value + 1, ". ", todo.title)
+));
+```
+
+Replacing an item with a new object under the same key rebuilds that row only.
+
+## Mounting
+
+```js
+const stop = mount(() => h(App), "#app");
+stop();
+```
+
+`mount(view, target)` takes a component function or an element, and a selector or element. It returns a function that removes everything and stops all updates.
+
+## Components and charts
+
+Styled components live in `@lucidui-dev/core/ui` ([UI.md](UI.md)) and dot-based charts in `@lucidui-dev/core/viz` ([VIZ.md](VIZ.md)).
+
+## Diagnostics
+
+Lucid UI explains mistakes with a stable code, a message and a fix. See [DIAGNOSTICS.md](DIAGNOSTICS.md).
+
+```js
+import { onDiagnostic, configure } from "@lucidui-dev/core";
+
+onDiagnostic(d => report(d));
+configure({ console: false });
+```
+
+Each diagnostic is a plain object: `{ code, level, message, fix, docs, ...context }`. Thrown errors are `LucidError` with the same `code`.
+
+
+---
+
+# Lucid UI components
+
+Styled, accessible components built on the core runtime. Include the stylesheet and put `lucid-app` on the element that hosts your app. Lucid UI never styles anything outside it.
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lucidui-dev/core@0.3/bundle/lucid.css">
+<body class="lucid-app">
+```
+
+```js
+import { Button, Select, Dialog, toast } from "@lucidui-dev/core/ui";
+```
+
+Every component takes optional props first, then children, the same as `h`.
+
+## Theme
+
+Light and dark are built in and follow the system. Force one with `data-theme="light"` or `data-theme="dark"` on `<html>` or the `lucid-app` element. Every colour, space, radius, shadow and easing is a `--lucid-*` custom property, so a theme is a short list of overrides.
+
+The default typeface is Geist with Geist Mono for code and IDs. Load it yourself, or set `--lucid-font-sans` to your own.
+
+## Layout
+
+| Component | Props |
+| --- | --- |
+| `Stack` | `gap` (space step 0–16), `align`, `justify`, `as` |
+| `Row` | `gap`, `align`, `justify`, `wrap` |
+| `Grid` | `min` (column min width, auto-fit), `columns` (fixed count), `gap` |
+| `Spacer`, `Divider` | `Divider({ vertical })` |
+| `Card` | `padding` (`sm`, `md`, `lg`), `variant` (`raised`, `sunken`) |
+
+## Pages
+
+Build whole screens from these, not from your own CSS. They carry the spacing, type and surfaces, and collapse for phones.
+
+| Component | Props |
+| --- | --- |
+| `AppShell` | `sidebar` (usually a `NavList`); children are the main area |
+| `NavList` | `value` (signal), `items: [{ value, label, icon, badge, href } or { group }]`, `label`, `onSelect` |
+| `Page` | `title`, `description`, `actions`, `width` (`sm`, `md`, `lg`, `full`) |
+| `Section` | `title`, `description`, `actions`, `id`, `tone: "danger"`; children are rows inside one card |
+| `SettingRow` | `label`, `description`; the child is the control (`Switch`, `Select`, `Input`, `Button`) |
+
+See [RECIPES.md](https://docs.lucidui.dev/docs/RECIPES.md) for complete settings, dashboard and list pages.
+
+## Text
+
+| Component | Props |
+| --- | --- |
+| `Heading` | `level` 1–6, `size` (`xs` to `3xl`) |
+| `Text` | `tone` (`muted`, `subtle`), `size`, `weight`, `mono`, `truncate`, `as` |
+| `Kbd` | keys as arguments: `Kbd("mod", "K")` shows ⌘K on Mac and Ctrl K elsewhere |
+
+## Actions and inputs
+
+| Component | Props |
+| --- | --- |
+| `Button` | `variant` (`primary`, `secondary`, `ghost`, `accent`, `danger`), `size` (`xs`, `sm`, `md`, `lg`), `icon`, `iconRight`, `kbd`, `loading` |
+| `Input` | `bind`, `icon`, `kbd`, `size`, `variant: "ghost"`, plus any input attribute |
+| `Textarea` | `bind`, `rows`, `variant: "ghost"`; grows with its content |
+| `Field` | `label`, `hint`, `error` or `field` (from `form`); wires the label, error and ARIA to the control inside it |
+| `Checkbox`, `Switch` | `bind` or `checked`, `label` |
+| `Segmented` | `value` (signal), `options: [{ value, label, icon }]`, `size`, `iconOnly` |
+| `Select` | `value` (signal), `options: [{ value, label, icon, hint, keywords }]`, `multiple`, `searchable`, `placeholder`, `display`, `variant`, `size`, `onChange`, `onCreate` (offers “Create …” for unmatched searches; return the new value) |
+| `DatePicker` | `value` (signal of a timestamp or `null`), `presets`, `min`, `max`, `placeholder`, `clearable`, `onChange` |
+
+Never use the browser's own controls or dialogs: no `select`, no date or colour `input`, no `alert()`, `confirm()` or `prompt()`. Use `Select`, `DatePicker`, `Switch`, `toast()` and `await ask()`, so every menu and dialog is styled. Lucid UI reports each native one it sees.
+
+An icon-only `Button` needs `aria: { label }`. Lucid UI reports `button-without-name` if it is missing.
+
+## Forms
+
+`form(spec)` holds a form's values and validation. Each field has a value signal, rules, and an error that appears once the field has been left or the form submitted.
+
+```js
+const invite = form({
+  email: { value: "", rules: [required("Enter an email"), email()] },
+  note: { value: "", rules: [maxLength(280)] }
+});
+
+const send = invite.submit(async values => { await api.invite(values); });
+
+Field({ label: "Email", field: invite.fields.email }, Input({ bind: invite.fields.email.value }));
+Button({ variant: "primary", loading: invite.submitting, onClick: send }, "Send");
+```
+
+- Rules: `required`, `minLength`, `maxLength`, `email`, `pattern`, `min`, `max`, or any `(value, allValues) => message | null`.
+- `Field({ field })` shows the error, sets `aria-invalid` and `aria-describedby`, and marks the field touched when focus leaves it.
+- `submit(handler)` shows every error, focuses the first invalid field, and only calls `handler` when the form is valid. `submitting`, `valid` and `dirty` are signals; `reset()` starts over.
+
+## Undo
+
+`createHistory(signal)` gives undo and redo for any state kept as immutable values.
+
+```js
+const history = createHistory(issues);
+history.change("Move WEB-12 to Done", () => { issues.value = moved; });
+history.undo();
+history.redo();
+```
+
+`canUndo`, `canRedo`, `nextUndo` and `nextRedo` are signals, ready for menus and shortcuts. Undo is the alternative to "Are you sure?" prompts: let people act, then let them take it back.
+
+## Long lists
+
+`VirtualList({ each, key, itemHeight }, render)` renders only the rows in view, so a list of tens of thousands stays fast. `itemHeight` can be a number or `(item) => number` for mixed rows like headers. Arrow keys move between rows, and `scrollToIndex(i)` is available on the element.
+
+## Overlays
+
+| Component | Props |
+| --- | --- |
+| `Menu` | `trigger` (an element), `items: [{ label, icon, kbd, onSelect, checked, danger, disabled } \| { separator: true } \| { group }]` |
+| `Tooltip` | `Tooltip({ label, kbd, placement }, trigger)` |
+| `Dialog` | `open` (signal or function), `title`, `description`, `footer`, `size`, `variant: "sheet"`, `onClose` |
+| `ask` | `await ask({ title, description, confirm, cancel, tone: "danger" })` opens a styled confirmation and resolves `true` or `false` |
+| `CommandMenu` | `open`, `items: [{ group, label, icon, kbd, hint, keywords, searchOnly, run }]` |
+| `toast(title, options)` | `description`, `tone` (`success`, `danger`, `info`), `action: { label, onClick }`, `duration` |
+
+Menus, selects and tooltips use the browser's popover layer, so they are never clipped by a scrolling parent. Dialogs use the native modal dialog, so focus is trapped and Escape closes them. Every overlay animates in and out, and respects reduced motion.
+
+## Identity
+
+| Component | Props |
+| --- | --- |
+| `Avatar` | `name`, `src`, `size`; colour is derived from the name, so a person always looks the same |
+| `AvatarStack` | avatars as children |
+| `Badge` | `color` (adds a dot, such as `"var(--lucid-success)"`), `tone` (`accent`, `solid`), `size` |
+| `Icon` | `name`, `size`, `stroke`; names are listed in `iconNames` |
+| `EmptyState` | `icon`, `title`, `description`, `action` |
+
+## Keyboard
+
+`hotkey("mod+k", handler)` registers a shortcut and removes it when the component is removed. Plain-key shortcuts are ignored while the user is typing or a dialog is open.
+
+
+---
+
+# Lucid UI recipes
+
+Complete pages to start from. Each uses only Lucid UI components, so it looks finished with no CSS of your own. In a plain HTML page, import every name from `https://cdn.jsdelivr.net/npm/@lucidui-dev/core@0.3/bundle/lucid.js`, load `bundle/lucid.css`, and put `class="lucid-app"` on `<body>`.
+
+## Settings page
+
+```js
+import { signal, mount, AppShell, NavList, Page, Section, SettingRow, Input, Select, Switch, Button, Badge, toast, ask } from "@lucidui-dev/core/bundle";
+
+const view = signal("settings");
+const name = signal("Lucid Analytics");
+const period = signal("30d");
+const timezone = signal("America/Toronto");
+const digest = signal(true);
+const alerts = signal(true);
+const twoFactor = signal(true);
+
+const nav = NavList({
+  value: view,
+  items: [
+    { group: "Workspace" },
+    { value: "overview", label: "Overview", icon: "board" },
+    { value: "reports", label: "Reports", icon: "chart" },
+    { group: "Manage" },
+    { value: "settings", label: "Settings", icon: "sliders" }
+  ]
+});
+
+const Settings = () => Page({
+  title: "Settings",
+  description: "Workspace, notifications and security.",
+  actions: Button({ variant: "primary", onClick: () => toast("Settings saved", { tone: "success" }) }, "Save changes")
+},
+  Section({ title: "Workspace", description: "How the workspace appears and reports." },
+    SettingRow({ label: "Workspace name", description: "Shown in navigation and shared reports." },
+      Input({ bind: name, aria: { label: "Workspace name" } })),
+    SettingRow({ label: "Default period", description: "The range analytics opens with." },
+      Select({ value: period, options: [{ value: "7d", label: "Last 7 days" }, { value: "30d", label: "Last 30 days" }, { value: "90d", label: "Last 90 days" }] })),
+    SettingRow({ label: "Timezone", description: "Used for daily boundaries and scheduled reports." },
+      Select({ value: timezone, searchable: true, options: ["America/Toronto", "America/Vancouver", "Europe/London", "UTC"].map(value => ({ value, label: value })) }))),
+  Section({ title: "Notifications" },
+    SettingRow({ label: "Weekly digest", description: "A Monday summary of the numbers that moved." }, Switch({ bind: digest, aria: { label: "Weekly digest" } })),
+    SettingRow({ label: "Anomaly alerts", description: "When a key metric leaves its normal range." }, Switch({ bind: alerts, aria: { label: "Anomaly alerts" } }))),
+  Section({ title: "Security" },
+    SettingRow({ label: "Two-factor authentication", description: "Ask for a second step when signing in." }, Switch({ bind: twoFactor, aria: { label: "Two-factor authentication" } })),
+    SettingRow({ label: "Active sessions", description: "Signed in on 2 devices." }, Badge({ color: "var(--lucid-success)" }, "Secure"), Button({ size: "sm" }, "Manage"))),
+  Section({ title: "Danger zone", tone: "danger" },
+    SettingRow({ label: "Delete workspace", description: "Permanently removes the workspace and its data." },
+      Button({
+        variant: "danger",
+        size: "sm",
+        onClick: async () => {
+          if (await ask({ title: "Delete this workspace?", description: "This can't be undone.", confirm: "Delete", tone: "danger" })) toast("Workspace deleted");
+        }
+      }, "Delete"))));
+
+mount(() => AppShell({ sidebar: nav }, () => (view.value === "settings" ? Settings() : Page({ title: "Overview" }))), "#app");
+```
+
+Rules this follows, and every page should:
+
+- Every control is a Lucid component: `Select`, never `select`; `Switch`, never a hand-made toggle; `toast()` and `ask()`, never `alert()` or `confirm()`.
+- No CSS for colours, borders, radii, shadows or type. The components and `--lucid-*` tokens are the design. Add CSS only for layout, and only when a component can't do it.
+- Mount once. Switch views with a signal inside the app, not by calling `mount` again.
+
+## Dashboard
+
+```js
+const range = signal("week");
+Page({ title: "Overview", width: "lg", actions: Segmented({ value: range, options: [{ value: "week", label: "Week" }, { value: "month", label: "Month" }] }) },
+  Grid({ min: 220, gap: 4 },
+    StatTile({ label: "Revenue", value: 48200, unit: "USD", delta: 12, trend: [31, 34, 33, 38, 41, 45, 48] }),
+    StatTile({ label: "Orders", value: 1284, delta: 6, trend: [9, 11, 10, 12, 12, 13, 13] }),
+    StatTile({ label: "Refund rate", value: 1.7, unit: "%", delta: -4, upIsGood: false })),
+  Grid({ min: 340, gap: 4 },
+    ChartCard({ title: "Orders by day" }, DotColumns({ data: [{ label: "Mon", value: 12 }, { label: "Tue", value: 18 }, { label: "Wed", value: 15 }], unit: "orders" })),
+    ChartCard({ title: "Channel mix" }, Waffle({ segments: [{ label: "Organic", value: 52 }, { label: "Paid", value: 31 }, { label: "Direct", value: 17 }] }))));
+```
+
+## List with empty state
+
+```js
+const items = signal([]);
+Page({ title: "Projects", actions: Button({ variant: "primary", icon: "plus" }, "New project") },
+  Section({},
+    () => items.value.length
+      ? For({ each: items, key: item => item.id }, item => SettingRow({ label: item.name, description: item.owner }, Button({ size: "sm", variant: "ghost" }, "Open")))
+      : EmptyState({ icon: "inbox", title: "No projects yet", description: "Create one to get started." })));
+```
+
+
+---
+
+# Lucid UI data visualisation
+
+Lucid UI draws data with dots. Bars, lines and pies are replaced by forms built from one consistent mark, so every chart in a Lucid UI app reads as part of the same system, and none of them look like a default chart library.
+
+```js
+import { DotColumns, DotDumbbell, Waffle, UnitRows, DotCalendar, DotSparkline, StatTile, DotMeter, ChartCard } from "@lucidui-dev/core/viz";
+```
+
+Every chart sizes itself to its container, re-renders when its data signals change, animates its dots in, and has a hover and keyboard tooltip.
+
+## The forms
+
+| Chart | Instead of | Data |
+| --- | --- | --- |
+| `DotColumns` | bar chart | `data: [{ label, value }]`, `unit` (a word for what is counted, such as `"issues"`). How many units each dot stands for is chosen automatically and stated in a caption, against a faint grid of empty dots. A remainder shows as a smaller dot. |
+| `DotDumbbell` | multi-line chart | `labels`, `series: [{ name, color, values }]` (two or more). Each period shows every value, joined by a stem from the lowest to the highest, so the spread is the story. The tooltip lists every series, and adds a net row when there are exactly two. |
+| `Waffle` | pie or donut | `segments: [{ label, value, color, hollow }]`, `columns`, `rows`. Each dot is an equal share of the whole. |
+| `UnitRows` | stacked bar | `rows: [{ label, avatar, counts: { [key]: number } }]`, `segments: [{ key, label, color }]`. One dot per item, so use it for small counts (under about 50 per row), such as issues per person. For large numbers, use `DotColumns`. |
+| `DotCalendar` | heatmap | `days: [{ date, value }]`. Dot size and shade both carry the value. |
+| `DotSparkline` | sparkline | `data: number[]`. A trail of small dots with the latest value highlighted. |
+| `StatTile` | KPI card | `label`, `value`, `unit` (text), `delta` (percent change as a number: `15` shows +15%), `deltaLabel`, `upIsGood` (`true`, `false` or `null` for neutral), `trend` (`number[]`) |
+| `DotMeter` | progress bar | `value`, `max`, `dots` |
+
+`color` is optional on every series and segment. Without it, each takes the next colour of the palette in order.
+
+`ChartCard({ title, subtitle, table }, chart)` frames a chart and adds a Chart and Table switch. Pass `table: () => ({ columns, rows })` so every value can be read without hovering.
+
+## Rules the charts follow
+
+- **Colour by job.** Series use the `--lucid-series-*` palette in a fixed order, checked for colour-blind separation in light and dark. Magnitude uses the one-hue `--lucid-seq-*` ramp. Colour is never the only signal: legends, labels and hollow dots back it up.
+- **Text is never the series colour.** Values and labels use ink tokens, and a coloured key sits beside them.
+- **One axis.** Two measures with different scales get two charts.
+- **Label sparingly.** Values appear where they matter: column tops, the hovered point and the tooltip.
+- **Tooltips enhance, never gate.** Everything in a tooltip is also in the table view.
+
+
+---
+
+# Diagnostics
+
+Every problem Lucid UI detects has a stable code. Codes never change meaning once released, so people, tests and AI agents can rely on them.
+
+`warn` diagnostics are reported and rendering continues. `error` diagnostics are thrown as a `LucidError` whose `code` matches.
+
+## button-without-name
+
+**warn.** A button has no text, `aria-label`, `aria-labelledby` or `title`, so screen readers announce it as just "button".
+
+Fix: give it visible text, or for an icon-only button pass `aria: { label: "Close" }`.
+
+## img-without-alt
+
+**warn.** An image has no `alt` attribute.
+
+Fix: describe what the image shows with `alt: "..."`. If it is purely decorative, pass `alt: ""` so screen readers skip it.
+
+## click-on-static-element
+
+**warn.** An `onClick` is attached to an element such as a `div` or `span`. Keyboard users cannot reach it and screen readers do not announce it as an action.
+
+Fix: use `button` for actions or `a` for navigation. If you really need a custom element, give it a `role` and a `tabindex` and handle the keyboard yourself.
+
+## native-select
+
+**warn.** A native `select` was used. Its option list is drawn by the browser, so it can't match the rest of the app. Inside a `lucid-app`, browsers that allow it get a styled list as a fallback; others show the plain browser menu.
+
+Fix: use `Select({ value, options })` from the components.
+
+## native-picker
+
+**warn.** An `input` with type `date`, `datetime-local`, `month`, `week`, `time` or `color` was used. Its picker is drawn by the browser.
+
+Fix: use `DatePicker` for dates. For other values, use `Select` or `Input`.
+
+## native-dialog
+
+**warn.** `alert()`, `confirm()` or `prompt()` was called. Lucid UI never shows browser dialogs: `alert()` is turned into a styled toast, and the other two are reported because they block the page.
+
+Fix: use `toast("Saved")` for messages, and `if (await ask({ title: "Delete workspace?", confirm: "Delete", tone: "danger" })) { ... }` for confirmations.
+
+## invalid-event-handler
+
+**error.** An `on...` prop received something other than a function, often a string like `"save()"`.
+
+Fix: pass a function, for example `onClick: () => save()`. `null` and `undefined` are allowed and mean no handler.
+
+## invalid-child
+
+**warn.** A plain object was passed as a child. Only the first argument may be a plain object, and it is read as props.
+
+Fix: pass text, numbers, elements, arrays, signals or functions as children. If you meant props, move them to the first argument.
+
+## duplicate-key
+
+**warn.** `For` received two items that produce the same key. Both rows render, but they cannot be tracked reliably when the list changes.
+
+Fix: make `key` return something unique per item, such as an id.
+
+## effect-cycle
+
+**error.** Effects kept triggering each other and Lucid UI stopped them after 1000 rounds. Usually an effect writes to a signal it also reads.
+
+Fix: read the signal with `untrack()`, derive the value with `computed()` instead, or move the write into an event handler.
+
+## mount-target-missing
+
+**error.** `mount()` could not find the element it was given.
+
+Fix: check the selector, and make sure the script runs after the element exists (`type="module"` scripts already wait for the page to parse).
+
+## cleanup-outside-scope
+
+**warn.** `onCleanup()` was called somewhere that is never removed, so the cleanup would never run.
+
+Fix: call it inside a component rendered by `mount()`, inside an `effect()`, or inside `root()`.

@@ -14,3 +14,11 @@ test("the API reference stays small enough for an agent's context", () => {
   const approxTokens = Math.ceil(read("docs/API.md").length / 4);
   assert.ok(approxTokens <= 2500, `docs/API.md is about ${approxTokens} tokens, budget is 2500`);
 });
+
+test("llms-full.txt is current and names the right project", async () => {
+  const { llmsFull } = await import("../tools/llms.js");
+  const committed = read("llms-full.txt");
+  assert.equal(committed, await llmsFull("."), "Run node tools/llms.js to regenerate llms-full.txt");
+  assert.match(committed, /@lucidui-dev\/core/);
+  assert.match(committed, /not AppNexus/i);
+});

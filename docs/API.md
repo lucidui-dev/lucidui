@@ -1,6 +1,6 @@
 # Lucid UI API
 
-The whole API on one page. This file is also the reference AI agents read, so it stays short on purpose.
+The whole API on one page, for Lucid UI from lucidui.dev (`@lucidui-dev/core`). Not AppNexus's React `lucid-ui`: no React, no JSX. This file is also the reference AI agents read, so it stays short on purpose.
 
 ```js
 import { signal, computed, effect, h, tags, mount, Show, For } from "@lucidui-dev/core";
