@@ -517,7 +517,7 @@ function Anywhere() {
         },
         h("p", { class: "anywhere-note" },
           Icon({ name: "lock", size: 12 }),
-          "Arrives at launch with the npm package and the WordPress plugin. WordPress, Shopify and Squarespace are trademarks of their owners; Lucid UI is independent and not affiliated with them."))));
+          "The WordPress plugin arrives at launch. WordPress, Shopify and Squarespace are trademarks of their owners; Lucid UI is independent and not affiliated with them."))));
 }
 
 function Start() {
@@ -525,15 +525,15 @@ function Start() {
     h("div", { class: "site-wrap start-inner" },
       SectionHead({
         eyebrow: "get started",
-        title: "Launching soon.",
-        lead: "Lucid UI is being finished in the open. At launch you'll download the package or import it straight from lucidui.dev, the same readable source you see here.",
+        title: "Start in one line.",
+        lead: "Install @lucidui-dev/core from npm, or import the one-file build straight from a CDN. Either way it is the same readable source you see here.",
         align: "center"
       }),
       h("div", { class: "start-ctas" },
         DownloadButton({ size: "lg", label: `Download v${version}` }),
         Button({ variant: "secondary", size: "lg", href: LINKS.docs, iconRight: "arrow-right" }, "Read the docs")),
       CodeWindow({ file: "index.html", code: IMPORT, lang: "html", icon: "monitor", class: "start-code" }),
-      h("p", { class: "start-note" }, "The package arrives on npm and GitHub at launch. Follow ", h("a", { href: LINKS.x }, "@lucidui_"), " to hear first.")));
+      h("p", { class: "start-note" }, h("code", null, "npm i @lucidui-dev/core"), " · ", h("a", { href: LINKS.npm }, "npm"), " · ", h("a", { href: LINKS.github }, "GitHub"), " · follow ", h("a", { href: LINKS.x }, "@lucidui_"))));
 }
 
 mountPage({

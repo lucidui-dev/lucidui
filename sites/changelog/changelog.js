@@ -3,6 +3,7 @@ import { Badge } from "/lucid/ui/index.js";
 import { mountPage, SectionHead } from "/shared/chrome.js";
 
 const UPDATES = [
+  { date: "6 October 2026", area: "Library", kind: "New", title: "Lucid UI is on npm", text: "Install it with npm i @lucidui-dev/core. The package includes the source modules, the one-file bundle and the docs." },
   { date: "6 October 2026", area: "Site", kind: "New", title: "New logo, icons and press page", text: "A new navy icon and wordmark across every site, sandbox demo and the Builder, with fresh favicons, app icons and a share image. The press page lists every file and size, and the hero dots now glow a quieter grey." },
   { date: "6 October 2026", area: "Site", kind: "Improved", title: "A new palette: obsidian and champagne", text: "The burgundy and tangerine are gone. Every site, the sandbox picker and the Builder now use deep obsidian with a soft champagne accent, and the decorative dot backgrounds have been removed for a calmer page." },
   { date: "6 October 2026", area: "Site", kind: "Improved", title: "One home for the brand: media.lucidui.dev", text: "Logos, icons and the press kit now live in one place, used by every Lucid UI site and sandbox demo instead of a copy in each." },

@@ -36,6 +36,7 @@ export function links(site) {
     changelog: "https://changelog.lucidui.dev",
     x: "https://x.com/lucidui_",
     github: "https://github.com/lucidui-dev/lucidui",
+    npm: "https://www.npmjs.com/package/@lucidui-dev/core",
     npm: "https://www.npmjs.com/~lucidui",
     reddit: "https://www.reddit.com/user/lucidui_",
     discord: "https://discord.gg/ZsWe7AqFV",
