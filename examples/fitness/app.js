@@ -1,7 +1,7 @@
 import { signal, computed, effect, h, mount, onCleanup } from "/lucid/index.js";
 import { Button, Segmented, Tooltip, Icon, toast, hotkey } from "/lucid/ui/index.js";
-import { DotColumns, DotCalendar, DotMeter, ChartCard } from "/lucid/viz/index.js";
-import { ExitCard } from "/exit.js";
+import { DotColumns, DotCalendar, DotMeter, ChartCard, Waffle, StatTile } from "/lucid/viz/index.js";
+import { ExitCard, ExitDock } from "/exit.js";
 
 const stored = key => { try { return localStorage.getItem(`lucid-fitness:${key}`); } catch { return null; } };
 const theme = signal(stored("theme") ?? "dark");
@@ -56,28 +56,59 @@ function Rings({ size = 200 } = {}) {
     RINGS.map((k, i) => DotRing({ value: () => today.value[k.id], goal: k.goal, r: 86 - i * 18, color: k.color, dots: 56 - i * 10 })));
 }
 
-function Rail() {
-  const nav = (icon, label, active) => h("button", {
-    type: "button", class: "ft-nav", "aria-current": active ? "page" : undefined,
-    onClick: () => { if (!active) toast(`${label} isn't part of this demo`, { icon: "info" }); }
-  }, Icon({ name: icon, size: 16 }), label);
-  return h("aside", { class: "ft-rail" },
+const tab = signal(stored("tab") ?? "today");
+const coach = signal(stored("coach") !== "closed" && !matchMedia("(max-width: 1100px)").matches);
+effect(() => { try { localStorage.setItem("lucid-fitness:tab", tab.value); localStorage.setItem("lucid-fitness:coach", coach.value ? "open" : "closed"); } catch {} });
+const TABS = [
+  { value: "today", label: "Today", icon: "hexagon" },
+  { value: "workouts", label: "Workouts", icon: "zap" },
+  { value: "sleep", label: "Sleep", icon: "moon" },
+  { value: "trends", label: "Trends", icon: "chart" }
+];
+
+function TopBar() {
+  return h("header", { class: "ft-top" },
     h("div", { class: "ft-brand" }, h("span", { class: "ft-mark", "aria-hidden": "true" }, h("i"), h("i"), h("i")), h("b", "Stride")),
-    h("nav", { class: "ft-navs", aria: { label: "Main" } },
-      nav("hexagon", "Today", true), nav("zap", "Workouts"), nav("moon", "Sleep"), nav("chart", "Trends")),
-    h("button", { type: "button", class: "ft-device", onClick: openSync },
-      h("span", { class: "ft-device-icon" }, Icon({ name: "link", size: 15 })),
-      h("span", { class: "ft-device-copy" },
-        h("b", () => device.value?.name ?? "No watch connected"),
-        h("span", () => (device.value ? "Synced just now" : "Tap to sync a device")))),
-    h("div", { class: "lucid-spacer" }),
-    h("div", { class: "ft-rail-foot" },
-      ExitCard(),
-      h("div", { class: "ft-appearance" }, "Appearance",
-        Segmented({
-          value: theme, size: "sm", iconOnly: true, aria: { label: "Theme" },
-          options: [{ value: "light", label: "Light", icon: "sun" }, { value: "dark", label: "Dark", icon: "moon" }, { value: "system", label: "System", icon: "monitor" }]
-        }))));
+    h("nav", { class: "ft-pill", aria: { label: "Main" } }, TABS.map(t => h("button", {
+      type: "button", class: "ft-pill-tab", "aria-current": () => (tab.value === t.value ? "page" : undefined),
+      onClick: () => { tab.value = t.value; document.querySelector(".ft-main")?.scrollTo({ top: 0 }); }
+    }, Icon({ name: t.icon, size: 15 }), h("span", t.label)))),
+    h("div", { class: "ft-top-end" },
+      h("button", { type: "button", class: "ft-device", onClick: openSync, aria: { label: () => (device.value ? `${device.value.name}, synced. Sync again` : "Sync a watch") } },
+        h("span", { class: "ft-device-icon" }, Icon({ name: "link", size: 14 })),
+        h("span", { class: "ft-device-copy" }, h("b", () => device.value?.name ?? "No watch"), h("span", () => (device.value ? "Synced just now" : "Tap to sync")))),
+      Segmented({
+        value: theme, size: "sm", iconOnly: true, aria: { label: "Theme" },
+        options: [{ value: "light", label: "Light", icon: "sun" }, { value: "dark", label: "Dark", icon: "moon" }, { value: "system", label: "System", icon: "monitor" }]
+      }),
+      Tooltip({ label: "Coach", kbd: "C" }, Button({
+        variant: "ghost", icon: "sidebar", class: "ft-coach-toggle", "aria-pressed": () => String(coach.value),
+        aria: { label: "Coach panel" }, onClick: () => { coach.value = !coach.peek(); }
+      }))));
+}
+
+function Coach() {
+  const left = computed(() => Math.max(0, 600 - today.value.move));
+  return h("aside", { class: "ft-coach", "data-open": coach, inert: () => !coach.value, aria: { label: "Coach" } },
+    h("div", { class: "ft-coach-inner" },
+      h("div", { class: "ft-coach-head" }, h("p", { class: "ft-kicker" }, "Coach"), h("h2", "Your day, read for you")),
+      h("section", { class: "ft-tip" },
+        h("span", { class: "ft-tip-icon", style: { "--c": "var(--ft-move)" } }, Icon({ name: "zap", size: 15 })),
+        h("div", h("b", () => (left.value ? `${left.value} kcal to close Move` : "Move ring closed")), h("span", () => (left.value ? "A brisk 25-minute walk gets you there." : "Nice. That's 6 days in a row.")))),
+      h("section", { class: "ft-tip" },
+        h("span", { class: "ft-tip-icon", style: { "--c": "var(--ft-stand)" } }, Icon({ name: "moon", size: 15 })),
+        h("div", h("b", "Recovery 82 / 100"), h("span", "Sleep was solid. A hard session is fine today."))),
+      h("section", { class: "ft-readiness" },
+        h("div", { class: "ft-readiness-top" }, h("span", "Readiness"), h("b", "82")),
+        DotMeter({ value: 82, max: 100, dots: 20, color: "var(--ft-exercise)", label: "Readiness 82 of 100" }),
+        h("p", "HRV 61 ms, above your 30-day range. Resting heart rate steady at 54.")),
+      h("section", { class: "ft-suggest" },
+        h("p", { class: "ft-kicker" }, "Suggested"),
+        h("b", "Tempo run · 35 min"),
+        h("span", "Zone 3 to 4, finish with 4 strides"),
+        Button({ variant: "primary", size: "sm", icon: "zap", class: "ft-sync-btn", onClick: () => toast("Added to today", { tone: "success", description: "Tempo run, 35 minutes, at 6:30 PM." }) }, "Add to today")),
+      h("div", { class: "lucid-spacer" }),
+      ExitCard()));
 }
 
 function Today() {
@@ -117,6 +148,80 @@ function Today() {
         h("div", { class: "ft-w-zone" }, DotMeter({ value: w.zone, max: 5, dots: 5, color: "var(--ft-move)", label: `Zone ${w.zone}` }), h("span", `Zone ${w.zone}`)),
         h("span", { class: "ft-w-kcal" }, `${w.kcal} kcal`),
         h("span", { class: "ft-w-when" }, w.when))))));
+}
+
+const SESSIONS = [
+  { id: "r1", icon: "zap", kind: "Run", title: "Morning tempo", when: "Today, 7:10", mins: 27, km: 5.4, kcal: 412, hr: 158, zones: [2, 6, 9, 8, 2], splits: [5.21, 5.08, 5.02, 4.58, 4.49] },
+  { id: "s1", icon: "target", kind: "Strength", title: "Upper body", when: "Yesterday", mins: 42, km: 0, kcal: 286, hr: 121, zones: [14, 18, 8, 2, 0], splits: [] },
+  { id: "c1", icon: "sun", kind: "Cycle", title: "Lakeshore loop", when: "Sat", mins: 48, km: 21.8, kcal: 538, hr: 142, zones: [6, 14, 20, 7, 1], splits: [] },
+  { id: "y1", icon: "moon", kind: "Yoga", title: "Recovery flow", when: "Fri", mins: 30, km: 0, kcal: 96, hr: 88, zones: [28, 2, 0, 0, 0], splits: [] },
+  { id: "r2", icon: "zap", kind: "Run", title: "Long run", when: "Thu", mins: 71, km: 12.6, kcal: 921, hr: 149, zones: [4, 22, 34, 10, 1], splits: [5.48, 5.39, 5.41, 5.36, 5.30] },
+  { id: "c2", icon: "sun", kind: "Cycle", title: "Hill repeats", when: "Tue", mins: 55, km: 24.1, kcal: 612, hr: 151, zones: [5, 12, 18, 16, 4], splits: [] }
+];
+const ZONE_COLORS = ["#5a6b80", "#35d6ff", "#b8ff3c", "#ffb020", "#ff4d6d"];
+
+function Workouts() {
+  const kind = signal("All");
+  const picked = signal("r1");
+  const list = computed(() => SESSIONS.filter(w => kind.value === "All" || w.kind === kind.value));
+  const W = computed(() => SESSIONS.find(w => w.id === picked.value) ?? SESSIONS[0]);
+  return h("div", { class: "ft-main-inner" },
+    h("header", { class: "ft-head" }, h("div", h("p", { class: "ft-kicker" }, "This week"), h("h1", "Workouts")), h("span", { class: "lucid-spacer" }),
+      Segmented({ value: kind, size: "sm", aria: { label: "Type" }, options: ["All", "Run", "Cycle", "Strength", "Yoga"].map(v => ({ value: v, label: v })) })),
+    h("div", { class: "ft-split" },
+      h("section", { class: "ft-card ft-list" }, h("ul", () => list.value.map(w => h("li",
+        h("button", { type: "button", class: "ft-list-item", "aria-pressed": () => String(picked.value === w.id), onClick: () => { picked.value = w.id; } },
+          h("span", { class: "ft-w-icon" }, Icon({ name: w.icon, size: 16 })),
+          h("span", { class: "ft-w-copy" }, h("b", w.title), h("span", `${w.kind} · ${w.when}`)),
+          h("span", { class: "ft-w-kcal" }, `${w.mins} min`)))))),
+      h("section", { class: "ft-card ft-detail" }, () => {
+        const w = W.value;
+        return h("div", { class: "ft-detail-inner" },
+          h("div", { class: "ft-detail-head" }, h("span", { class: "ft-w-icon ft-w-icon-lg" }, Icon({ name: w.icon, size: 20 })), h("div", h("h2", w.title), h("span", { class: "ft-muted" }, `${w.kind} · ${w.when}`))),
+          h("div", { class: "ft-detail-stats" },
+            [["Time", `${w.mins}`, "min"], ["Distance", w.km ? w.km.toFixed(1) : "—", w.km ? "km" : ""], ["Energy", `${w.kcal}`, "kcal"], ["Avg heart rate", `${w.hr}`, "bpm"]]
+              .map(([label, value, unit]) => h("div", { class: "ft-stat" }, h("span", label), h("b", value, h("small", ` ${unit}`))))),
+          h("div", { class: "ft-detail-block" }, h("h3", "Heart-rate zones"),
+            Waffle({ segments: w.zones.map((v, i) => ({ label: `Zone ${i + 1}`, value: v, color: ZONE_COLORS[i] })), columns: 30, rows: 3, label: "Minutes in each heart-rate zone" })),
+          w.splits.length ? h("div", { class: "ft-detail-block" }, h("h3", "Pace per kilometre"),
+            DotColumns({ data: w.splits.map((v, i) => ({ label: `km ${i + 1}`, value: Math.round(v * 60) })), height: 150, unit: "seconds", color: "var(--ft-accent)", format: v => `${Math.floor(v / 60)}:${String(v % 60).padStart(2, "0")}`, label: "Seconds per kilometre" })) : null);
+      })));
+}
+
+const NIGHTS = [["Mon", 6.9], ["Tue", 7.4], ["Wed", 6.2], ["Thu", 7.8], ["Fri", 8.1], ["Sat", 8.6], ["Sun", 7.7]];
+
+function Sleep() {
+  return h("div", { class: "ft-main-inner" },
+    h("header", { class: "ft-head" }, h("div", h("p", { class: "ft-kicker" }, "Last night"), h("h1", "Sleep"))),
+    h("section", { class: "ft-hero ft-sleep-hero" },
+      h("div", { class: "ft-sleep-score" }, h("span", "Sleep score"), h("b", "86"), DotMeter({ value: 86, max: 100, dots: 20, color: "var(--ft-stand)", label: "Sleep score 86" })),
+      h("div", { class: "ft-hero-stats" },
+        [["Asleep", "7:42", "h"], ["Bedtime", "11:08", "pm"], ["Woke", "6:57", "am"], ["Deep", "1:31", "h"], ["REM", "1:58", "h"], ["Awake", "0:14", "h"]]
+          .map(([label, value, unit]) => h("div", { class: "ft-stat" }, h("span", label), h("b", value, h("small", ` ${unit}`)))))),
+    h("div", { class: "ft-grid" },
+      ChartCard({ title: "Last night in stages", subtitle: "Each dot is about five minutes" },
+        Waffle({ segments: [{ label: "Deep", value: 18, color: "#3a5bff" }, { label: "Core", value: 51, color: "#35d6ff" }, { label: "REM", value: 24, color: "#a46bff" }, { label: "Awake", value: 3, color: "#ff4d6d", hollow: true }], columns: 24, rows: 4, label: "Sleep stages" })),
+      ChartCard({ title: "Hours asleep this week", subtitle: "Goal 7.5 hours", table: () => ({ columns: ["Night", "Hours"], rows: NIGHTS }) },
+        DotColumns({ data: NIGHTS.map(([label, value]) => ({ label, value: Math.round(value * 60) })), height: 170, unit: "minutes", color: "var(--ft-stand)", format: v => `${Math.floor(v / 60)}:${String(v % 60).padStart(2, "0")}`, label: "Minutes asleep per night" }))));
+}
+
+function Trends() {
+  const months = ["May", "Jun", "Jul", "Aug", "Sep", "Oct"];
+  return h("div", { class: "ft-main-inner" },
+    h("header", { class: "ft-head" }, h("div", h("p", { class: "ft-kicker" }, "Six months"), h("h1", "Trends"))),
+    h("div", { class: "ft-trend-tiles" },
+      StatTile({ label: "VO₂ max", value: 48.6, delta: 4, deltaLabel: "since May", trend: [45.1, 45.8, 46.4, 47.2, 47.9, 48.6] }),
+      StatTile({ label: "Resting heart rate", value: 54, unit: "bpm", delta: -6, upIsGood: false, deltaLabel: "since May", trend: [59, 58, 57, 56, 55, 54] }),
+      StatTile({ label: "Weekly distance", value: 31.4, unit: "km", delta: 22, deltaLabel: "since May", trend: [24, 26, 25, 28, 30, 31.4] })),
+    h("div", { class: "ft-grid" },
+      ChartCard({ title: "Running distance by month", subtitle: "Kilometres" },
+        DotColumns({ data: months.map((label, i) => ({ label, value: [96, 104, 88, 121, 132, 74][i] })), height: 180, unit: "km", color: "var(--ft-accent)", label: "Kilometres per month" })),
+      ChartCard({ title: "Where your training time went", subtitle: "Six months, each dot is about two hours" },
+        Waffle({ segments: [{ label: "Run", value: 46, color: "var(--ft-exercise)" }, { label: "Cycle", value: 28, color: "var(--ft-stand)" }, { label: "Strength", value: 17, color: "var(--ft-move)" }, { label: "Yoga", value: 9, color: "#a46bff" }], columns: 20, rows: 5, label: "Training time by sport" }))),
+    h("section", { class: "ft-card ft-records" },
+      h("header", { class: "ft-card-head" }, h("h2", "Personal records")),
+      h("ul", [["Fastest 5 km", "24:12", "Sep 14"], ["Longest run", "21.1 km", "Aug 30"], ["Biggest climb", "612 m", "Jul 19"], ["Longest streak", "23 days", "Jun"]].map(([label, value, when]) =>
+        h("li", h("span", { class: "ft-w-icon" }, Icon({ name: "target", size: 15 })), h("b", label), h("span", { class: "ft-records-value" }, value), h("span", { class: "ft-w-when" }, when))))));
 }
 
 const syncOpen = signal(false);
@@ -253,11 +358,17 @@ function SyncScene() {
 
 function App() {
   hotkey("s", () => { if (!syncOpen.peek()) openSync(); });
+  hotkey("c", () => { coach.value = !coach.peek(); });
   hotkey("escape", () => { if (syncOpen.peek()) closeSync(); });
-  return h("div", { class: "ft-app" },
-    Rail(),
-    h("main", { class: "ft-main" }, Today(), () => (syncOpen.value ? SyncScene() : null),
-      h("footer", { class: "ft-foot" }, "Stride is a fictional brand. Devices, workouts and people are invented for a Lucid UI demo.")));
+  return h("div", { class: "ft-app", "data-coach": coach },
+    TopBar(),
+    h("div", { class: "ft-body" },
+      h("main", { class: "ft-main" },
+        () => ({ today: Today, workouts: Workouts, sleep: Sleep, trends: Trends }[tab.value] ?? Today)(),
+        h("footer", { class: "ft-foot" }, "Stride is a fictional brand. Devices, workouts and people are invented for a Lucid UI demo.")),
+      Coach()),
+    () => (coach.value ? null : ExitDock()),
+    () => (syncOpen.value ? SyncScene() : null));
 }
 
 mount(App, "#app");
