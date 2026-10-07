@@ -30,13 +30,32 @@
     "README.md",
     "LICENSE"
   ],
-  "sideEffects": false,
+  "sideEffects": [
+    "*.css"
+  ],
   "scripts": {
     "test": "node --test --import ./test/setup.js \"test/*.test.js\"",
-    "build": "node tools/build.js"
+    "build": "node tools/build.js",
+    "prepack": "node tools/prepack.js",
+    "prepublishOnly": "npm test"
   },
   "devDependencies": {
     "@happy-dom/global-registrator": "^20.14.5",
     "happy-dom": "^20.14.5"
-  }
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "ui",
+    "signals",
+    "reactive",
+    "components",
+    "charts",
+    "dataviz",
+    "no-build",
+    "ai",
+    "agents",
+    "llm"
+  ]
 }
