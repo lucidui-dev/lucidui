@@ -50,6 +50,8 @@ The default typeface is Geist with Geist Mono for code and IDs. Load it yourself
 | `Select` | `value` (signal), `options: [{ value, label, icon, hint, keywords }]`, `multiple`, `searchable`, `placeholder`, `display`, `variant`, `size`, `onChange`, `onCreate` (offers “Create …” for unmatched searches; return the new value) |
 | `DatePicker` | `value` (signal of a timestamp or `null`), `presets`, `min`, `max`, `placeholder`, `clearable`, `onChange` |
 
+Never use the browser's own controls or dialogs: no `select`, no date or colour `input`, no `alert()`, `confirm()` or `prompt()`. Use `Select`, `DatePicker`, `Switch`, `toast()` and `await ask()`, so every menu and dialog is styled. Lucid UI reports each native one it sees.
+
 An icon-only `Button` needs `aria: { label }`. Lucid UI reports `button-without-name` if it is missing.
 
 ## Forms
@@ -96,6 +98,7 @@ history.redo();
 | `Menu` | `trigger` (an element), `items: [{ label, icon, kbd, onSelect, checked, danger, disabled } \| { separator: true } \| { group }]` |
 | `Tooltip` | `Tooltip({ label, kbd, placement }, trigger)` |
 | `Dialog` | `open` (signal or function), `title`, `description`, `footer`, `size`, `variant: "sheet"`, `onClose` |
+| `ask` | `await ask({ title, description, confirm, cancel, tone: "danger" })` opens a styled confirmation and resolves `true` or `false` |
 | `CommandMenu` | `open`, `items: [{ group, label, icon, kbd, hint, keywords, searchOnly, run }]` |
 | `toast(title, options)` | `description`, `tone` (`success`, `danger`, `info`), `action: { label, onClick }`, `duration` |
 

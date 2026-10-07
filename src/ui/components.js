@@ -1,5 +1,6 @@
 import { signal, computed, effect, untrack, isSignal, read, getOwner, onCleanup } from "../reactive.js";
-import { h, For } from "../dom.js";
+import { h, For, mount } from "../dom.js";
+import { report } from "../diagnostics.js";
 import { Icon } from "./icons.js";
 import { follow, place } from "./floating.js";
 
@@ -503,6 +504,34 @@ export function Dialog(...args) {
   return dialog;
 }
 
+export function ask({ title, description, confirm = "Confirm", cancel = "Cancel", tone } = {}) {
+  return new Promise(resolve => {
+    const open = signal(true);
+    const host = h("div");
+    let stop;
+    const finish = answer => {
+      if (!stop) return;
+      open.value = false;
+      resolve(answer);
+      const done = stop;
+      stop = null;
+      setTimeout(() => { done(); host.remove(); }, 400);
+    };
+    (document.querySelector(".lucid-app") ?? document.body).append(host);
+    stop = mount(() => Dialog({
+      open,
+      title,
+      description,
+      size: "sm",
+      onClose: () => finish(false),
+      footer: [
+        Button({ variant: "ghost", onClick: () => finish(false) }, cancel),
+        Button({ variant: tone === "danger" ? "danger" : "primary", autofocus: true, onClick: () => finish(true) }, confirm)
+      ]
+    }), host);
+  });
+}
+
 export function CommandMenu({ open, items, placeholder = "Type a command or search", empty = "Nothing found" } = {}) {
   const query = signal("");
   const active = signal(0);
@@ -604,6 +633,22 @@ export function CommandMenu({ open, items, placeholder = "Type a command or sear
 let toaster = null;
 
 const toastIcons = { success: "check-circle", danger: "alert-circle", info: "info" };
+
+if (typeof window !== "undefined") {
+  const guard = (name, styled) => {
+    const native = window[name];
+    if (native?.lucid || (!styled && typeof native !== "function")) return;
+    const wrapped = (...args) => {
+      report("native-dialog", { call: name });
+      return styled ? styled(...args) : native.apply(window, args);
+    };
+    wrapped.lucid = true;
+    window[name] = wrapped;
+  };
+  guard("alert", message => { toast(String(message ?? "")); });
+  guard("confirm");
+  guard("prompt");
+}
 
 export function toast(title, { description, tone = "info", icon, action, duration = 4200 } = {}) {
   if (!toaster || !toaster.isConnected) {

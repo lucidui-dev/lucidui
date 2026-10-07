@@ -1,7 +1,7 @@
 import { test, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import { signal, mount, h } from "../src/index.js";
-import { Button, Badge, Avatar, Stack, Row, Segmented, Kbd, Checkbox } from "../src/ui/index.js";
+import { Button, Badge, Avatar, Stack, Row, Segmented, Kbd, Checkbox, ask } from "../src/ui/index.js";
 import { DotMeter } from "../src/viz/index.js";
 import { onDiagnostic } from "../src/diagnostics.js";
 
@@ -72,4 +72,26 @@ test("DotMeter fills proportionally", () => {
   assert.equal(filled(), 5);
   value.value = 80;
   assert.equal(filled(), 8);
+});
+
+test("native controls and browser dialogs are reported", () => {
+  const found = [];
+  const off = onDiagnostic(d => found.push(d.code));
+  h("select", null, h("option", null, "One"));
+  h("input", { type: "date" });
+  h("input", { type: "text" });
+  window.alert("Saved");
+  off();
+  assert.deepEqual(found, ["native-select", "native-picker", "native-dialog"]);
+  assert.match(document.querySelector(".lucid-toaster")?.textContent ?? "", /Saved/);
+});
+
+test("ask opens a styled dialog and resolves with the choice", async () => {
+  const answer = ask({ title: "Delete workspace?", confirm: "Delete", tone: "danger" });
+  const dialog = document.querySelector(".lucid-dialog");
+  assert.equal(dialog.querySelector(".lucid-dialog-title").textContent, "Delete workspace?");
+  const confirm = [...dialog.querySelectorAll("button")].find(b => b.textContent === "Delete");
+  assert.equal(confirm.dataset.variant, "danger");
+  confirm.click();
+  assert.equal(await answer, true);
 });

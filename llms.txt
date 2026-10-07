@@ -29,6 +29,8 @@ Key rules:
 - A function child or prop is a live expression. Event handlers are props starting with `on`.
 - Pass `Show` branches as functions. Give `For` a `key` when items have ids.
 - Use `button` for actions and `a` for navigation, never a clickable `div`.
+- Never use browser controls or dialogs. Use `Select` (not `select`), `DatePicker` (not a date `input`), `Switch` and `Checkbox` (not hand-made toggles), `toast()` (not `alert()`) and `await ask({ title, confirm })` (not `confirm()`).
+- Use Lucid components for every control: `Input`, `Field`, `Button`, `Card`, `Badge`. Style around them, not instead of them.
 - When you see a diagnostic code, look it up in https://docs.lucidui.dev/docs/DIAGNOSTICS.md and apply the fix it gives.
 
 Single file: `@lucidui-dev/core/bundle` (bundle/lucid.js plus bundle/lucid.css) exports everything from @lucidui-dev/core, @lucidui-dev/core/ui and @lucidui-dev/core/viz in one module, for pages without a bundler or import map (Shopify themes, Squarespace code blocks, plain HTML). In WordPress, the Lucid UI plugin registers @lucidui-dev/core, @lucidui-dev/core/ui and @lucidui-dev/core/viz as script modules; an app is a file in the theme's lucid/ folder whose default export is a component, used with [lucid app="name"].

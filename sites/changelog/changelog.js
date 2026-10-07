@@ -42,6 +42,19 @@ const UPDATES = [
 
 const RELEASES = [
   {
+    version: "0.3.2",
+    date: "6 October 2026",
+    title: "No browser dialogs, ever",
+    summary: "Every menu and dialog in a Lucid UI app is styled, even when an AI agent reaches for the browser's own.",
+    items: [
+      ["New", "ask() opens a styled confirmation and resolves true or false: if (await ask({ title, confirm, tone: \"danger\" })) { ... }"],
+      ["New", "alert() shows a styled toast instead of a browser dialog, and alert, confirm and prompt are reported with the fix."],
+      ["New", "Diagnostics for native selects and date, time and colour pickers, each pointing to the Lucid component to use."],
+      ["Improved", "A plain select inside a Lucid UI app gets a styled menu in browsers that support it."],
+      ["Fixed", "Dialogs with no body content no longer leave a gap above the buttons."]
+    ]
+  },
+  {
     version: "0.3.1",
     date: "6 October 2026",
     title: "Friendlier charts for people and agents",

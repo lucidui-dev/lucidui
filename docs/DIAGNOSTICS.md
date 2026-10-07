@@ -22,6 +22,24 @@ Fix: describe what the image shows with `alt: "..."`. If it is purely decorative
 
 Fix: use `button` for actions or `a` for navigation. If you really need a custom element, give it a `role` and a `tabindex` and handle the keyboard yourself.
 
+## native-select
+
+**warn.** A native `select` was used. Its option list is drawn by the browser, so it can't match the rest of the app. Inside a `lucid-app`, browsers that allow it get a styled list as a fallback; others show the plain browser menu.
+
+Fix: use `Select({ value, options })` from the components.
+
+## native-picker
+
+**warn.** An `input` with type `date`, `datetime-local`, `month`, `week`, `time` or `color` was used. Its picker is drawn by the browser.
+
+Fix: use `DatePicker` for dates. For other values, use `Select` or `Input`.
+
+## native-dialog
+
+**warn.** `alert()`, `confirm()` or `prompt()` was called. Lucid UI never shows browser dialogs: `alert()` is turned into a styled toast, and the other two are reported because they block the page.
+
+Fix: use `toast("Saved")` for messages, and `if (await ask({ title: "Delete workspace?", confirm: "Delete", tone: "danger" })) { ... }` for confirmations.
+
 ## invalid-event-handler
 
 **error.** An `on...` prop received something other than a function, often a string like `"save()"`.

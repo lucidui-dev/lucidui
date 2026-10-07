@@ -15,7 +15,7 @@ Every chart sizes itself to its container, re-renders when its data signals chan
 | `DotColumns` | bar chart | `data: [{ label, value }]`, `unit` (a word for what is counted, such as `"issues"`). How many units each dot stands for is chosen automatically and stated in a caption, against a faint grid of empty dots. A remainder shows as a smaller dot. |
 | `DotDumbbell` | multi-line chart | `labels`, `series: [{ name, color, values }]` (two or more). Each period shows every value, joined by a stem from the lowest to the highest, so the spread is the story. The tooltip lists every series, and adds a net row when there are exactly two. |
 | `Waffle` | pie or donut | `segments: [{ label, value, color, hollow }]`, `columns`, `rows`. Each dot is an equal share of the whole. |
-| `UnitRows` | stacked bar | `rows: [{ label, avatar, counts }]`, `segments`. One dot per item, so small numbers stay countable. |
+| `UnitRows` | stacked bar | `rows: [{ label, avatar, counts: { [key]: number } }]`, `segments: [{ key, label, color }]`. One dot per item, so use it for small counts (under about 50 per row), such as issues per person. For large numbers, use `DotColumns`. |
 | `DotCalendar` | heatmap | `days: [{ date, value }]`. Dot size and shade both carry the value. |
 | `DotSparkline` | sparkline | `data: number[]`. A trail of small dots with the latest value highlighted. |
 | `StatTile` | KPI card | `label`, `value`, `unit` (text), `delta` (percent change as a number: `15` shows +15%), `deltaLabel`, `upIsGood` (`true`, `false` or `null` for neutral), `trend` (`number[]`) |

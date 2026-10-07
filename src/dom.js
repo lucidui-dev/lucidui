@@ -203,6 +203,8 @@ function applyBind(element, source) {
   element.addEventListener(event, () => { source.value = element[property]; });
 }
 
+const NATIVE_PICKERS = new Set(["date", "datetime-local", "month", "week", "time", "color"]);
+
 function audit(element, props) {
   const tag = element.localName;
   if (tag === "button" || element.getAttribute("role") === "button") {
@@ -215,6 +217,8 @@ function audit(element, props) {
     if (!named) report("button-without-name", { element });
   }
   if (tag === "img" && !element.hasAttribute("alt")) report("img-without-alt", { element });
+  if (tag === "select") report("native-select", { element });
+  if (tag === "input" && NATIVE_PICKERS.has(String(read(props.type)))) report("native-picker", { element });
   if (
     typeof props.onClick === "function" &&
     !INTERACTIVE.has(tag) &&

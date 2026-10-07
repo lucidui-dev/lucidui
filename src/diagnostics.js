@@ -14,6 +14,21 @@ const catalog = {
     message: "A click handler is attached to an element keyboard users cannot reach.",
     fix: "Use a button element for actions, or an a element for navigation."
   },
+  "native-select": {
+    level: "warn",
+    message: "A native select was used, so its option list is drawn by the browser.",
+    fix: "Use Select({ value, options }) from Lucid UI's components. Its menu matches the rest of the app."
+  },
+  "native-picker": {
+    level: "warn",
+    message: "A native date, time or colour input was used, so its picker is drawn by the browser.",
+    fix: "Use DatePicker for dates. For other values, use Select or Input."
+  },
+  "native-dialog": {
+    level: "warn",
+    message: "alert(), confirm() or prompt() was called, which opens a browser dialog.",
+    fix: "Use toast(\"...\") for messages and await ask({ title, confirm }) for confirmations. Both are styled."
+  },
   "invalid-event-handler": {
     level: "error",
     message: "Event handler is not a function.",
@@ -74,7 +89,7 @@ export function report(code, context = {}, { quiet = false } = {}) {
     level: entry.level,
     message: entry.message,
     fix: entry.fix,
-    docs: `docs/DIAGNOSTICS.md#${code}`,
+    docs: `https://docs.lucidui.dev/docs/DIAGNOSTICS.md#${code}`,
     ...context
   };
   for (const handler of handlers) handler(diagnostic);
