@@ -186,6 +186,12 @@ function stop() {
 
 const togglePlay = () => (playing.peek() ? stop() : start());
 
+const pump = () => {
+  if (ctx) while (queue.length && queue[0].at <= ctx.currentTime) step.value = queue.shift().step;
+  requestAnimationFrame(pump);
+};
+requestAnimationFrame(pump);
+
 function Visualizer() {
   const BANDS = 84;
   const ROWS = 10;
@@ -200,10 +206,7 @@ function Visualizer() {
   const buf = new Uint8Array(64);
   let idle = 0;
   const loop = () => {
-    if (ctx && analyser) {
-      analyser.getByteFrequencyData(buf);
-      while (queue.length && queue[0].at <= ctx.currentTime) step.value = queue.shift().step;
-    }
+    if (ctx && analyser) analyser.getByteFrequencyData(buf);
     idle += 0.03;
     for (const { dot, c, r } of dots) {
       const v = ctx && playing.peek() ? buf[Math.min(63, Math.floor(c * 0.68) + 1)] / 255 : (Math.sin(idle + c * 0.2) * 0.5 + 0.5) * 0.18;
@@ -267,61 +270,152 @@ function Sequencer() {
       }, h("i"))))));
 }
 
+const screen = signal(stored("screen") ?? "studio");
+const browser = signal(stored("browser") !== "closed" && !matchMedia("(max-width: 900px)").matches);
+const saved = signal([]);
+effect(() => { try { localStorage.setItem("lucid-beats:screen", screen.value); localStorage.setItem("lucid-beats:browser", browser.value ? "open" : "closed"); } catch {} });
+const ICONS = { kick: "target", snare: "zap", hat: "sun", clap: "hexagon", bass: "layers", chord: "sliders" };
+
 function Transport() {
   const nudge = d => { bpm.value = Math.max(60, Math.min(180, bpm.peek() + d)); };
-  return h("div", { class: "dw-transport" },
+  return h("header", { class: "dw-transport" },
+    h("div", { class: "dw-brand" }, h("span", { class: "dw-mark", "aria-hidden": "true" }, h("i"), h("i"), h("i"), h("i")), h("b", "Dotwave")),
+    h("span", { class: "dw-divider", "aria-hidden": "true" }),
     h("button", { type: "button", class: "dw-play", "data-playing": playing, aria: { label: () => (playing.value ? "Stop" : "Play") }, onClick: togglePlay },
       () => (playing.value ? h("span", { class: "dw-stop-glyph" }) : h("span", { class: "dw-play-glyph" }))),
+    h("div", { class: "dw-lcd", "aria-live": "polite" },
+      h("span", { class: "dw-lcd-step" }, () => (step.value < 0 ? "1.1" : `${Math.floor(step.value / 4) + 1}.${(step.value % 4) + 1}`)),
+      h("span", { class: "dw-lcd-name" }, () => PRESETS[preset.value]?.name ?? "Untitled")),
     h("div", { class: "dw-field" },
       h("span", "Tempo"),
       h("div", { class: "dw-bpm" },
         h("button", { type: "button", aria: { label: "Slower" }, onClick: () => nudge(-2) }, "−"),
-        h("b", { "aria-live": "polite" }, () => bpm.value, h("small", "bpm")),
+        h("b", () => bpm.value, h("small", "bpm")),
         h("button", { type: "button", aria: { label: "Faster" }, onClick: () => nudge(2) }, "+"))),
-    h("label", { class: "dw-field" },
+    h("label", { class: "dw-field dw-field-range" },
       h("span", () => `Swing ${swing.value}%`),
       h("input", { type: "range", min: 0, max: 50, value: () => swing.value, class: "dw-range", style: { "--p": () => `${swing.value * 2}%` }, onInput: e => { swing.value = Number(e.target.value); } })),
-    h("label", { class: "dw-field" },
+    h("label", { class: "dw-field dw-field-range" },
       h("span", () => `Volume ${Math.round(master.value * 100)}%`),
       h("input", { type: "range", min: 0, max: 100, value: () => Math.round(master.value * 100), class: "dw-range", style: { "--p": () => `${master.value * 100}%` }, onInput: e => { master.value = Number(e.target.value) / 100; } })),
     h("span", { class: "lucid-spacer" }),
-    Segmented({ value: preset, size: "sm", aria: { label: "Pattern" }, onChange: load, options: Object.entries(PRESETS).map(([value, p]) => ({ value, label: p.name })) }));
+    Segmented({ value: screen, size: "sm", aria: { label: "Screen" }, options: [{ value: "studio", label: "Studio", icon: "board" }, { value: "mixer", label: "Mixer", icon: "sliders" }, { value: "library", label: "Library", icon: "layers" }] }),
+    Segmented({
+      value: theme, size: "sm", iconOnly: true, aria: { label: "Theme" },
+      options: [{ value: "light", label: "Light", icon: "sun" }, { value: "dark", label: "Dark", icon: "moon" }, { value: "system", label: "System", icon: "monitor" }]
+    }));
 }
 
-function Rail() {
-  const nav = (icon, label, active) => h("button", { type: "button", class: "dw-nav", "aria-current": active ? "page" : undefined, onClick: () => { if (!active) toast(`${label} isn't part of this demo`, { icon: "info" }); } }, Icon({ name: icon, size: 16 }), label);
-  return h("aside", { class: "dw-rail" },
-    h("div", { class: "dw-brand" }, h("span", { class: "dw-mark", "aria-hidden": "true" }, h("i"), h("i"), h("i"), h("i")), h("b", "Dotwave")),
-    h("nav", { class: "dw-navs", aria: { label: "Main" } }, nav("board", "Studio", true), nav("layers", "Patterns"), nav("sliders", "Sounds"), nav("download", "Export")),
-    h("div", { class: "dw-tip" }, h("b", "Keys"), h("span", Kbd("space"), " play or stop"), h("span", Kbd("←"), Kbd("→"), " move"), h("span", Kbd("enter"), " toggle a step")),
+function Browser() {
+  const presets = computed(() => (saved.value, Object.keys(PRESETS).filter(k => k !== "empty")));
+  return h("aside", { class: "dw-browser", "data-open": browser, aria: { label: "Browser" } },
+    h("div", { class: "dw-browser-top" },
+      h("span", { class: "dw-browser-title" }, "Browser"),
+      Tooltip({ label: "Browser", kbd: "B" }, Button({ variant: "ghost", size: "sm", icon: "sidebar", class: "dw-browser-toggle", aria: { label: () => (browser.value ? "Collapse browser" : "Expand browser") }, onClick: () => { browser.value = !browser.peek(); } }))),
+    h("div", { class: "dw-browser-section" },
+      h("p", { class: "dw-browser-label" }, "Sounds"),
+      TRACKS.map(t => Tooltip({ label: `Play ${t.label}` }, h("button", { type: "button", class: "dw-sound", style: { "--c": t.color }, aria: { label: `Audition ${t.label}` }, onClick: () => audition(t.id, 0) },
+        h("span", { class: "dw-sound-icon" }, Icon({ name: ICONS[t.id], size: 14 })),
+        h("span", { class: "dw-sound-name" }, t.label),
+        h("span", { class: "dw-sound-play" }, "▶"))))),
+    h("div", { class: "dw-browser-section dw-browser-patterns" },
+      h("p", { class: "dw-browser-label" }, "Patterns"),
+      () => presets.value.map(key => h("button", { type: "button", class: "dw-pattern", "aria-current": () => (preset.value === key ? "true" : undefined), onClick: () => load(key) },
+        h("span", { class: "dw-pattern-dot" }), h("span", { class: "dw-sound-name" }, PRESETS[key].name)))),
     h("div", { class: "lucid-spacer" }),
-    h("div", { class: "dw-rail-foot" },
-      ExitCard(),
-      h("div", { class: "dw-appearance" }, "Appearance",
-        Segmented({
-          value: theme, size: "sm", iconOnly: true, aria: { label: "Theme" },
-          options: [{ value: "light", label: "Light", icon: "sun" }, { value: "dark", label: "Dark", icon: "moon" }, { value: "system", label: "System", icon: "monitor" }]
-        }))));
+    h("div", { class: "dw-tip" }, h("b", "Keys"), h("span", Kbd("space"), " play or stop"), h("span", Kbd("←"), Kbd("→"), " move"), h("span", Kbd("enter"), " toggle a step")),
+    ExitCard({ compact: () => !browser.value }));
+}
+
+const lit = (id, n) => () => {
+  const s = step.value;
+  if (!playing.value || s < 0 || !grid.value[id][s] || !audible(id)) return 0;
+  return Math.round(levels.value[id] * n);
+};
+
+function Strip(track) {
+  const DOTS = 12;
+  const setLevel = v => { levels.value = { ...levels.peek(), [track.id]: v }; };
+  const flip = sig => { const next = new Set(sig.peek()); next.has(track.id) ? next.delete(track.id) : next.add(track.id); sig.value = next; };
+  const meter = lit(track.id, DOTS);
+  return h("div", { class: "dw-strip", style: { "--c": track.color }, "data-silent": () => !audible(track.id) },
+    h("div", { class: "dw-strip-meter", "aria-hidden": "true" }, Array.from({ length: DOTS }, (_, i) => h("i", { "data-on": () => DOTS - i <= meter() }))),
+    h("div", { class: "dw-strip-fader", role: "group", aria: { label: `${track.label} level` } }, Array.from({ length: 10 }, (_, i) => {
+      const v = (10 - i) / 10;
+      return h("button", { type: "button", class: "dw-fader-dot", "data-on": () => levels.value[track.id] >= v - 0.05, aria: { label: `${track.label} ${Math.round(v * 100)}%` }, onClick: () => setLevel(v) });
+    })),
+    h("b", { class: "dw-strip-value" }, () => `${Math.round(levels.value[track.id] * 100)}`),
+    h("div", { class: "dw-strip-tools" },
+      h("button", { type: "button", class: "dw-tool", "aria-pressed": () => mutes.value.has(track.id), aria: { label: `Mute ${track.label}` }, onClick: () => flip(mutes) }, "M"),
+      h("button", { type: "button", class: "dw-tool", "data-solo": "", "aria-pressed": () => solos.value.has(track.id), aria: { label: `Solo ${track.label}` }, onClick: () => flip(solos) }, "S")),
+    h("span", { class: "dw-strip-name" }, h("i"), track.label));
+}
+
+function Mixer() {
+  const any = () => TRACKS.reduce((n, t) => Math.max(n, lit(t.id, 12)()), 0);
+  return h("div", { class: "dw-screen" },
+    h("header", { class: "dw-head" }, h("div", h("p", { class: "dw-kicker" }, "Mixer"), h("h1", "Balance the band")), h("span", { class: "lucid-spacer" }),
+      Button({ variant: "ghost", icon: "x", onClick: () => { mutes.value = new Set(); solos.value = new Set(); } }, "Clear mutes and solos")),
+    h("section", { class: "dw-mixer" },
+      TRACKS.map(Strip),
+      h("div", { class: "dw-strip dw-strip-master", style: { "--c": "#f3f0f8" } },
+        h("div", { class: "dw-strip-meter", "aria-hidden": "true" }, Array.from({ length: 12 }, (_, i) => h("i", { "data-on": () => 12 - i <= Math.round(any() * master.value) }))),
+        h("div", { class: "dw-strip-fader", role: "group", aria: { label: "Master level" } }, Array.from({ length: 10 }, (_, i) => {
+          const v = (10 - i) / 10;
+          return h("button", { type: "button", class: "dw-fader-dot", "data-on": () => master.value >= v - 0.05, aria: { label: `Master ${Math.round(v * 100)}%` }, onClick: () => { master.value = v; } });
+        })),
+        h("b", { class: "dw-strip-value" }, () => `${Math.round(master.value * 100)}`),
+        h("div", { class: "dw-strip-tools" }),
+        h("span", { class: "dw-strip-name" }, h("i"), "Master"))),
+    h("p", { class: "dw-hint" }, "Press space to play. Each column lights up as its track hits, scaled by its level."));
+}
+
+function Library() {
+  const keys = computed(() => (saved.value, Object.keys(PRESETS).filter(k => k !== "empty")));
+  const save = () => {
+    const key = `mine-${saved.peek().length + 1}`;
+    PRESETS[key] = { name: `My pattern ${saved.peek().length + 1}`, bpm: bpm.peek(), swing: swing.peek(), grid: structuredClone(grid.peek()) };
+    saved.value = [...saved.peek(), key];
+    preset.value = key;
+    toast("Pattern saved", { tone: "success", description: `${PRESETS[key].name} · ${bpm.peek()} bpm` });
+  };
+  return h("div", { class: "dw-screen" },
+    h("header", { class: "dw-head" }, h("div", h("p", { class: "dw-kicker" }, "Library"), h("h1", "Patterns")), h("span", { class: "lucid-spacer" }),
+      Button({ variant: "primary", icon: "plus", onClick: save }, "Save current pattern")),
+    h("ul", { class: "dw-library" }, () => keys.value.map(key => {
+      const p = PRESETS[key];
+      return h("li", h("button", { type: "button", class: "dw-card", "aria-current": () => (preset.value === key ? "true" : undefined), onClick: () => { load(key); screen.value = "studio"; } },
+        h("div", { class: "dw-card-grid", "aria-hidden": "true" }, TRACKS.map(t => p.grid[t.id].map(on => h("i", { style: { "--c": t.color }, "data-on": on })))),
+        h("div", { class: "dw-card-copy" }, h("b", p.name), h("span", `${p.bpm} bpm · swing ${p.swing}%`)),
+        h("span", { class: "dw-card-open" }, "Open in Studio", Icon({ name: "arrow-right", size: 13 }))));
+    })));
+}
+
+function Studio() {
+  const active = computed(() => TRACKS.reduce((n, t) => n + grid.value[t.id].filter(Boolean).length, 0));
+  return h("div", { class: "dw-screen" },
+    h("header", { class: "dw-head" },
+      h("div",
+        h("p", { class: "dw-kicker" }, () => (playing.value ? "Playing" : "Ready"), h("i", { "data-on": playing })),
+        h("h1", () => PRESETS[preset.value].name)),
+      h("span", { class: "lucid-spacer" }),
+      h("span", { class: "dw-meta" }, () => `${active.value} steps · ${TRACKS.length} tracks · 1 bar`),
+      Button({ variant: "ghost", icon: "trash", onClick: () => load("empty") }, "Clear")),
+    h("section", { class: "dw-stage" }, Visualizer()),
+    h("section", { class: "dw-panel" }, Sequencer()));
 }
 
 function App() {
   hotkey(" ", () => togglePlay());
+  hotkey("b", () => { browser.value = !browser.peek(); });
   onCleanup(stop);
-  const active = computed(() => TRACKS.reduce((n, t) => n + grid.value[t.id].filter(Boolean).length, 0));
   return h("div", { class: "dw-app" },
-    Rail(),
-    h("main", { class: "dw-main" },
-      h("header", { class: "dw-head" },
-        h("div",
-          h("p", { class: "dw-kicker" }, () => (playing.value ? "Playing" : "Ready"), h("i", { "data-on": playing })),
-          h("h1", () => PRESETS[preset.value].name)),
-        h("span", { class: "lucid-spacer" }),
-        h("span", { class: "dw-meta" }, () => `${active.value} steps · ${TRACKS.length} tracks · 1 bar`),
-        Button({ variant: "ghost", icon: "trash", onClick: () => load("empty") }, "Clear")),
-      h("section", { class: "dw-stage" }, Visualizer()),
-      Transport(),
-      h("section", { class: "dw-panel" }, Sequencer()),
-      h("footer", { class: "dw-foot" }, "Sound is synthesised live in your browser with the Web Audio API. No samples, no uploads. Dotwave is a Lucid UI demo.")));
+    Transport(),
+    h("div", { class: "dw-body", "data-browser": browser },
+      Browser(),
+      h("main", { class: "dw-main" },
+        () => ({ studio: Studio, mixer: Mixer, library: Library }[screen.value] ?? Studio)(),
+        h("footer", { class: "dw-foot" }, "Sound is synthesised live in your browser with the Web Audio API. No samples, no uploads. Dotwave is a Lucid UI demo."))));
 }
 
 mount(App, "#app");
