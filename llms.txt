@@ -41,13 +41,14 @@ Single file: `@lucidui-dev/core/bundle` (bundle/lucid.js plus bundle/lucid.css) 
 
 ## Live preview for agents
 
-If you can use MCP tools, the Lucid bridge renders your code in the user's Lucid Builder tab and returns errors and diagnostics with fixes. Setup for Claude Code: `claude mcp add lucid -- npx -y @lucidui-dev/bridge`. Call `connect_builder`, show the user the link, then call `render` with your module and repeat until it reports no problems.
+If you can use MCP tools, the Lucid bridge renders your code in the user's Lucid Builder tab and returns errors and diagnostics with fixes. Setup for Claude Code: `claude mcp add --scope user lucid -- npx -y @lucidui-dev/bridge`. Call `connect_builder`, show the user the link, then call `render` with your module and repeat until it reports no problems.
 
 ## Docs
 
 - [API](https://docs.lucidui.dev/docs/API.md): the complete API
 - [Components](https://docs.lucidui.dev/docs/UI.md): styled, accessible components (@lucidui-dev/core/ui)
 - [Charts](https://docs.lucidui.dev/docs/VIZ.md): charts with tooltips, legends and table views (@lucidui-dev/core/viz)
+- [Build with an agent](https://docs.lucidui.dev/docs/AGENTS.md): connect to Lucid Builder with the bridge, or use the brief
 - [Recipes](https://docs.lucidui.dev/docs/RECIPES.md): complete settings, dashboard and list pages to start from
 - [Diagnostics](https://docs.lucidui.dev/docs/DIAGNOSTICS.md): every warning and error code, with the fix
 - [Vision](https://docs.lucidui.dev/docs/VISION.md): goals, principles and roadmap

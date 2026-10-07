@@ -4,7 +4,7 @@ Tags: ui, components, javascript, charts, shortcode
 Requires at least: 6.5
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 0.3.4
+Stable tag: 0.3.5
 License: MIT
 License URI: https://opensource.org/license/mit
 
@@ -51,6 +51,9 @@ Apps are only loaded from the `lucid` folder of the active theme, its parent the
 Lucid UI keeps its styles in a low-priority CSS layer so your theme stays in charge. If your theme styles bare elements such as `button` or `input` heavily, those rules can show through inside an app.
 
 == Changelog ==
+
+= 0.3.5 =
+* Ships Lucid UI 0.3.5.
 
 = 0.3.4 =
 * Ships Lucid UI 0.3.4.

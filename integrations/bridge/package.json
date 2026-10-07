@@ -1,6 +1,6 @@
 {
   "name": "@lucidui-dev/bridge",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Connect your coding agent to Lucid Builder: the agent renders Lucid UI apps in your browser and gets errors and diagnostics back. An MCP server with zero dependencies.",
   "license": "MIT",
   "homepage": "https://build.lucidui.dev",

@@ -1,6 +1,6 @@
 {
   "name": "@lucidui-dev/core",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "description": "Lucid UI from lucidui.dev: a small, dependency-free UI runtime for the web, built for people and AI agents. Not the AppNexus React lucid-ui.",
   "license": "MIT",
   "homepage": "https://lucidui.dev",

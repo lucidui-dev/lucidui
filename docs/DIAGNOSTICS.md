@@ -40,6 +40,12 @@ Fix: use `DatePicker` for dates. For other values, use `Select` or `Input`.
 
 Fix: use `toast("Saved")` for messages, and `if (await ask({ title: "Delete workspace?", confirm: "Delete", tone: "danger" })) { ... }` for confirmations.
 
+## unknown-icon
+
+**warn.** `Icon({ name })` was given a name it does not know, so a placeholder was drawn. Common words such as `close`, `edit`, `delete`, `gear` and `email` already map to the right icon.
+
+Fix: use a name from `iconNames`, listed in the Icons section of [UI.md](UI.md#icons).
+
 ## invalid-event-handler
 
 **error.** An `on...` prop received something other than a function, often a string like `"save()"`.

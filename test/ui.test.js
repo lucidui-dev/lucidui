@@ -109,3 +109,15 @@ test("page building blocks render a settings screen", () => {
   assert.equal(view.value, "overview");
   assert.equal(app.querySelector('[aria-current="page"]').textContent, "Overview");
 });
+
+test("icons accept common aliases and report unknown names", async () => {
+  const { Icon } = await import("../src/ui/index.js");
+  const found = [];
+  const off = onDiagnostic(d => found.push(d.code));
+  const close = Icon({ name: "close" });
+  const x = Icon({ name: "x" });
+  assert.equal(close.innerHTML, x.innerHTML);
+  Icon({ name: "definitely-not-an-icon" });
+  off();
+  assert.deepEqual(found, ["unknown-icon"]);
+});

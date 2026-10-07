@@ -3,6 +3,8 @@ import { Badge } from "/lucid/ui/index.js";
 import { mountPage, SectionHead } from "/shared/chrome.js";
 
 const UPDATES = [
+  { date: "7 October 2026", area: "Site", kind: "New", title: "A guide to building with an agent", text: "One page on connecting Claude Code, Cursor or any MCP agent to Builder: setup, pairing, the render-and-fix loop and troubleshooting, plus the brief for agents without tools." },
+  { date: "7 October 2026", area: "Builder", kind: "Fixed", title: "The preview always uses the current Lucid UI", text: "Builder's preview now asks for the exact version of Lucid UI's files, so a browser can't keep an older stylesheet that's missing new components." },
   { date: "7 October 2026", area: "Builder", kind: "New", title: "Connect your coding agent to Builder", text: "Add the Lucid bridge to Claude Code, Cursor or any MCP agent with one command. Your agent renders straight into Builder, gets every error and diagnostic back with its fix, and repairs its own code until the page is clean. It runs on your computer; nothing is uploaded." },
   { date: "7 October 2026", area: "Builder", kind: "Improved", title: "A welcome guide, and a way out", text: "Builder now explains itself on your first visit: three ways to use it and the shortcuts worth knowing, reopenable from the help button. A Leave button takes you back to lucidui.dev, with your draft saved." },
   { date: "6 October 2026", area: "Site", kind: "New", title: "The Lucid UI manifesto", text: "Nine things Lucid UI believes, from small is a feature to never the browser's grey box, and why a designer built it for the community. Read it at lucidui.dev/manifesto." },
@@ -50,6 +52,18 @@ const UPDATES = [
 ];
 
 const RELEASES = [
+  {
+    version: "0.3.5",
+    date: "7 October 2026",
+    title: "Icons agents can guess",
+    summary: "Watching an agent build in Builder showed it reaching for icons that didn't exist. Now the common ones do, and the rest explain themselves.",
+    items: [
+      ["New", "Six icons agents reach for: home, settings, mail, star, heart and eye."],
+      ["New", "Common words map to the right icon: close, add, edit, delete, gear, email and more."],
+      ["New", "An unknown icon name reports unknown-icon with the fix, instead of quietly drawing a placeholder."],
+      ["Improved", "Every icon name is listed in the component guide."]
+    ]
+  },
   {
     version: "0.3.4",
     date: "6 October 2026",

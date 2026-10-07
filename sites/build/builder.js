@@ -70,7 +70,8 @@ onDiagnostic(d => parent.postMessage({ lucidBuilder: __RUN__, kind: "diagnostic"
 
 function documentFor(source, run) {
   const origin = location.origin;
-  const map = JSON.stringify({ imports: { "@lucidui-dev/core": `${origin}/lucid/index.js`, "@lucidui-dev/core/ui": `${origin}/lucid/ui/index.js`, "@lucidui-dev/core/viz": `${origin}/lucid/viz/index.js` } });
+  const v = `?v=${version}`;
+  const map = JSON.stringify({ imports: { "@lucidui-dev/core": `${origin}/lucid/index.js${v}`, "@lucidui-dev/core/ui": `${origin}/lucid/ui/index.js${v}`, "@lucidui-dev/core/viz": `${origin}/lucid/viz/index.js${v}` } });
   const safe = text => text.replace(/<\/script/gi, "<\\/script");
   return `<!doctype html>
 <html lang="en" data-theme="${resolvedTheme()}">
@@ -79,7 +80,7 @@ function documentFor(source, run) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <base href="${origin}/">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Geist+Mono:wght@400..600&display=swap">
-<link rel="stylesheet" href="${origin}/lucid/ui/lucid.css">
+<link rel="stylesheet" href="${origin}/lucid/ui/lucid.css${v}">
 <style>
   html, body { margin: 0; min-height: 100%; }
   body { padding: 28px; background: var(--lucid-surface); color: var(--lucid-ink); font-family: Geist, system-ui, sans-serif; }
@@ -234,7 +235,7 @@ function Preview() {
 }
 
 const PROMPT = "Build this with Lucid UI from lucidui.dev, the npm package @lucidui-dev/core. Read https://lucidui.dev/llms-full.txt in full first. Import from \"@lucidui-dev/core\", \"@lucidui-dev/core/ui\" and \"@lucidui-dev/core/viz\". Output a single app.js that calls mount(App, \"#app\").";
-const ADD_CLAUDE = "claude mcp add lucid -- npx -y @lucidui-dev/bridge";
+const ADD_CLAUDE = "claude mcp add --scope user lucid -- npx -y @lucidui-dev/bridge";
 const ADD_JSON = `{
   "mcpServers": {
     "lucid": { "command": "npx", "args": ["-y", "@lucidui-dev/bridge"] }

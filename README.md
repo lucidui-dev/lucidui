@@ -30,10 +30,10 @@ mount(Counter, "#app");
 
 ## Build with your agent, live
 
-[Builder](https://build.lucidui.dev) is a browser workbench for Lucid UI. Connect your coding agent with the [Lucid bridge](integrations/bridge) and it renders straight into Builder, reads every diagnostic and fixes its own mistakes:
+[Builder](https://build.lucidui.dev) is a browser workbench for Lucid UI. Connect your coding agent with the [Lucid bridge](integrations/bridge) and it renders straight into Builder, reads every diagnostic and fixes its own mistakes. Full walkthrough: [docs/AGENTS.md](docs/AGENTS.md).
 
 ```sh
-claude mcp add lucid -- npx -y @lucidui-dev/bridge
+claude mcp add --scope user lucid -- npx -y @lucidui-dev/bridge
 ```
 
 ## Use it anywhere

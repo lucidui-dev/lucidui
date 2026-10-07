@@ -208,7 +208,7 @@ await listen(FIRST_PORT);
 log(`v${version} listening on 127.0.0.1:${port}`);
 
 if (process.stdin.isTTY) {
-  process.stderr.write(`\nLucid UI bridge ${version}\n\nThis runs inside your coding agent as an MCP server. Add it once:\n\n  Claude Code   claude mcp add lucid -- npx -y @lucidui-dev/bridge\n  Others        { "mcpServers": { "lucid": { "command": "npx", "args": ["-y", "@lucidui-dev/bridge"] } } }\n\nTo pair a Builder tab with this process, open:\n  ${link()}\n\nPress Ctrl+C to stop.\n`);
+  process.stderr.write(`\nLucid UI bridge ${version}\n\nThis runs inside your coding agent as an MCP server. Add it once:\n\n  Claude Code   claude mcp add --scope user lucid -- npx -y @lucidui-dev/bridge\n  Others        { "mcpServers": { "lucid": { "command": "npx", "args": ["-y", "@lucidui-dev/bridge"] } } }\n\nTo pair a Builder tab with this process, open:\n  ${link()}\n\nPress Ctrl+C to stop.\n`);
 } else {
   const lines = createInterface({ input: process.stdin });
   lines.on("line", line => {

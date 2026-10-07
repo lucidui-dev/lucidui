@@ -6,6 +6,7 @@ import { CodeWindow } from "/shared/code.js";
 const GUIDES = [
   { href: "/docs/API.md", icon: "hash", title: "API reference", text: "The whole core on one page: signals, elements, control flow and mounting." },
   { href: "/docs/UI.md", icon: "layers", title: "Components", text: "Buttons, inputs, selects, date picker, menus, dialogs, forms, undo and long lists." },
+  { href: "/docs/AGENTS.md", icon: "link", title: "Build with an agent", text: "Connect Claude Code, Cursor or any MCP agent to Builder, or use the brief. Setup, pairing and troubleshooting." },
   { href: "/docs/RECIPES.md", icon: "layers", title: "Recipes", text: "Complete settings, dashboard and list pages built only from Lucid components." },
   { href: "/docs/VIZ.md", icon: "chart", title: "Charts", text: "Dot columns, dumbbells, waffles, unit rows, calendars and stat tiles." },
   { href: "/docs/DIAGNOSTICS.md", icon: "alert-circle", title: "Diagnostics", text: "Every warning and error code Lucid reports, with the fix for each." },
@@ -51,7 +52,7 @@ const FAQ = [
   ["Do I need React, a bundler or a build step?", "No. Lucid UI is plain JavaScript modules. Link one stylesheet and import one file from a CDN, or install @lucidui-dev/core from npm if you already use a bundler."],
   ["How do I build with an AI agent?", "Copy the agent brief on this page and paste it before your request. It points the agent at llms-full.txt, the complete docs in one file, and tells it not to guess. The diagnostics then tell it how to fix any mistake."],
   ["What is the Builder?", "Builder, at build.lucidui.dev, is a workbench that runs entirely in your browser. Pick a template or paste code, and the preview reruns as you type, with every error and Lucid diagnostic explained in the console. Nothing you write is uploaded."],
-  ["Can my AI agent build in the Builder directly?", "Yes. Add the Lucid bridge to your agent once (for Claude Code: claude mcp add lucid -- npx -y @lucidui-dev/bridge), then ask it to connect to Lucid Builder and open the link it gives you. Your agent renders into the Builder, reads the diagnostics and fixes its own mistakes. It all runs on your computer."],
+  ["Can my AI agent build in the Builder directly?", "Yes. Add the Lucid bridge to your agent once (for Claude Code: claude mcp add --scope user lucid -- npx -y @lucidui-dev/bridge), then ask it to connect to Lucid Builder and open the link it gives you. Your agent renders into the Builder, reads the diagnostics and fixes its own mistakes. It all runs on your computer."],
   ["Which browsers does it support?", "Current versions of Chrome, Edge, Safari and Firefox. Lucid UI uses modern platform features such as popovers, the dialog element and light-dark colours, so very old browsers are not supported."],
   ["Can I use it in WordPress, Shopify or Squarespace?", "Yes. The one-file build works anywhere a script tag does, and there is a WordPress plugin with a [lucid] shortcode on the download page."],
   ["Can I change the look?", "Yes. Every colour, space, radius and font is a --lucid-* custom property, and light and dark are built in. A theme is a short list of overrides."],
@@ -82,7 +83,8 @@ function QuickStart() {
       step("3", "Or hand it to your AI agent", "Copy the brief, paste it before your request, then ask for what you need: \u201cmake a settings page\u201d.",
         h("div", { class: "qs-brief" },
           Button({ variant: "primary", icon: "copy", onClick: copyBrief }, "Copy the agent brief"),
-          Button({ href: "/llms-full.txt", icon: "sparkles" }, "Open llms-full.txt")))));
+          Button({ href: "/docs/AGENTS.md", icon: "link" }, "Connect your agent to Builder"),
+          Button({ variant: "ghost", href: "/llms-full.txt", icon: "sparkles" }, "Open llms-full.txt")))));
 }
 
 function Faq() {

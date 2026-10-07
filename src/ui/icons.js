@@ -1,4 +1,5 @@
 import { h } from "../dom.js";
+import { report } from "../diagnostics.js";
 
 const paths = {
   plus: ["M12 5v14", "M5 12h14"],
@@ -54,7 +55,36 @@ const paths = {
   type: ["M4 7V4h16v3", "M9 20h6", "M12 4v16"],
   download: ["M12 15V3", "m7 10 5 5 5-5", "M5 21h14"],
   external: ["M15 3h6v6", "M10 14 21 3", "M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"],
-  grip: ["M9 6h.01", "M9 12h.01", "M9 18h.01", "M15 6h.01", "M15 12h.01", "M15 18h.01"]
+  grip: ["M9 6h.01", "M9 12h.01", "M9 18h.01", "M15 6h.01", "M15 12h.01", "M15 18h.01"],
+  home: ["M3 10.5 12 3l9 7.5", "M5 9v11a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9"],
+  settings: ["M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z", "M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"],
+  mail: ["M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z", "m3 7 9 6 9-6"],
+  star: ["m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9L12 3Z"],
+  heart: ["M12 20s-7.5-4.6-9.3-9.2C1.6 7.9 3.4 4.5 6.7 4.5c2 0 3.6 1.1 5.3 3 1.7-1.9 3.3-3 5.3-3 3.3 0 5.1 3.4 4 6.3C19.5 15.4 12 20 12 20Z"],
+  eye: ["M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z", "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"]
+};
+
+const aliases = {
+  close: "x", cancel: "x", add: "plus", new: "plus", edit: "pen", pencil: "pen", delete: "trash", remove: "trash", bin: "trash",
+  gear: "settings", cog: "settings", preferences: "sliders", house: "home", dashboard: "board", email: "mail", envelope: "mail",
+  favorite: "star", like: "heart", view: "eye", show: "eye", notification: "bell", notifications: "bell", alert: "alert-circle",
+  warning: "alert-circle", error: "alert-circle", success: "check-circle", done: "check", time: "clock", schedule: "calendar",
+  date: "calendar", person: "user", people: "users", team: "users", chat: "message", comment: "message", messages: "message",
+  stats: "chart", analytics: "chart", "bar-chart": "chart", tags: "tag", label: "tag", lightning: "zap", bolt: "zap", ai: "sparkles",
+  magic: "sparkles", "more-horizontal": "more", share: "external", "external-link": "external",
+  "arrow-up-right": "external", duplicate: "copy", secure: "lock", picture: "image", photo: "image",
+  text: "type", font: "type", files: "layers", folder: "layers", grid: "board", play: "chevron-right", next: "chevron-right",
+  back: "chevron-left", previous: "chevron-left", expand: "chevron-down", "caret-down": "chevron-down"
+};
+const warned = new Set();
+const resolve = name => {
+  if (paths[name]) return paths[name];
+  if (aliases[name] && paths[aliases[name]]) return paths[aliases[name]];
+  if (!warned.has(name)) {
+    warned.add(name);
+    report("unknown-icon", { name });
+  }
+  return paths.hexagon;
 };
 
 export const iconNames = Object.keys(paths);
@@ -72,5 +102,5 @@ export function Icon({ name, size = 16, stroke = 1.75, ...props } = {}) {
     "stroke-linejoin": "round",
     "aria-hidden": "true",
     style: props.style
-  }, (paths[name] ?? paths.hexagon).map(d => h("path", { d })));
+  }, resolve(name).map(d => h("path", { d })));
 }

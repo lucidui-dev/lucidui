@@ -9,7 +9,7 @@ It is a small MCP server with no dependencies. It runs on your computer and talk
 Claude Code:
 
 ```sh
-claude mcp add lucid -- npx -y @lucidui-dev/bridge
+claude mcp add --scope user lucid -- npx -y @lucidui-dev/bridge
 ```
 
 Cursor, Windsurf, VS Code and other MCP clients:

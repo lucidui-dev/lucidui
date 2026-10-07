@@ -29,6 +29,11 @@ const catalog = {
     message: "alert(), confirm() or prompt() was called, which opens a browser dialog.",
     fix: "Use toast(\"...\") for messages and await ask({ title, confirm }) for confirmations. Both are styled."
   },
+  "unknown-icon": {
+    level: "warn",
+    message: "Icon was given a name it does not know, so a placeholder was drawn.",
+    fix: "Use a name from iconNames, listed in the Icons section of docs/UI.md, such as home, settings, plus, x, check, search, user, bell, mail or trash."
+  },
   "invalid-event-handler": {
     level: "error",
     message: "Event handler is not a function.",

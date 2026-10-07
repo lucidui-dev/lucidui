@@ -125,9 +125,18 @@ Menus, selects and tooltips use the browser's popover layer, so they are never c
 | `Avatar` | `name`, `src`, `size`; colour is derived from the name, so a person always looks the same |
 | `AvatarStack` | avatars as children |
 | `Badge` | `color` (adds a dot, such as `"var(--lucid-success)"`), `tone` (`accent`, `solid`), `size` |
-| `Icon` | `name`, `size`, `stroke`; names are listed in `iconNames` |
+| `Icon` | `name`, `size`, `stroke`; see Icons below |
 | `EmptyState` | `icon`, `title`, `description`, `action` |
 
 ## Keyboard
 
 `hotkey("mod+k", handler)` registers a shortcut and removes it when the component is removed. Plain-key shortcuts are ignored while the user is typing or a dialog is open.
+
+## Icons
+
+Every `icon` prop and `Icon({ name })` takes one of these names. Use only these; an unknown name draws a placeholder and reports `unknown-icon`.
+
+`plus`, `x`, `check`, `chevron-down`, `chevron-right`, `chevron-left`, `chevrons-up-down`, `search`, `filter`, `list`, `board`, `inbox`, `user`, `users`, `layers`, `chart`, `sun`, `moon`, `monitor`, `calendar`, `tag`, `more`, `message`, `clock`, `command`, `table`, `sidebar`, `link`, `trash`, `hash`, `zap`, `target`, `bell`, `pen`, `copy`, `arrow-up`, `arrow-down`, `arrow-right`, `corner-down-left`, `trending-up`, `trending-down`, `hexagon`, `check-circle`, `alert-circle`, `info`, `sliders`, `menu`, `sparkles`, `lock`, `image`, `type`, `download`, `external`, `grip`, `home`, `settings`, `mail`, `star`, `heart`, `eye`
+
+Common words also work: `close`, `add`, `edit`, `delete`, `gear`, `email`, `favorite`, `notification`, `warning`, `success`, `person`, `team`, `chat`, `analytics`, `share` and `grid` map to the icon you'd expect.
+
