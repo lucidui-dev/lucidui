@@ -1,0 +1,6 @@
+<IfModule mod_headers.c>
+  Header set Access-Control-Allow-Origin "*"
+  <FilesMatch "\.zip$">
+    Header set Content-Disposition "attachment"
+  </FilesMatch>
+</IfModule>

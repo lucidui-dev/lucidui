@@ -3,7 +3,7 @@ import { Button, Segmented, Input, Icon, Tooltip, toast } from "/lucid/ui/index.
 import { StatTile, Waffle } from "/lucid/viz/index.js";
 import { mountPage, SectionHead, jump } from "/shared/chrome.js";
 
-const MEDIA = "/media";
+const MEDIA = "/media/";
 const KIT = "/media/press/lucidui-press-kit.zip";
 
 const LOGOS = [
@@ -63,6 +63,7 @@ const copy = (text, label) => {
 async function exportPng(src, size, name, ratio = 1) {
   try {
     const image = new Image();
+    image.crossOrigin = "anonymous";
     image.src = src;
     await image.decode();
     const canvas = document.createElement("canvas");
@@ -77,6 +78,18 @@ async function exportPng(src, size, name, ratio = 1) {
     toast("PNG ready", { tone: "success", description: `${name}-${size}.png · ${canvas.width} × ${canvas.height}` });
   } catch {
     toast("Couldn't make the PNG", { tone: "danger", description: "Download the SVG instead; it scales to any size." });
+  }
+}
+
+async function save(event, src, name) {
+  event.preventDefault();
+  try {
+    const blob = await (await fetch(src, { mode: "cors" })).blob();
+    const url = URL.createObjectURL(blob);
+    h("a", { href: url, download: name }).click();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  } catch {
+    window.open(src, "_blank", "noopener");
   }
 }
 
@@ -103,7 +116,7 @@ function Hero(L) {
           class: "press-hero-card",
           style: { transform: () => `perspective(900px) rotateY(${tilt.value.x * 14}deg) rotateX(${-tilt.value.y * 14}deg)` }
         },
-        h("img", { src: `${MEDIA}/logo/lucidui-icon.svg`, alt: "", width: 320, height: 320 }),
+        h("img", { src: `${MEDIA}logo/lucidui-icon.svg`, alt: "", width: 320, height: 320 }),
         h("span", { class: "press-hero-shine", style: { "--x": () => `${(tilt.value.x + 0.5) * 100}%`, "--y": () => `${(tilt.value.y + 0.5) * 100}%` } })))));
 }
 
@@ -123,7 +136,7 @@ function Facts() {
 
 function LogoCard(logo) {
   const size = signal(2400);
-  const src = `${MEDIA}/${logo.file}`;
+  const src = `${MEDIA}${logo.file}`;
   const base = logo.file.split("/").pop().replace(".svg", "");
   return h("article", { class: ["logo-card", logo.wide ? "logo-wide" : null], "data-stage": logo.stage },
     h("div", { class: "logo-stage" },
@@ -134,7 +147,7 @@ function LogoCard(logo) {
         h("span", { class: "logo-file" }, `${base}.svg`)),
       h("p", { class: "logo-text" }, logo.text),
       h("div", { class: "logo-actions" },
-        Button({ size: "sm", href: src, download: `${base}.svg`, icon: "download" }, "SVG"),
+        Button({ size: "sm", href: src, download: `${base}.svg`, icon: "download", onClick: event => save(event, src, `${base}.svg`) }, "SVG"),
         Button({ size: "sm", variant: "ghost", icon: "image", onClick: () => exportPng(src, size.peek(), base, logo.ratio) }, "PNG"),
         Segmented({
           value: size,
@@ -169,18 +182,18 @@ function Files() {
           h("span", { role: "columnheader" }, "Asset"), h("span", { role: "columnheader" }, "File"), h("span", { role: "columnheader" }, "Format"), h("span", { role: "columnheader" }, "Size"), h("span", { role: "columnheader" }, h("span", { class: "sr-only" }, "Download"))),
         FILES.map(([name, file, format, dims]) => h("div", { class: "file-row", role: "row" },
           h("span", { role: "cell", class: "file-name" },
-            h("span", { class: "file-thumb", "data-dark": file.includes("on-dark") }, h("img", { src: `${MEDIA}/${file}`, alt: "", loading: "lazy" })),
+            h("span", { class: "file-thumb", "data-dark": file.includes("on-dark") }, h("img", { src: `${MEDIA}${file}`, alt: "", loading: "lazy" })),
             name),
           h("code", { role: "cell" }, file.split("/").pop()),
           h("span", { role: "cell", class: "file-format" }, format),
           h("span", { role: "cell", class: "file-dims" }, dims),
           h("span", { role: "cell" }, Tooltip({ label: `Download ${file.split("/").pop()}` },
-            Button({ size: "xs", variant: "ghost", icon: "download", href: `${MEDIA}/${file}`, download: file.split("/").pop(), aria: { label: `Download ${file.split("/").pop()}` } }))))))));
+            Button({ size: "xs", variant: "ghost", icon: "download", href: `${MEDIA}${file}`, download: file.split("/").pop(), onClick: event => save(event, `${MEDIA}${file}`, file.split("/").pop()), aria: { label: `Download ${file.split("/").pop()}` } }))))))));
 }
 
 function Usage() {
   const rule = (ok, label, cls) => h("figure", { class: ["rule", ok ? "rule-do" : "rule-dont"] },
-    h("div", { class: "rule-stage" }, h("img", { src: `${MEDIA}/logo/lucidui-wordmark-on-dark.svg`, alt: "", class: cls })),
+    h("div", { class: "rule-stage" }, h("img", { src: `${MEDIA}logo/lucidui-wordmark-on-dark.svg`, alt: "", class: cls })),
     h("figcaption", h("span", { class: "rule-badge" }, Icon({ name: ok ? "check" : "x", size: 12, stroke: 3 })), label));
   return h("section", { class: "press-section press-tint", id: "usage" },
     h("div", { class: "site-wrap" },
@@ -189,7 +202,7 @@ function Usage() {
         h("figure", { class: "clearspace" },
           h("div", { class: "clearspace-box" },
             h("span", { class: "clearspace-zone" }),
-            h("img", { src: `${MEDIA}/logo/lucidui-icon.svg`, alt: "The icon with clear space marked around it" }),
+            h("img", { src: `${MEDIA}logo/lucidui-icon.svg`, alt: "The icon with clear space marked around it" }),
             ["top", "right", "bottom", "left"].map(side => h("span", { class: `clearspace-x clearspace-${side}` }, "x"))),
           h("figcaption", "Clear space equals x, a quarter of the icon\u2019s width.")),
         h("div", { class: "rules" },
