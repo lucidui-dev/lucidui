@@ -16,6 +16,7 @@ const SERVICES = [
   { id: "build", name: "Builder", host: "build.lucidui.dev", group: "Our sites", url: "https://build.lucidui.dev/" },
   { id: "sandbox", name: "Sandbox", host: "sandbox.lucidui.dev", group: "Our sites", url: "https://sandbox.lucidui.dev/" },
   { id: "changelog", name: "Changelog", host: "changelog.lucidui.dev", group: "Our sites", url: "https://changelog.lucidui.dev/" },
+  { id: "editions", name: "Editions", host: "editions.lucidui.dev", group: "Our sites", url: "https://editions.lucidui.dev/" },
   { id: "media", name: "Media", host: "media.lucidui.dev", group: "Our sites", url: "https://media.lucidui.dev/icons/favicon.svg", cors: true },
   { id: "npm", name: "npm registry", host: "registry.npmjs.org", group: "Where code ships", url: "https://registry.npmjs.org/@lucidui-dev/core/latest", cors: true, json: data => { npmLatest.value = data.version; } },
   { id: "cdn", name: "jsDelivr CDN", host: "cdn.jsdelivr.net", group: "Where code ships", url: "https://cdn.jsdelivr.net/npm/@lucidui-dev/core@0.3/src/index.js", cors: true, text: body => { cdnServes.value = body.match(/version = "([^"]+)"/)?.[1] ?? null; } },
@@ -323,7 +324,7 @@ function Fact(label, value, state) {
 
 function SignalMap() {
   const portrait = matchMedia("(max-width: 640px)").matches;
-  const gapAfter = new Set([5, 8]);
+  const gapAfter = new Set([6, 9]);
   const steps = SERVICES.length - 1 + gapAfter.size * 0.8;
   const W = portrait ? 360 : 1000;
   const H = portrait ? 120 + steps * 46 : 460;

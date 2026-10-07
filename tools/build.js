@@ -116,6 +116,7 @@ const built = [
   }),
   await site("changelog.lucidui.dev", "sites/changelog"),
   await site("build.lucidui.dev", "sites/build"),
+  await site("editions.lucidui.dev", "sites/editions"),
   await site("media.lucidui.dev", "media", { shared: false, lucid: false, extras: [["dist/press-kit/lucidui-press-kit.zip", "press/lucidui-press-kit.zip"]] })
 ];
 

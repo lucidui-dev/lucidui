@@ -3,6 +3,7 @@ import { Badge } from "/lucid/ui/index.js";
 import { mountPage, SectionHead } from "/shared/chrome.js";
 
 const UPDATES = [
+  { date: "8 October 2026", area: "Editions", kind: "New", title: "Lucid Editions opens", text: "editions.lucidui.dev is home to Editions: finished apps built only from Lucid UI, with the source, a licence to ship them and a guide for your agent. The first, No. 01, is in the studio. Lucid UI itself stays free and MIT licensed." },
   { date: "7 October 2026", area: "Docs", kind: "New", title: "A WordPress guide", text: "Everything about the WordPress plugin in one place: installing it, writing apps as theme files, props, light and dark, reading posts from the REST API, bringing apps over from Builder, and fixes for common problems. Agents read it too, in llms-full.txt." },
   { date: "7 October 2026", area: "Site", kind: "New", title: "A live status page", text: "lucidui.dev/status checks the sites, npm, jsDelivr, GitHub and both copies of the agent docs from your browser every 15 seconds, and draws each answer as a heartbeat. It also shows every release, whether npm and the CDN agree on the latest version, and whether an agent can learn Lucid UI right now. Nothing is sent anywhere." },
   { date: "7 October 2026", area: "Site", kind: "Fixed", title: "The CDN refreshes every file agents check after a release", text: "Publishing now also refreshes jsDelivr's copy of package.json and the core entry file, so a CDN version check never reports an older release." },

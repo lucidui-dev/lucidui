@@ -563,6 +563,12 @@ body.site { background: var(--lucid-surface); min-height: 100dvh; overflow-x: cl
   .guide-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
+@media (max-width: 1120px) {
+  .site-search span, .site-search .lucid-kbds { display: none; }
+  .site-search { width: 32px; padding: 0; justify-content: center; }
+  .site-theme { display: none; }
+}
+
 @media (max-width: 760px) {
   .site-wrap { width: calc(100% - 32px); }
   .site-links, .site-search span, .site-search .lucid-kbds { display: none; }
