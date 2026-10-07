@@ -1,7 +1,7 @@
 import { signal, computed, effect, h, mount } from "/lucid/index.js";
 import { Button, Segmented, Tooltip, Icon } from "/lucid/ui/index.js";
-import { DotSparkline, UnitRows, Waffle, ChartCard } from "/lucid/viz/index.js";
-import { ExitCard } from "/exit.js";
+import { DotSparkline, UnitRows, Waffle, ChartCard, DotMeter } from "/lucid/viz/index.js";
+import { ExitDock } from "/exit.js";
 import { RACE, CANDIDATES, CANDIDATE, WEEKS, POLLS, POLLSTERS, COUNTIES, COUNTY, GRID, CELLS, CENTROIDS, FUNDS, PRIORITIES, TRAIL, HEADLINES } from "./data.js";
 
 const stored = key => { try { return localStorage.getItem(`lucid-campaign:${key}`); } catch { return null; } };
@@ -47,28 +47,45 @@ function Logo() {
     h("span", { class: "cr-logo-word" }, "NEWS"));
 }
 
-function Rail() {
-  const link = (id, icon, label) => h("a", { class: "cr-nav-link", href: `#${id}` }, Icon({ name: icon, size: 15 }), label);
-  const soon = label => h("span", { class: "cr-nav-soon", "aria-disabled": "true" }, Icon({ name: "lock", size: 13 }), label, h("small", "Soon"));
-  return h("aside", { class: "cr-rail" },
-    Logo(),
-    h("div", { class: "cr-rail-tag" }, h("i"), "Race Center"),
-    h("nav", { class: "cr-nav", aria: { label: "Sections" } },
-      link("top", "hexagon", "Overview"),
-      link("polls", "chart", "Polls"),
-      link("map", "target", "County map"),
-      link("money", "layers", "Money"),
-      link("trail", "calendar", "Campaign trail")),
-    h("div", { class: "cr-rail-label" }, "Other races"),
-    h("div", { class: "cr-nav" }, soon("Senate · Westmere"), soon("Mayor · Brightwater")),
-    h("div", { class: "lucid-spacer" }),
-    h("div", { class: "cr-rail-foot" },
-      ExitCard(),
-      h("div", { class: "cr-appearance" }, "Appearance",
-        Segmented({
-          value: theme, size: "sm", iconOnly: true, aria: { label: "Theme" },
-          options: [{ value: "light", label: "Paper", icon: "sun" }, { value: "dark", label: "Studio", icon: "moon" }, { value: "system", label: "System", icon: "monitor" }]
-        }))));
+const SECTIONS = [
+  { value: "overview", label: "Overview" },
+  { value: "polls", label: "Polls" },
+  { value: "map", label: "County map" },
+  { value: "money", label: "Money" },
+  { value: "trail", label: "Trail" },
+  { value: "results", label: "Election night", fresh: true }
+];
+const section = signal(stored("section") ?? "overview");
+effect(() => { try { localStorage.setItem("lucid-campaign:section", section.value); } catch {} });
+const open = value => {
+  section.value = value;
+  document.querySelector(".cr-main")?.scrollTo({ top: 0 });
+};
+
+function Nameplate() {
+  return h("header", { class: "cr-plate" },
+    h("div", { class: "cr-plate-top" },
+      Logo(),
+      h("div", { class: "cr-plate-tag" }, h("i"), "Race Center"),
+      h("span", { class: "cr-plate-race" }, `${RACE.state} ${RACE.office} · ${RACE.year}`),
+      h("span", { class: "lucid-spacer" }),
+      Segmented({
+        value: theme, size: "sm", iconOnly: true, aria: { label: "Theme" },
+        options: [{ value: "light", label: "Paper", icon: "sun" }, { value: "dark", label: "Studio", icon: "moon" }, { value: "system", label: "System", icon: "monitor" }]
+      })),
+    h("nav", { class: "cr-tabs", aria: { label: "Sections" } }, SECTIONS.map(s => h("button", {
+      type: "button",
+      class: "cr-tab",
+      "aria-current": () => (section.value === s.value ? "page" : undefined),
+      onClick: () => open(s.value)
+    }, s.label, s.fresh ? h("span", { class: "cr-tab-new" }, "Live") : null))));
+}
+
+function SectionHead({ eyebrow, title, text }) {
+  return h("div", { class: "cr-section-head" },
+    h("div", { class: "cr-eyebrow" }, eyebrow),
+    h("h2", title),
+    text ? h("p", { class: "cr-muted" }, text) : null);
 }
 
 function Masthead() {
@@ -317,41 +334,138 @@ function Trail() {
     })));
 }
 
+const count = signal(0);
+const running = signal(false);
+const speed = signal("2");
+let tick = 0;
+const COUNT_ORDER = Object.fromEntries(COUNTIES.map((c, i) => [c.id, ((i * 7) % COUNTIES.length) / COUNTIES.length * 0.55]));
+const reported = id => Math.max(0, Math.min(1, (count.value - COUNT_ORDER[id]) / 0.45));
+const tally = computed(() => {
+  let ok = 0;
+  let wh = 0;
+  let so = 0;
+  const rows = COUNTIES.map(c => {
+    const share = reported(c.id);
+    const m = countyMargin(c.id) + Math.sin(c.voters) * 1.8;
+    const votes = c.voters * 1000 * 0.62 * share;
+    const okShare = 0.485 + m / 200;
+    const soShare = 0.04;
+    const o = votes * okShare;
+    const s = votes * soShare;
+    const w = votes - o - s;
+    ok += o;
+    wh += w;
+    so += s;
+    return { ...c, share, o, w, m: votes ? ((o - w) / votes) * 100 : 0 };
+  });
+  const total = ok + wh + so;
+  const expected = COUNTIES.reduce((n, c) => n + c.voters * 1000 * 0.62, 0);
+  return { rows, ok, wh, so, total, counted: total / expected };
+});
+const called = computed(() => {
+  const t = tally.value;
+  if (t.counted < 0.55 || !t.total) return null;
+  const lead = (t.ok - t.wh) / t.total * 100;
+  return Math.abs(lead) > 2.4 ? (lead > 0 ? CANDIDATE.okafor : CANDIDATE.whitfield) : null;
+});
+const votes = n => Math.round(n).toLocaleString("en-US");
+const toggleCount = () => {
+  if (running.peek()) { running.value = false; clearInterval(tick); return; }
+  if (count.peek() >= 1) count.value = 0;
+  running.value = true;
+  tick = setInterval(() => {
+    count.value = Math.min(1, count.peek() + 0.004 * Number(speed.peek()));
+    if (count.peek() >= 1) { running.value = false; clearInterval(tick); }
+  }, 80);
+};
+
+function Results() {
+  const share = (who, n) => () => (tally.value.total ? `${((n() / tally.value.total) * 100).toFixed(1)}%` : "0.0%");
+  return h("div", { class: "cr-page" },
+    SectionHead({ eyebrow: "Election night", title: "Watch the count come in", text: "A simulation of results night: counties report in waves, and the desk calls the race once the lead is safe." }),
+    h("section", { class: "cr-card cr-night" },
+      h("div", { class: "cr-night-bar" },
+        () => (running.value
+          ? Button({ variant: "primary", icon: "clock", onClick: toggleCount }, "Pause the count")
+          : Button({ variant: "primary", icon: "zap", onClick: toggleCount }, count.peek() >= 1 ? "Count again" : count.peek() > 0 ? "Resume the count" : "Start the count")),
+        Segmented({ value: speed, size: "sm", aria: { label: "Speed" }, options: [{ value: "1", label: "1×" }, { value: "2", label: "2×" }, { value: "5", label: "5×" }] }),
+        h("span", { class: "lucid-spacer" }),
+        h("div", { class: "cr-night-counted" }, h("b", () => `${Math.round(tally.value.counted * 100)}%`), " of the expected vote counted")),
+      () => (called.value
+        ? h("div", { class: "cr-call", style: { "--c": called.value.color } }, h("span", { class: "cr-call-tag" }, "Crest projects"), h("b", `${called.value.name} wins the ${RACE.state} governor's race`))
+        : h("div", { class: "cr-call cr-call-wait" }, h("span", { class: "cr-call-tag" }, "Too early to call"), h("b", () => (count.value ? "The desk is watching the margin" : "Polls have closed. Start the count.")))),
+      h("div", { class: "cr-night-totals" }, [["okafor", () => tally.value.ok], ["whitfield", () => tally.value.wh], ["sorensen", () => tally.value.so]].map(([id, n]) => {
+        const c = CANDIDATE[id];
+        return h("div", { class: "cr-night-total", style: { "--c": c.color } },
+          h("span", { class: "cr-night-who" }, h("i"), c.name, () => (called.value?.id === id ? h("span", { class: "cr-check" }, Icon({ name: "check", size: 12 })) : null)),
+          h("span", { class: "cr-big" }, share(id, n)),
+          h("span", { class: "cr-muted" }, () => `${votes(n())} votes`));
+      })),
+      h("div", { class: "cr-night-strip", "aria-hidden": "true" }, () => {
+        const t = tally.value;
+        const dots = 100;
+        const ok = t.total ? Math.round((t.ok / t.total) * dots) : 0;
+        const so = t.total ? Math.round((t.so / t.total) * dots) : 0;
+        return Array.from({ length: dots }, (_, i) => h("i", { style: { "--c": !t.total ? "var(--cr-neutral)" : i < ok ? CANDIDATE.okafor.color : i >= dots - so ? CANDIDATE.sorensen.color : CANDIDATE.whitfield.color } }));
+      })),
+    h("section", { class: "cr-card cr-night-list" },
+      h("header", { class: "cr-card-head" }, h("div", h("div", { class: "cr-eyebrow" }, "By county"), h("h2", "Where the votes are"))),
+      h("ul", () => [...tally.value.rows].sort((a, b) => b.voters - a.voters).map(r => h("li",
+        h("b", r.name),
+        DotMeter({ value: Math.round(r.share * 100), max: 100, dots: 20, color: "var(--cr-yellow)", label: `${r.name} ${Math.round(r.share * 100)}% reporting` }),
+        h("span", { class: "cr-muted" }, `${Math.round(r.share * 100)}% in`),
+        r.share ? h("span", { class: "cr-night-lead", style: { "--c": r.m >= 0 ? CANDIDATE.okafor.color : CANDIDATE.whitfield.color } }, `${r.m >= 0 ? "Okafor" : "Whitfield"} ${signed(Math.abs(r.m)).replace("+", "+")}`) : h("span", { class: "cr-muted" }, "Waiting"))))));
+}
+
+function Overview() {
+  return h("div", { class: "cr-page" },
+    Masthead(),
+    Ticker(),
+    h("div", { class: "cr-cands" }, CANDIDATES.map(CandidateCard)),
+    h("div", { class: "cr-split" },
+      h("section", { class: "cr-card" },
+        h("header", { class: "cr-card-head" },
+          h("div", h("div", { class: "cr-eyebrow" }, "Polling average"), h("h2", "Six months of the race")),
+          h("span", { class: "lucid-spacer" }),
+          h("div", { class: "cr-key" }, CANDIDATES.map(c => h("span", { style: { "--c": c.color } }, h("i"), c.last)))),
+        PollChart()),
+      Forecast()));
+}
+
+function Polls() {
+  return h("div", { class: "cr-page" },
+    SectionHead({ eyebrow: "Polls", title: "What the pollsters found", text: "Every poll in the average, newest first. Tap a candidate on the overview to follow them through the chart." }),
+    h("section", { class: "cr-card" },
+      h("header", { class: "cr-card-head" },
+        h("div", h("div", { class: "cr-eyebrow" }, "Polling average"), h("h2", "Six months of the race")),
+        h("span", { class: "lucid-spacer" }),
+        h("div", { class: "cr-key" }, CANDIDATES.map(c => h("span", { style: { "--c": c.color } }, h("i"), c.last)))),
+      PollChart()),
+    h("div", { style: { height: "14px" } }),
+    PollBoard());
+}
+
+function MapPage() {
+  return h("div", { class: "cr-page" },
+    SectionHead({ eyebrow: "County map", title: "Every dot is about a thousand voters", text: "Coloured by projected margin. Move the forecast slider and watch the map shift." }),
+    h("div", { class: "cr-map" },
+      h("div", { class: "cr-map-stage" }, CountyMap(),
+        h("div", { class: "cr-legend" },
+          h("span", { style: { color: CANDIDATE.whitfield.color } }, "Whitfield"),
+          h("i", { class: "cr-legend-ramp" }),
+          h("span", { style: { color: CANDIDATE.okafor.color } }, "Okafor"))),
+      h("div", { class: "cr-map-side" }, CountyPanel(), Forecast())));
+}
+
 function App() {
   return h("div", { class: "cr-app" },
-    Rail(),
+    Nameplate(),
     h("main", { class: "cr-main" },
-      Masthead(),
-      Ticker(),
-      h("div", { class: "cr-cands" }, CANDIDATES.map(CandidateCard)),
-      h("div", { class: "cr-split", id: "polls" },
-        h("section", { class: "cr-card" },
-          h("header", { class: "cr-card-head" },
-            h("div", h("div", { class: "cr-eyebrow" }, "Polling average"), h("h2", "Six months of the race")),
-            h("span", { class: "lucid-spacer" }),
-            h("div", { class: "cr-key" }, CANDIDATES.map(c => h("span", { style: { "--c": c.color } }, h("i"), c.last)))),
-          PollChart()),
-        Forecast()),
-      h("section", { class: "cr-section", id: "map" },
-        h("div", { class: "cr-section-head" },
-          h("div", { class: "cr-eyebrow" }, "County map"),
-          h("h2", "Every dot is about a thousand voters"),
-          h("p", { class: "cr-muted" }, "Coloured by projected margin. Move the forecast slider and watch the map shift.")),
-        h("div", { class: "cr-map" },
-          h("div", { class: "cr-map-stage" }, CountyMap(),
-            h("div", { class: "cr-legend" },
-              h("span", { style: { color: CANDIDATE.whitfield.color } }, "Whitfield"),
-              h("i", { class: "cr-legend-ramp" }),
-              h("span", { style: { color: CANDIDATE.okafor.color } }, "Okafor"))),
-          CountyPanel())),
-      h("section", { class: "cr-section" },
-        h("div", { class: "cr-section-head" }, h("div", { class: "cr-eyebrow" }, "Latest polls"), h("h2", "What the pollsters found")),
-        PollBoard()),
-      Money(),
-      Trail(),
+      () => ({ overview: Overview, polls: Polls, map: MapPage, money: Money, trail: Trail, results: Results }[section.value] ?? Overview)(),
       h("footer", { class: "cr-foot" },
         Logo(),
-        h("p", "Crest News is a fictional newsroom. Every candidate, poll, county and headline here is invented for a Lucid UI demo. Built with Lucid UI, custom-branded with its tokens."))));
+        h("p", "Crest News is a fictional newsroom. Every candidate, poll, county and headline here is invented for a Lucid UI demo. Built with Lucid UI, custom-branded with its tokens."))),
+    ExitDock());
 }
 
 mount(App, "#app");
