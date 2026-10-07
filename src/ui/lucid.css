@@ -582,6 +582,80 @@
   .lucid-card[data-variant="raised"] { background: var(--lucid-surface-raised); box-shadow: var(--lucid-shadow-md), var(--lucid-highlight); }
   .lucid-card[data-variant="sunken"] { background: var(--lucid-surface-sunken); box-shadow: inset 0 0 0 1px var(--lucid-line); }
 
+  .lucid-shell { display: grid; grid-template-columns: 240px minmax(0, 1fr); min-height: 100dvh; }
+  .lucid-shell-side {
+    position: sticky; top: 0; height: 100dvh; overflow: auto;
+    display: flex; flex-direction: column; gap: var(--lucid-space-5);
+    padding: var(--lucid-space-5) var(--lucid-space-3);
+    background: var(--lucid-surface-sunken);
+    box-shadow: inset -1px 0 0 var(--lucid-line);
+  }
+  .lucid-shell-main { min-width: 0; }
+
+  .lucid-nav { display: flex; flex-direction: column; gap: 2px; }
+  .lucid-nav-group { padding: var(--lucid-space-3) 10px 6px; font-size: var(--lucid-text-xs); font-weight: 500; color: var(--lucid-ink-3); }
+  .lucid-nav-group:first-child { padding-top: 0; }
+  .lucid-nav-item {
+    display: flex; align-items: center; gap: 10px; width: 100%;
+    height: 32px; padding: 0 10px; border: 0; border-radius: var(--lucid-radius-md);
+    font: inherit; font-size: var(--lucid-text-sm); text-align: left; text-decoration: none;
+    color: var(--lucid-ink-2); background: transparent; cursor: pointer;
+    transition: background-color var(--lucid-fast), color var(--lucid-fast);
+  }
+  .lucid-nav-item > .lucid-icon { color: var(--lucid-ink-3); flex: none; }
+  .lucid-nav-item:hover { color: var(--lucid-ink); background: var(--lucid-hover); }
+  .lucid-nav-item[aria-current="page"] { color: var(--lucid-ink); background: var(--lucid-press); font-weight: 500; }
+  .lucid-nav-item[aria-current="page"] > .lucid-icon { color: var(--lucid-ink); }
+  .lucid-nav-item:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--lucid-accent-soft), inset 0 0 0 1px var(--lucid-accent); }
+  .lucid-nav-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lucid-nav-badge { font-size: var(--lucid-text-xs); color: var(--lucid-ink-3); font-variant-numeric: tabular-nums; }
+
+  .lucid-page { width: min(100% - 2 * var(--lucid-space-5), var(--w, 880px)); margin: 0 auto; padding: var(--lucid-space-8) 0 var(--lucid-space-10); display: flex; flex-direction: column; gap: var(--lucid-space-8); }
+  .lucid-page[data-width="sm"] { --w: 640px; }
+  .lucid-page[data-width="lg"] { --w: 1120px; }
+  .lucid-page[data-width="full"] { --w: 100%; }
+  .lucid-page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--lucid-space-4); flex-wrap: wrap; }
+  .lucid-page-title { margin: 0; font-size: var(--lucid-text-2xl); font-weight: 600; letter-spacing: -.025em; line-height: 1.15; color: var(--lucid-ink); }
+  .lucid-page-desc { margin: 6px 0 0; font-size: var(--lucid-text-base); color: var(--lucid-ink-2); text-wrap: pretty; }
+  .lucid-page-actions { display: flex; gap: var(--lucid-space-2); }
+
+  .lucid-section { display: flex; flex-direction: column; gap: var(--lucid-space-3); scroll-margin-top: var(--lucid-space-6); }
+  .lucid-section-head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--lucid-space-4); }
+  .lucid-section-title { margin: 0; font-size: var(--lucid-text-md); font-weight: 600; letter-spacing: -.01em; color: var(--lucid-ink); }
+  .lucid-section-desc { margin: 3px 0 0; font-size: var(--lucid-text-sm); color: var(--lucid-ink-3); text-wrap: pretty; }
+  .lucid-section-body {
+    min-width: 0; overflow: clip;
+    background: var(--lucid-surface);
+    border-radius: var(--lucid-radius-xl);
+    box-shadow: 0 0 0 1px var(--lucid-line), var(--lucid-shadow-xs);
+  }
+  .lucid-section-body > :not(.lucid-setting) { padding: var(--lucid-space-5); }
+  .lucid-section-body > * + * { border-top: 1px solid var(--lucid-line); }
+  .lucid-section[data-tone="danger"] .lucid-section-body { box-shadow: 0 0 0 1px color-mix(in oklab, var(--lucid-danger) 35%, transparent), var(--lucid-shadow-xs); }
+  .lucid-section[data-tone="danger"] .lucid-setting-label { color: var(--lucid-danger); }
+
+  .lucid-setting { display: flex; align-items: center; justify-content: space-between; gap: var(--lucid-space-5); min-height: 64px; padding: var(--lucid-space-3) var(--lucid-space-5); }
+  .lucid-setting-copy { min-width: 0; flex: 1; }
+  .lucid-setting-label { font-size: var(--lucid-text-base); font-weight: 500; color: var(--lucid-ink); }
+  .lucid-setting-desc { margin-top: 2px; font-size: var(--lucid-text-sm); color: var(--lucid-ink-3); text-wrap: pretty; }
+  .lucid-setting-control { display: flex; align-items: center; justify-content: flex-end; gap: var(--lucid-space-2); flex: none; max-width: 55%; }
+  .lucid-setting-control > .lucid-input, .lucid-setting-control > .lucid-select-trigger, .lucid-setting-control > .lucid-date-trigger { width: 240px; max-width: 100%; }
+  .lucid-setting-control > .lucid-select-trigger, .lucid-setting-control > .lucid-date-trigger { justify-content: flex-start; }
+  .lucid-setting-control > .lucid-select-trigger > .lucid-chevron { margin-left: auto; }
+
+  @media (max-width: 760px) {
+    .lucid-shell { grid-template-columns: minmax(0, 1fr); }
+    .lucid-shell-side { position: static; height: auto; padding: var(--lucid-space-3); box-shadow: inset 0 -1px 0 var(--lucid-line); }
+    .lucid-shell-side .lucid-nav { flex-direction: row; overflow-x: auto; }
+    .lucid-shell-side .lucid-nav-group { display: none; }
+    .lucid-shell-side .lucid-nav-item { width: auto; flex: none; }
+    .lucid-page { padding-top: var(--lucid-space-6); gap: var(--lucid-space-6); }
+    .lucid-setting { flex-direction: column; align-items: stretch; gap: var(--lucid-space-2); }
+    .lucid-setting-control { max-width: none; justify-content: flex-start; }
+    .lucid-setting-control > .lucid-input, .lucid-setting-control > .lucid-select-trigger, .lucid-setting-control > .lucid-date-trigger { width: 100%; }
+    .lucid-setting:has(> .lucid-setting-control > .lucid-check:only-child) { flex-direction: row; align-items: center; }
+  }
+
   .lucid-empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; padding: 48px 24px; color: var(--lucid-ink-3); }
   .lucid-empty-icon {
     display: grid; place-items: center; width: 44px; height: 44px; margin-bottom: 8px;

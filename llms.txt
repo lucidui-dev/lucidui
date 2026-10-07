@@ -30,7 +30,9 @@ Key rules:
 - Pass `Show` branches as functions. Give `For` a `key` when items have ids.
 - Use `button` for actions and `a` for navigation, never a clickable `div`.
 - Never use browser controls or dialogs. Use `Select` (not `select`), `DatePicker` (not a date `input`), `Switch` and `Checkbox` (not hand-made toggles), `toast()` (not `alert()`) and `await ask({ title, confirm })` (not `confirm()`).
-- Use Lucid components for every control: `Input`, `Field`, `Button`, `Card`, `Badge`. Style around them, not instead of them.
+- Use Lucid components for every control: `Input`, `Field`, `Button`, `Card`, `Badge`. Build screens from `AppShell`, `NavList`, `Page`, `Section` and `SettingRow`, and start from a recipe in RECIPES.md.
+- Write no CSS for colours, borders, radii, shadows or type: the components already look finished. Add CSS only for layout a component can't do.
+- Mount once, and switch views with a signal.
 - When you see a diagnostic code, look it up in https://docs.lucidui.dev/docs/DIAGNOSTICS.md and apply the fix it gives.
 
 Single file: `@lucidui-dev/core/bundle` (bundle/lucid.js plus bundle/lucid.css) exports everything from @lucidui-dev/core, @lucidui-dev/core/ui and @lucidui-dev/core/viz in one module, for pages without a bundler or import map (Shopify themes, Squarespace code blocks, plain HTML). In WordPress, the Lucid UI plugin registers @lucidui-dev/core, @lucidui-dev/core/ui and @lucidui-dev/core/viz as script modules; an app is a file in the theme's lucid/ folder whose default export is a component, used with [lucid app="name"].
@@ -40,5 +42,6 @@ Single file: `@lucidui-dev/core/bundle` (bundle/lucid.js plus bundle/lucid.css) 
 - [API](https://docs.lucidui.dev/docs/API.md): the complete API
 - [Components](https://docs.lucidui.dev/docs/UI.md): styled, accessible components (@lucidui-dev/core/ui)
 - [Charts](https://docs.lucidui.dev/docs/VIZ.md): charts with tooltips, legends and table views (@lucidui-dev/core/viz)
+- [Recipes](https://docs.lucidui.dev/docs/RECIPES.md): complete settings, dashboard and list pages to start from
 - [Diagnostics](https://docs.lucidui.dev/docs/DIAGNOSTICS.md): every warning and error code, with the fix
 - [Vision](https://docs.lucidui.dev/docs/VISION.md): goals, principles and roadmap

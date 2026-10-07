@@ -720,6 +720,66 @@ export function Card(...args) {
   return h(as, { class: ["lucid-card", cls], "data-padding": padding, "data-variant": variant, ...rest }, children);
 }
 
+export function AppShell(...args) {
+  const [{ sidebar, class: cls, ...rest }, children] = parts(args);
+  return h("div", { class: ["lucid-shell", cls], ...rest },
+    sidebar ? h("aside", { class: "lucid-shell-side" }, sidebar) : null,
+    h("main", { class: "lucid-shell-main" }, children));
+}
+
+export function NavList({ value, items, label = "Navigation", onSelect, class: cls } = {}) {
+  return h("nav", { class: ["lucid-nav", cls], aria: { label } },
+    items.map(item => {
+      if (item.group) return h("div", { class: "lucid-nav-group" }, item.group);
+      const current = () => read(value) === item.value;
+      const select = () => {
+        write(value, item.value);
+        onSelect?.(item.value);
+      };
+      return h(item.href ? "a" : "button", {
+        class: "lucid-nav-item",
+        href: item.href,
+        type: item.href ? undefined : "button",
+        "aria-current": () => (current() ? "page" : undefined),
+        onClick: select
+      },
+      item.icon ? Icon({ name: item.icon, size: 16 }) : null,
+      h("span", { class: "lucid-nav-label" }, item.label),
+      item.badge != null ? h("span", { class: "lucid-nav-badge" }, item.badge) : null);
+    }));
+}
+
+export function Page(...args) {
+  const [{ title, description, actions, width = "md", class: cls, ...rest }, children] = parts(args);
+  return h("div", { class: ["lucid-page", cls], "data-width": width, ...rest },
+    title || description || actions ? h("header", { class: "lucid-page-head" },
+      h("div", { class: "lucid-page-titles" },
+        title ? h("h1", { class: "lucid-page-title" }, title) : null,
+        description ? h("p", { class: "lucid-page-desc" }, description) : null),
+      actions ? h("div", { class: "lucid-page-actions" }, actions) : null) : null,
+    children);
+}
+
+export function Section(...args) {
+  const [{ title, description, actions, id, tone, class: cls, ...rest }, children] = parts(args);
+  return h("section", { class: ["lucid-section", cls], id, "data-tone": tone, ...rest },
+    title || description || actions ? h("div", { class: "lucid-section-head" },
+      h("div", { style: { minWidth: 0 } },
+        title ? h("h2", { class: "lucid-section-title" }, title) : null,
+        description ? h("p", { class: "lucid-section-desc" }, description) : null),
+      actions ?? null) : null,
+    h("div", { class: "lucid-section-body" }, children));
+}
+
+export function SettingRow(...args) {
+  const [{ label, description, class: cls, ...rest }, children] = parts(args);
+  return h("div", { class: ["lucid-setting", cls], ...rest },
+    h("div", { class: "lucid-setting-copy" },
+      h("div", { class: "lucid-setting-label" }, label),
+      description ? h("div", { class: "lucid-setting-desc" }, description) : null),
+    h("div", { class: "lucid-setting-control" }, children));
+}
+
 export function EmptyState({ icon = "inbox", title, description, action } = {}) {
   return h("div", { class: "lucid-empty" },
     h("div", { class: "lucid-empty-icon" }, typeof icon === "string" ? Icon({ name: icon, size: 20 }) : icon),

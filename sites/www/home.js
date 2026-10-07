@@ -98,6 +98,21 @@ function briefAgent() {
     () => toast("Couldn't copy", { tone: "danger", description: BRIEF }));
 }
 
+const AGENTS = [
+  "Claude Code", "Cursor", "GitHub Copilot", "OpenAI Codex", "ChatGPT", "Windsurf", "Cline", "Roo Code", "Aider",
+  "Continue", "Zed", "Gemini CLI", "Replit Agent", "Bolt", "Lovable", "v0", "Amazon Q Developer", "Junie",
+  "Devin", "Amp", "Kilo Code", "Warp", "Augment Code", "OpenHands", "Tabnine", "Qwen Code", "DeepSeek"
+];
+
+function AgentTicker() {
+  const run = hidden => h("ul", { class: "ticker-run", "aria-hidden": hidden ? "true" : undefined },
+    AGENTS.map(name => h("li", h("span", { class: "ticker-dot" }), name)));
+  return h("div", { class: "ticker" },
+    h("p", { class: "ticker-label" }, `Works with ${AGENTS.length} coding agents, and any that can read a web page`),
+    h("div", { class: "ticker-track", role: "region", aria: { label: "Coding agents that work with Lucid UI" } },
+      h("div", { class: "ticker-belt" }, run(false), run(true))));
+}
+
 function Hero() {
   return h("section", { class: "hero" },
     DotField(),
@@ -123,7 +138,8 @@ function Hero() {
         h("li", h("b", FACTS.core), " core, gzipped"),
         h("li", h("b", `${FACTS.tokens}-token`), " API"),
         h("li", h("b", FACTS.deps), " dependencies"),
-        h("li", h("b", "No"), " build step"))),
+        h("li", h("b", "No"), " build step")),
+      AgentTicker()),
     h("div", { class: "site-wrap" }, HeroStage()));
 }
 

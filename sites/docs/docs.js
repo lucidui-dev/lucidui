@@ -5,6 +5,7 @@ import { mountPage, SectionHead, DownloadButton } from "/shared/chrome.js";
 const GUIDES = [
   { href: "/docs/API.md", icon: "hash", title: "API reference", text: "The whole core on one page: signals, elements, control flow and mounting." },
   { href: "/docs/UI.md", icon: "layers", title: "Components", text: "Buttons, inputs, selects, date picker, menus, dialogs, forms, undo and long lists." },
+  { href: "/docs/RECIPES.md", icon: "layers", title: "Recipes", text: "Complete settings, dashboard and list pages built only from Lucid components." },
   { href: "/docs/VIZ.md", icon: "chart", title: "Charts", text: "Dot columns, dumbbells, waffles, unit rows, calendars and stat tiles." },
   { href: "/docs/DIAGNOSTICS.md", icon: "alert-circle", title: "Diagnostics", text: "Every warning and error code Lucid reports, with the fix for each." },
   { href: "/llms.txt", icon: "sparkles", title: "llms.txt", text: "The entry point for AI agents, pointing at everything above." },

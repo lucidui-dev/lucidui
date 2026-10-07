@@ -99,7 +99,7 @@ async function site(name, from, { shared = true, lucid = true, extras = [], file
 }
 
 const full = [await readFile(join(root, "llms.txt"), "utf8")];
-for (const name of ["API", "UI", "VIZ", "DIAGNOSTICS"]) full.push(await readFile(join(root, "docs", `${name}.md`), "utf8"));
+for (const name of ["API", "UI", "RECIPES", "VIZ", "DIAGNOSTICS"]) full.push(await readFile(join(root, "docs", `${name}.md`), "utf8"));
 await writeFile(join(dist, "llms-full.txt"), full.join("\n\n---\n\n"));
 
 const built = [

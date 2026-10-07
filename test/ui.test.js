@@ -1,7 +1,7 @@
 import { test, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import { signal, mount, h } from "../src/index.js";
-import { Button, Badge, Avatar, Stack, Row, Segmented, Kbd, Checkbox, ask } from "../src/ui/index.js";
+import { Button, Badge, Avatar, Stack, Row, Segmented, Kbd, Checkbox, ask, AppShell, NavList, Page, Section, SettingRow } from "../src/ui/index.js";
 import { DotMeter } from "../src/viz/index.js";
 import { onDiagnostic } from "../src/diagnostics.js";
 
@@ -94,4 +94,18 @@ test("ask opens a styled dialog and resolves with the choice", async () => {
   assert.equal(confirm.dataset.variant, "danger");
   confirm.click();
   assert.equal(await answer, true);
+});
+
+test("page building blocks render a settings screen", () => {
+  const view = signal("settings");
+  mount(() => AppShell({ sidebar: NavList({ value: view, items: [{ group: "Manage" }, { value: "overview", label: "Overview" }, { value: "settings", label: "Settings" }] }) },
+    Page({ title: "Settings" },
+      Section({ title: "Security", tone: "danger" },
+        SettingRow({ label: "Two-factor", description: "A second step" }, Button({}, "Set up"))))), app);
+  assert.equal(app.querySelector(".lucid-page-title").textContent, "Settings");
+  assert.equal(app.querySelector(".lucid-setting-label").textContent, "Two-factor");
+  assert.equal(app.querySelector('[aria-current="page"]').textContent, "Settings");
+  app.querySelector(".lucid-nav-item").click();
+  assert.equal(view.value, "overview");
+  assert.equal(app.querySelector('[aria-current="page"]').textContent, "Overview");
 });

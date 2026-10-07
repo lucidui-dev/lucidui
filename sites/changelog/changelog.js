@@ -3,6 +3,7 @@ import { Badge } from "/lucid/ui/index.js";
 import { mountPage, SectionHead } from "/shared/chrome.js";
 
 const UPDATES = [
+  { date: "6 October 2026", area: "Site", kind: "New", title: "Works with every coding agent", text: "The homepage now lists 27 coding agents that can build with Lucid UI, from Claude Code and Cursor to Qwen Code and DeepSeek, and any agent that can read a web page." },
   { date: "6 October 2026", area: "Site", kind: "New", title: "Downloads are open, and the docs are public", text: "Download Lucid UI and the WordPress plugin from every site, read the full guides on docs.lucidui.dev, and copy a one-line brief from the homepage to point your AI agent at llms.txt." },
   { date: "6 October 2026", area: "Library", kind: "New", title: "Lucid UI is on npm", text: "Install it with npm i @lucidui-dev/core. The package includes the source modules, the one-file bundle and the docs." },
   { date: "6 October 2026", area: "Site", kind: "New", title: "New logo, icons and press page", text: "A new navy icon and wordmark across every site, sandbox demo and the Builder, with fresh favicons, app icons and a share image. The press page lists every file and size, and the hero dots now glow a quieter grey." },
@@ -41,6 +42,17 @@ const UPDATES = [
 ];
 
 const RELEASES = [
+  {
+    version: "0.3.3",
+    date: "6 October 2026",
+    title: "Whole pages, crafted by default",
+    summary: "Ask an agent for a settings page and get a finished one. Lucid now ships the building blocks for whole screens, and recipes agents start from.",
+    items: [
+      ["New", "AppShell, NavList, Page, Section and SettingRow: sidebars, page headers, grouped cards and label-and-control rows, in light and dark, and collapsing for phones."],
+      ["New", "Recipes: complete settings, dashboard and list pages, built only from Lucid components, in the docs and in llms-full.txt."],
+      ["Improved", "The rules agents read now say to build from components, write no CSS for colours or type, and mount once."]
+    ]
+  },
   {
     version: "0.3.2",
     date: "6 October 2026",

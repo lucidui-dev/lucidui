@@ -29,6 +29,20 @@ The default typeface is Geist with Geist Mono for code and IDs. Load it yourself
 | `Spacer`, `Divider` | `Divider({ vertical })` |
 | `Card` | `padding` (`sm`, `md`, `lg`), `variant` (`raised`, `sunken`) |
 
+## Pages
+
+Build whole screens from these, not from your own CSS. They carry the spacing, type and surfaces, and collapse for phones.
+
+| Component | Props |
+| --- | --- |
+| `AppShell` | `sidebar` (usually a `NavList`); children are the main area |
+| `NavList` | `value` (signal), `items: [{ value, label, icon, badge, href } or { group }]`, `label`, `onSelect` |
+| `Page` | `title`, `description`, `actions`, `width` (`sm`, `md`, `lg`, `full`) |
+| `Section` | `title`, `description`, `actions`, `id`, `tone: "danger"`; children are rows inside one card |
+| `SettingRow` | `label`, `description`; the child is the control (`Switch`, `Select`, `Input`, `Button`) |
+
+See [RECIPES.md](https://docs.lucidui.dev/docs/RECIPES.md) for complete settings, dashboard and list pages.
+
 ## Text
 
 | Component | Props |
@@ -110,7 +124,7 @@ Menus, selects and tooltips use the browser's popover layer, so they are never c
 | --- | --- |
 | `Avatar` | `name`, `src`, `size`; colour is derived from the name, so a person always looks the same |
 | `AvatarStack` | avatars as children |
-| `Badge` | `color` (adds a dot), `tone`, `size` |
+| `Badge` | `color` (adds a dot, such as `"var(--lucid-success)"`), `tone` (`accent`, `solid`), `size` |
 | `Icon` | `name`, `size`, `stroke`; names are listed in `iconNames` |
 | `EmptyState` | `icon`, `title`, `description`, `action` |
 
