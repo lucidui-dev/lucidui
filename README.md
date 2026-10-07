@@ -28,6 +28,14 @@ mount(Counter, "#app");
 
 **Status:** early and experimental. APIs will change before 1.0.
 
+## Build with your agent, live
+
+[Builder](https://build.lucidui.dev) is a browser workbench for Lucid UI. Connect your coding agent with the [Lucid bridge](integrations/bridge) and it renders straight into Builder, reads every diagnostic and fixes its own mistakes:
+
+```sh
+claude mcp add lucid -- npx -y @lucidui-dev/bridge
+```
+
 ## Use it anywhere
 
 Lucid UI also ships as one file, `bundle/lucid.js` (with `bundle/lucid.css`), which exports everything from `@lucidui-dev/core`, `@lucidui-dev/core/ui` and `@lucidui-dev/core/viz`. Drop it into any page that allows a script tag:

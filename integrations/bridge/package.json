@@ -1,0 +1,24 @@
+{
+  "name": "@lucidui-dev/bridge",
+  "version": "0.1.0",
+  "description": "Connect your coding agent to Lucid Builder: the agent renders Lucid UI apps in your browser and gets errors and diagnostics back. An MCP server with zero dependencies.",
+  "license": "MIT",
+  "homepage": "https://build.lucidui.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lucidui-dev/lucidui.git",
+    "directory": "integrations/bridge"
+  },
+  "type": "module",
+  "bin": {
+    "lucid-bridge": "index.js"
+  },
+  "files": [
+    "index.js",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": ["lucid-ui", "mcp", "model-context-protocol", "ai-agents", "claude-code", "cursor", "builder"]
+}

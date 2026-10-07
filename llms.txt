@@ -39,6 +39,10 @@ Key rules:
 
 Single file: `@lucidui-dev/core/bundle` (bundle/lucid.js plus bundle/lucid.css) exports everything from @lucidui-dev/core, @lucidui-dev/core/ui and @lucidui-dev/core/viz in one module, for pages without a bundler or import map (Shopify themes, Squarespace code blocks, plain HTML). In WordPress, the Lucid UI plugin registers @lucidui-dev/core, @lucidui-dev/core/ui and @lucidui-dev/core/viz as script modules; an app is a file in the theme's lucid/ folder whose default export is a component, used with [lucid app="name"].
 
+## Live preview for agents
+
+If you can use MCP tools, the Lucid bridge renders your code in the user's Lucid Builder tab and returns errors and diagnostics with fixes. Setup for Claude Code: `claude mcp add lucid -- npx -y @lucidui-dev/bridge`. Call `connect_builder`, show the user the link, then call `render` with your module and repeat until it reports no problems.
+
 ## Docs
 
 - [API](https://docs.lucidui.dev/docs/API.md): the complete API

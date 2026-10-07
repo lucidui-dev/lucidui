@@ -18,6 +18,7 @@ const logs = signal([]);
 const runs = signal(0);
 const status = signal("idle");
 const agentOpen = signal(false);
+const guideOpen = signal(store.get("guide") !== "seen");
 const dirty = computed(() => code.value !== byKey[template.value].code);
 
 let frame;
@@ -40,7 +41,7 @@ effect(() => {
   if (doc) doc.dataset.theme = mode;
 });
 
-const push = entry => { logs.value = [...logs.peek().slice(-199), { id: ++seq, at: Date.now(), ...entry }]; };
+const push = entry => { logs.value = [...logs.peek().slice(-199), { id: ++seq, at: Date.now(), run: runs.peek(), ...entry }]; };
 
 const BOOT = `
 (() => {
@@ -99,6 +100,7 @@ window.__lucidReady?.();</script>
 
 let pending = 0;
 let primed = false;
+let mountedMs = 0;
 
 function run() {
   clearTimeout(pending);
@@ -114,8 +116,9 @@ window.addEventListener("message", event => {
   const data = event.data;
   if (!data || data.lucidBuilder !== runs.peek() || event.source !== frame?.contentWindow) return;
   if (data.kind === "ready") {
-    status.value = "ok";
-    push({ kind: "done", level: "ok", text: `Mounted in ${Math.max(1, Math.round(performance.now() - started))} ms` });
+    mountedMs = Math.max(1, Math.round(performance.now() - started));
+    if (status.peek() !== "error") status.value = "ok";
+    push({ kind: "done", level: "ok", text: `Mounted in ${mountedMs} ms` });
     return;
   }
   if (data.level === "error") status.value = "error";
@@ -230,29 +233,205 @@ function Preview() {
       h("iframe", { class: "b-frame", title: "Preview", ref: el => { frame = el; } })));
 }
 
-const PROMPT = "You are writing UI with Lucid UI, a dependency-free runtime. Read https://lucidui.dev/llms.txt first. Import from \"lucidui\", \"lucidui/ui\" and \"lucidui/viz\". Components run once; use signals for state. Output a single app.js that calls mount(App, \"#app\").";
+const PROMPT = "Build this with Lucid UI from lucidui.dev, the npm package @lucidui-dev/core. Read https://lucidui.dev/llms-full.txt in full first. Import from \"@lucidui-dev/core\", \"@lucidui-dev/core/ui\" and \"@lucidui-dev/core/viz\". Output a single app.js that calls mount(App, \"#app\").";
+const ADD_CLAUDE = "claude mcp add lucid -- npx -y @lucidui-dev/bridge";
+const ADD_JSON = `{
+  "mcpServers": {
+    "lucid": { "command": "npx", "args": ["-y", "@lucidui-dev/bridge"] }
+  }
+}`;
+
+const bridge = signal(null);
+const bridgeState = signal("off");
+let source = null;
+
+const bridgeUrl = (path, b = bridge.peek()) => `http://127.0.0.1:${b.port}${path}${path.includes("?") ? "&" : "?"}token=${b.token}`;
+const answer = payload => fetch(bridgeUrl("/reply"), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) }).catch(() => {});
+
+function readPairing(text) {
+  const match = /bridge=(\d{2,5})\.([a-f0-9]{16,64})/i.exec(text ?? "");
+  return match ? { port: Number(match[1]), token: match[2] } : null;
+}
+
+function settle(run) {
+  return new Promise(resolve => {
+    const begin = performance.now();
+    const check = () => {
+      if (runs.peek() !== run) return resolve();
+      if (status.peek() !== "running" || performance.now() - begin > 8000) return setTimeout(resolve, 350);
+      setTimeout(check, 60);
+    };
+    check();
+  });
+}
+
+async function agentRender({ id, code: next, summary }) {
+  const before = code.peek();
+  code.value = next;
+  run();
+  const current = runs.peek();
+  await settle(current);
+  const entries = logs.peek().filter(e => e.run === current && e.kind !== "run" && e.kind !== "done").map(({ level, code: diagnostic, text, fix, tag }) => ({ level, code: diagnostic, text, fix, tag }));
+  answer({ id, status: status.peek() === "running" ? "pending" : status.peek(), mountedMs, logs: entries });
+  const problems = entries.filter(e => e.level === "error" || e.level === "warn").length;
+  toast(summary || "Your agent updated the code", {
+    tone: problems ? "info" : "success",
+    description: problems ? `${problems} issue${problems === 1 ? "" : "s"} sent back to your agent` : "Rendered cleanly",
+    action: { label: "Undo", onClick: () => { code.value = before; run(); } }
+  });
+}
+
+let lostTimer = 0;
+
+function connectBridge(next, { quiet = false } = {}) {
+  source?.close();
+  clearTimeout(lostTimer);
+  bridge.value = next;
+  if (!next) { bridgeState.value = "off"; return; }
+  try { sessionStorage.setItem("lucid-builder:bridge", `${next.port}.${next.token}`); } catch {}
+  bridgeState.value = "connecting";
+  let opened = false;
+  source = new EventSource(bridgeUrl("/events", next));
+  source.addEventListener("hello", () => {
+    opened = true;
+    bridgeState.value = "on";
+    agentOpen.value = false;
+    toast("Agent connected", { tone: "success", description: "Your agent can now render here. Ask it for what you want." });
+  });
+  source.addEventListener("render", event => agentRender(JSON.parse(event.data)));
+  source.addEventListener("get-code", event => answer({ id: JSON.parse(event.data).id, code: code.peek() }));
+  source.onerror = () => {
+    if (!opened) {
+      source.close();
+      if (quiet) { disconnectBridge(); return; }
+      bridgeState.value = "failed";
+      return;
+    }
+    if (bridgeState.peek() === "lost") return;
+    bridgeState.value = "lost";
+    clearTimeout(lostTimer);
+    lostTimer = setTimeout(() => {
+      if (bridgeState.peek() !== "lost") return;
+      source?.close();
+      bridgeState.value = "ended";
+      toast("Agent disconnected", { icon: "link", description: "Ask your agent to connect again for a new link." });
+    }, 8000);
+  };
+  source.onopen = () => { if (opened) { clearTimeout(lostTimer); bridgeState.value = "on"; } };
+}
+
+function disconnectBridge() {
+  clearTimeout(lostTimer);
+  source?.close();
+  source = null;
+  bridge.value = null;
+  bridgeState.value = "off";
+  try { sessionStorage.removeItem("lucid-builder:bridge"); } catch {}
+}
+
+const BRIDGE_LABEL = { off: "Connect an agent", connecting: "Connecting…", on: "Agent connected", lost: "Agent reconnecting", failed: "Connect an agent", ended: "Agent disconnected" };
 
 function AgentDialog() {
   const copy = (text, what) => navigator.clipboard?.writeText(text).then(() => toast(`${what} copied`, { tone: "success" }), () => toast("Copy failed", { tone: "danger" }));
+  const client = signal("claude");
+  const pasted = signal("");
   const step = (n, title, text, action) => h("li", { class: "b-step" },
     h("span", { class: "b-step-num" }, n),
     h("div", { class: "b-step-body" }, h("b", title), h("p", text), action ?? null));
+  const tryPaste = () => {
+    const found = readPairing(pasted.peek());
+    if (!found) { toast("That doesn't look like a pairing link", { tone: "danger", description: "It ends in #bridge= followed by numbers and letters." }); return; }
+    connectBridge(found);
+  };
   return Dialog({
     open: agentOpen,
     title: "Connect an agent",
-    description: "Builder will run code straight from your coding agent or terminal. The bridge is in preview; for now, hand your agent the context and paste what it writes.",
+    description: "Your coding agent renders straight into this Builder, and gets every error and Lucid diagnostic back with its fix. It all runs on your computer.",
     size: "md"
   },
-  h("ol", { class: "b-steps" },
-    step(1, "Give it the context", "llms.txt describes the whole API in one file, written for models.",
-      h("div", { class: "b-copy" }, h("code", "https://lucidui.dev/llms.txt"), Button({ size: "xs", icon: "copy", onClick: () => copy("https://lucidui.dev/llms.txt", "Link") }, "Copy"))),
-    step(2, "Use a starter prompt", "Works with Claude Code, Cursor, Codex or any chat.",
-      h("div", { class: "b-copy b-copy-prompt" }, h("p", PROMPT), Button({ size: "xs", icon: "copy", onClick: () => copy(PROMPT, "Prompt") }, "Copy"))),
-    step(3, "Paste and run", "Drop the result into the editor. Lucid diagnostics tell you, and your agent, exactly what to fix.")),
-  h("div", { class: "b-soon" },
-    h("span", { class: "b-soon-icon" }, Icon({ name: "link", size: 15 })),
-    h("div", h("b", "Live bridge, coming soon"), h("p", "Pair a session with one command, and your agent writes here while you watch it render."))),
-  h("pre", { class: "b-term" }, h("span", { class: "b-prompt" }, "$ "), "npx lucidui connect ", h("span", { class: "b-term-dim" }, "# soon")));
+  () => bridgeState.value === "on" || bridgeState.value === "lost"
+    ? h("div", { class: "b-paired" },
+        h("span", { class: "b-paired-dot", "data-state": bridgeState }),
+        h("div", h("b", () => (bridgeState.value === "on" ? "Your agent is connected" : "Reconnecting to your agent")), h("p", "Ask it for anything, like “make a settings page”. Each render shows up here, and the diagnostics go back to the agent.")),
+        Button({ size: "sm", onClick: disconnectBridge }, "Disconnect"))
+    : h("ol", { class: "b-steps" },
+        step(1, "Add the Lucid bridge to your agent", "Once per machine. It's a tiny MCP server with no dependencies.",
+          h("div", { class: "b-client" },
+            Segmented({ value: client, size: "sm", aria: { label: "Agent" }, options: [{ value: "claude", label: "Claude Code" }, { value: "json", label: "Cursor and others" }] }),
+            () => client.value === "claude"
+              ? h("div", { class: "b-copy" }, h("code", ADD_CLAUDE), Button({ size: "xs", icon: "copy", onClick: () => copy(ADD_CLAUDE, "Command") }, "Copy"))
+              : h("div", { class: "b-copy b-copy-prompt" }, h("pre", { class: "b-json" }, ADD_JSON), Button({ size: "xs", icon: "copy", onClick: () => copy(ADD_JSON, "Config") }, "Copy")))),
+        step(2, "Ask it to connect", "Say “connect to Lucid Builder”. Your agent replies with a pairing link."),
+        step(3, "Open the link", "It pairs this tab. If your browser asks to allow access to apps on this device, allow it. Or paste the link here:",
+          h("form", { class: "b-pair", onSubmit: event => { event.preventDefault(); tryPaste(); } },
+            h("input", { class: "b-pair-input", placeholder: "https://build.lucidui.dev/#bridge=…", value: pasted, onInput: event => { pasted.value = event.target.value; }, aria: { label: "Pairing link" } }),
+            Button({ size: "sm", variant: "primary", type: "submit" }, "Pair"))),
+        () => bridgeState.value === "failed"
+          ? h("p", { class: "b-pair-error" }, Icon({ name: "alert-circle", size: 14 }), "Couldn't reach the bridge. Check your agent is still running, then ask it for a fresh link. Safari can block this; use Chrome, Edge or Firefox.")
+          : null),
+  h("details", { class: "b-manual" },
+    h("summary", "No MCP? Use a prompt instead"),
+    h("div", { class: "b-copy b-copy-prompt" }, h("p", PROMPT), Button({ size: "xs", icon: "copy", onClick: () => copy(PROMPT, "Prompt") }, "Copy")),
+    h("p", { class: "b-manual-note" }, "Paste what your agent writes into the editor. The console shows each diagnostic and its fix to hand back.")));
+}
+
+function GuideDialog() {
+  const close = () => { guideOpen.value = false; store.set("guide", "seen"); };
+  const way = (n, icon, title, text, action) => h("li", { class: "b-way" },
+    h("span", { class: "b-way-icon" }, Icon({ name: icon, size: 17 })),
+    h("div", h("span", { class: "b-way-n" }, n), h("b", title), h("p", text), action ?? null));
+  const tip = (keys, text) => h("li", h("span", { class: "b-tip-keys" }, keys), h("span", text));
+  return Dialog({
+    open: guideOpen,
+    onClose: close,
+    title: "Welcome to Builder",
+    description: "A workbench for Lucid UI that runs entirely in your browser. Write an app and watch it render as you type, or let your AI agent build here with you.",
+    size: "lg",
+    footer: [
+      h("span", { class: "b-guide-note" }, Icon({ name: "lock", size: 13 }), "Nothing you write leaves this browser."),
+      h("span", { class: "lucid-spacer" }),
+      Button({ variant: "ghost", href: "https://docs.lucidui.dev" }, "Read the docs"),
+      Button({ variant: "primary", iconRight: "arrow-right", onClick: close }, "Start building")
+    ]
+  },
+  h("ol", { class: "b-ways" },
+    way("01", "layers", "Start from a template", "Pick one from the menu at the top: a counter, a sign-up form, a dot chart or the diagnostics tour. Edit the code on the left, and the preview reruns as you type."),
+    way("02", "copy", "Paste code from anywhere", "Drop in what an AI chat, a doc or a teammate wrote. If something is off, the console names the problem and gives you the fix."),
+    way("03", "link", "Connect your coding agent", "Claude Code, Cursor and other agents can render straight into this tab, read the diagnostics and fix their own mistakes until the page is clean.",
+      Button({ size: "sm", icon: "link", onClick: () => { close(); agentOpen.value = true; } }, "Connect an agent"))),
+  h("div", { class: "b-tips" },
+    h("p", { class: "b-tips-title" }, "Good to know"),
+    h("ul",
+      tip([Kbd("mod", "enter")], "Run the code now. Turn Auto-run off to run only when you ask."),
+      tip([h("code", "@lucidui-dev/core")], "Imports work as they would in your project, including /ui and /viz."),
+      tip([Icon({ name: "command", size: 13 })], "The console shows logs, errors and every Lucid diagnostic with its fix."),
+      tip([Icon({ name: "moon", size: 13 })], "The preview follows the theme switch, so check light and dark."),
+      tip([Icon({ name: "copy", size: 13 })], "Copy the code from the editor and it runs anywhere Lucid UI does."),
+      tip([Icon({ name: "clock", size: 13 })], "Each template keeps your draft in this browser until you reset it."))));
+}
+
+function LeaveBuilder() {
+  const state = signal("idle");
+  let timer = 0;
+  const press = () => {
+    if (state.peek() === "idle") {
+      state.value = "confirm";
+      clearTimeout(timer);
+      timer = setTimeout(() => { state.value = "idle"; }, 4000);
+      return;
+    }
+    clearTimeout(timer);
+    state.value = "leaving";
+    setTimeout(() => { location.href = "https://lucidui.dev"; }, matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 320);
+  };
+  return Tooltip({ label: () => (state.value === "idle" ? "Leave Builder" : "Your draft is saved. Press again to leave") }, h("button", {
+    type: "button", class: "b-leave", "data-state": state,
+    aria: { label: () => (state.value === "idle" ? "Leave Builder" : "Confirm: leave Builder. Your draft is saved") },
+    onClick: press,
+    onBlur: () => { if (state.peek() === "confirm") { clearTimeout(timer); state.value = "idle"; } }
+  },
+  h("span", { class: "b-leave-idle" }, h("span", { class: "b-hide-sm" }, "Leave"), Icon({ name: "arrow-right", size: 14 })),
+  h("span", { class: "b-leave-confirm" }, () => (state.value === "leaving" ? "Bye" : "Sure?"))));
 }
 
 function Bar() {
@@ -273,7 +452,10 @@ function Bar() {
       }
     }),
     h("span", { class: "lucid-spacer" }),
-    Button({ variant: "ghost", size: "sm", icon: "link", class: "b-agent", onClick: () => { agentOpen.value = true; } }, h("span", { class: "b-hide-sm" }, "Connect an agent")),
+    Tooltip({ label: "What is Builder?" }, Button({ variant: "ghost", size: "sm", icon: "info", class: "b-ghost", aria: { label: "What is Builder?" }, onClick: () => { guideOpen.value = true; } })),
+    h("button", { type: "button", class: "b-agent", "data-state": bridgeState, onClick: () => { agentOpen.value = true; } },
+      h("span", { class: "b-agent-dot", "aria-hidden": "true" }),
+      h("span", { class: "b-hide-sm" }, () => BRIDGE_LABEL[bridgeState.value])),
     h("label", { class: "lucid-check b-auto" },
       h("input", { type: "checkbox", role: "switch", checked: auto, onChange: event => { auto.value = event.target.checked; } }),
       h("span", { class: "lucid-switch-track", "aria-hidden": "true" }),
@@ -286,12 +468,27 @@ function Bar() {
       class: "b-theme",
       aria: { label: "Theme" },
       options: [{ value: "light", label: "Light", icon: "sun" }, { value: "dark", label: "Dark", icon: "moon" }, { value: "system", label: "System", icon: "monitor" }]
-    }));
+    }),
+    LeaveBuilder());
 }
 
 function App() {
   hotkey("mod+enter", run, { inputs: true });
   queueMicrotask(run);
+  queueMicrotask(() => {
+    const fromHash = readPairing(location.hash);
+    let saved = null;
+    try { saved = readPairing(`bridge=${sessionStorage.getItem("lucid-builder:bridge")}`); } catch {}
+    if (fromHash) history.replaceState(null, "", location.pathname + location.search);
+    if (fromHash) connectBridge(fromHash);
+    else if (saved) connectBridge(saved, { quiet: true });
+  });
+  window.addEventListener("hashchange", () => {
+    const next = readPairing(location.hash);
+    if (!next) return;
+    history.replaceState(null, "", location.pathname + location.search);
+    connectBridge(next);
+  });
   return h("div", { class: "b-app" },
     Bar(),
     h("main", { class: "b-main" },
@@ -305,7 +502,8 @@ function App() {
       h("a", { href: "https://docs.lucidui.dev" }, "Docs"),
       h("a", { href: "https://sandbox.lucidui.dev" }, "Sandbox"),
       h("a", { href: "https://lucidui.dev" }, "lucidui.dev")),
-    AgentDialog());
+    AgentDialog(),
+    GuideDialog());
 }
 
 mount(App, "#app");
