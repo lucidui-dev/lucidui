@@ -3,6 +3,7 @@ import { Badge } from "/lucid/ui/index.js";
 import { mountPage, SectionHead } from "/shared/chrome.js";
 
 const UPDATES = [
+  { date: "8 October 2026", area: "Editions", kind: "New", title: "Edition No. 03, Relay, is open to try", text: "Relay is a visual builder for multi-agent workflows: a canvas where you drag, connect and replay agents, tools and people, with the cost of every handoff, loops caught before they run up a bill, and contracts tested against 30 days of history. In porcelain grey and deep teal-slate. Try it at editions.lucidui.dev/relay." },
   { date: "8 October 2026", area: "Editions", kind: "Improved", title: "Every Edition sketch moves", text: "All the dot sketches in the collection now animate: their dots shimmer and the highlights twinkle, and the unannounced ones move more quietly. Reduced motion keeps them still." },
   { date: "8 October 2026", area: "Editions", kind: "Fixed", title: "Edition cards line up", text: "The cards in the collection now share one height and one baseline, with each Edition's one-liner above its preview link." },
   { date: "8 October 2026", area: "Editions", kind: "New", title: "Edition No. 02, Nightjar, is open to try", text: "Nightjar is an operations console for an AI platform: live traffic, 24,000 runs with step-by-step traces, model routing, prompts with version diffs, evals, keys and alerts, in violet night and lilac paper. Try it at editions.lucidui.dev/nightjar." },

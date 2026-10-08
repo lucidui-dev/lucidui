@@ -69,6 +69,35 @@ const LAYOUTS = {
     { x: 36, y: 20, w: 7, h: 1, a: 1, gold: true },
     { x: 32, y: 7, w: 12, h: 20, a: 0.1 }
   ],
+  flow: [
+    { x: 0, y: 0, w: 44, h: 2, a: 0.16 },
+    { x: 1, y: 0, w: 6, h: 1, a: 0.8 },
+    { x: 1, y: 11, w: 7, h: 5, a: 0.2 },
+    { x: 2, y: 13, w: 4, h: 1, a: 1, gold: true },
+    { x: 8, y: 13, w: 3, h: 1, a: 0.4 },
+    { x: 11, y: 11, w: 7, h: 5, a: 0.2 },
+    { x: 12, y: 13, w: 4, h: 1, a: 0.85 },
+    { x: 18, y: 13, w: 2, h: 1, a: 0.4 },
+    { x: 20, y: 7, w: 1, h: 13, a: 0.4 },
+    { x: 21, y: 7, w: 2, h: 1, a: 0.4 },
+    { x: 21, y: 19, w: 2, h: 1, a: 0.4 },
+    { x: 23, y: 5, w: 8, h: 5, a: 0.2 },
+    { x: 24, y: 7, w: 5, h: 1, a: 0.85 },
+    { x: 23, y: 17, w: 8, h: 5, a: 0.2 },
+    { x: 24, y: 19, w: 4, h: 1, a: 0.85 },
+    { x: 14, y: 4, w: 1, h: 7, a: 0.5, gold: true },
+    { x: 14, y: 4, w: 13, h: 1, a: 0.5, gold: true },
+    { x: 26, y: 4, w: 1, h: 1, a: 0.5, gold: true },
+    { x: 31, y: 7, w: 2, h: 1, a: 0.4 },
+    { x: 31, y: 19, w: 2, h: 1, a: 0.4 },
+    { x: 33, y: 7, w: 1, h: 13, a: 0.4 },
+    { x: 34, y: 13, w: 2, h: 1, a: 0.4 },
+    { x: 36, y: 11, w: 7, h: 5, a: 0.2 },
+    { x: 37, y: 13, w: 4, h: 1, a: 1, gold: true },
+    { x: 34, y: 23, w: 9, h: 4, a: 0.14 },
+    { x: 13, y: 25, w: 18, h: 2, a: 0.18 },
+    { x: 14, y: 25, w: 3, h: 1, a: 0.7 }
+  ],
   ledger: [
     { x: 0, y: 0, w: 44, h: 2, a: 0.16 },
     { x: 2, y: 4, w: 20, h: 3, a: 0.85 },
@@ -222,6 +251,19 @@ const EDITIONS = {
       ["You get", "The full source, a guide for AI agents, a README, a commercial licence and updates."],
       ["Not included", "Real model calls or a log pipeline. Point it at your gateway's runs and usage, one file to change."]
     ]
+  },
+  "03": {
+    no: "No. 03", name: "Relay", kind: "Multi-agent workflow builder", href: "/relay/",
+    summary: "A canvas for wiring agents, tools and people into one flow, then seeing what every handoff costs and where work goes in circles.",
+    rows: [
+      ["Screens", "Overview, a full canvas editor, Flows, Runs with a path panel, Contracts, a Library of blocks, Insights and Workspace with members and billing."],
+      ["Data", "6 flows, 6,001 runs with full paths, cost and traffic on every handoff, 6 contracts with 30 days of replay and 24 building blocks."],
+      ["Feel", "A soft rail with nested flows, porcelain grey and deep teal-slate, roomy cards and nodes with real depth."],
+      ["Built with", "Lucid UI only. Plain ES modules, no build step. About 1,400 lines of JavaScript and 500 of CSS."],
+      ["Works", "Drag, connect, multi-select and nudge; pan, zoom and minimap; Undo on every change; run replay step by step; phone to desktop."],
+      ["You get", "The full source, a guide for AI agents, a README, a commercial licence and updates."],
+      ["Not included", "An agent runtime or real model calls. Feed it your own flows and run logs; one file to change."]
+    ]
   }
 };
 
@@ -341,7 +383,7 @@ function How() {
 const PLATES = [
   { key: "01", no: "No. 01", name: "Meridian", layout: "console", state: "Live preview", now: true },
   { key: "02", no: "No. 02", name: "Nightjar", layout: "ops", state: "Live preview", now: true },
-  { no: "No. 03", layout: "planner", state: "Unannounced" },
+  { key: "03", no: "No. 03", name: "Relay", layout: "flow", state: "Live preview", now: true },
   { no: "No. 04", layout: "ledger", state: "Unannounced" }
 ];
 
