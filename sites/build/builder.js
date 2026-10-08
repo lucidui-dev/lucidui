@@ -550,7 +550,7 @@ function LeaveBuilder() {
     onClick: press,
     onBlur: () => { if (state.peek() === "confirm") { clearTimeout(timer); state.value = "idle"; } }
   },
-  h("span", { class: "b-leave-idle" }, h("span", { class: "b-hide-sm" }, "Leave"), Icon({ name: "arrow-right", size: 14 })),
+  h("span", { class: "b-leave-idle" }, "Leave", Icon({ name: "arrow-right", size: 14 })),
   h("span", { class: "b-leave-confirm" }, () => (state.value === "leaving" ? "Bye" : "Sure?"))));
 }
 
@@ -573,9 +573,10 @@ function Bar() {
     }),
     h("span", { class: "lucid-spacer" }),
     Tooltip({ label: "What is Builder?" }, Button({ variant: "ghost", size: "sm", icon: "info", class: "b-ghost", aria: { label: "What is Builder?" }, onClick: () => { guideOpen.value = true; } })),
-    h("button", { type: "button", class: "b-agent", "data-state": bridgeState, onClick: () => { agentOpen.value = true; } },
+    h("button", { type: "button", class: "b-agent", "data-state": bridgeState, aria: { label: () => BRIDGE_LABEL[bridgeState.value] }, onClick: () => { agentOpen.value = true; } },
       h("span", { class: "b-agent-dot", "aria-hidden": "true" }),
-      h("span", { class: "b-hide-sm" }, () => BRIDGE_LABEL[bridgeState.value])),
+      h("span", { class: "b-hide-sm" }, () => BRIDGE_LABEL[bridgeState.value]),
+      h("span", { class: "b-show-sm", "aria-hidden": "true" }, "Agent")),
     h("label", { class: "lucid-check b-auto" },
       h("input", { type: "checkbox", role: "switch", checked: auto, onChange: event => { auto.value = event.target.checked; } }),
       h("span", { class: "lucid-switch-track", "aria-hidden": "true" }),

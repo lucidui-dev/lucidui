@@ -276,3 +276,6 @@ body { background: var(--lucid-bg); }
 @media (prefers-reduced-motion: reduce) {
   .tr-halo, .tr-alert, .tr-elevator-ring, .tr-live i, .tr-line-status i, .tr-ripple circle { animation: none !important; }
 }
+@media (max-width: 640px) {
+  .tr-svg { height: 420px; }
+}

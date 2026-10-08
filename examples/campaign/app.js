@@ -242,7 +242,7 @@ function CountyPanel() {
       return h("div", { class: "cr-county-panel" },
         h("div", { class: "cr-eyebrow" }, "Statewide"),
         h("h3", "Where it will be decided"),
-        h("p", { class: "cr-muted" }, `${tossups.length} of ${COUNTIES.length} counties are toss-ups at the current margin. Hover or select a county.`),
+        h("p", { class: "cr-muted" }, `${tossups.length} of ${COUNTIES.length} counties are toss-ups at the current margin. Hover or tap a county.`),
         h("div", { class: "cr-chips" }, tossups.map(c => h("button", { type: "button", class: "cr-chip", onClick: () => { selectedCounty.value = c.id; } }, c.name, h("span", signed(countyMargin(c.id)))))));
     }
     const county = COUNTY[id];

@@ -278,6 +278,7 @@ function Matrix() {
             h("th", { scope: "row" }, label),
             cells.map(([kind, text], c) => h("td", {
               class: c === 0 ? "matrix-lucid" : null,
+              "data-name": COLUMNS[c],
               "data-col": String(c),
               "data-tone": tone(kind)
             },

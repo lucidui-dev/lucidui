@@ -33,14 +33,15 @@
     } catch {}
   </script>
   <style>
-    .ed-badge { position: fixed; z-index: 30; right: 16px; bottom: 16px; display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 14px; border-radius: 999px; font: 500 12.5px/1 "Geist", system-ui, sans-serif; color: #f5f2ea; background: rgb(27 22 56 / .9); box-shadow: 0 0 0 1px rgb(232 214 168 / .3), 0 18px 40px -18px #000; backdrop-filter: blur(10px); }
+    .ed-badge { position: fixed; z-index: 30; left: 0; right: 0; bottom: 0; height: 44px; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 0 8px 0 16px; padding-bottom: env(safe-area-inset-bottom); font: 500 12.5px/1 "Geist", system-ui, sans-serif; color: #e8f1f3; background: #0f0c22; box-shadow: 0 -1px 0 rgb(200 190 255 / .14); }
     .ed-badge b { font-weight: 600; color: #e8d6a8; }
-    .ed-badge a { display: inline-flex; align-items: center; height: 26px; padding: 0 12px; border-radius: 999px; color: #111; background: #e8d6a8; text-decoration: none; font-weight: 600; }
+    .ed-badge a { display: inline-flex; align-items: center; height: 28px; padding: 0 12px; border-radius: 999px; color: #111; background: #e8d6a8; text-decoration: none; font-weight: 600; }
     .ed-badge a:focus-visible { outline: 2px solid #e8d6a8; outline-offset: 2px; }
-    .ed-badge button { display: grid; place-items: center; width: 26px; height: 26px; padding: 0; border: 0; border-radius: 50%; color: rgb(245 242 234 / .6); background: none; cursor: pointer; font: inherit; font-size: 15px; }
-    .ed-badge button:hover { color: #f5f2ea; background: rgb(245 242 234 / .08); }
+    .ed-badge button { position: absolute; right: 8px; display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; color: rgb(232 241 243 / .6); background: none; cursor: pointer; font: inherit; font-size: 15px; }
+    .ed-badge button:hover { color: #e8f1f3; background: rgb(232 241 243 / .08); }
     .ed-badge[hidden] { display: none; }
-    @media (max-width: 900px) { .ed-badge { bottom: 12px; right: 12px; } .ed-badge span { display: none; } }
+    body:has(.ed-badge:not([hidden])) .nj { height: calc(100dvh - 44px); }
+    @media (max-width: 640px) { .ed-badge span { display: none; } }
   </style>
 </head>
 <body class="lucid-app">

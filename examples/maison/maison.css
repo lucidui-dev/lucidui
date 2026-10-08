@@ -178,3 +178,9 @@ body { background: var(--ms-bg); color: var(--ms-ink); }
   .ms-collection, .ms-showroom { padding: 28px 16px 96px; }
   .ms-rooms, .ms-fields { grid-template-columns: minmax(0, 1fr); }
 }
+@media (max-width: 640px) {
+  .ms-header { flex-wrap: wrap; height: auto; row-gap: 0; padding: 12px 16px 0; }
+  .ms-header-end { margin-left: auto; }
+  .ms-links { order: 3; flex: 1 1 100%; margin: 6px -16px 0; padding: 0 10px; mask-image: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 28px), transparent); -webkit-mask-image: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 28px), transparent); }
+  .ms-link { height: 42px; }
+}

@@ -217,6 +217,7 @@ export function NetworkMap() {
 
   const svg = h("svg", {
     class: "tr-svg",
+    preserveAspectRatio: "xMidYMid slice",
     viewBox: () => { const v = view.value; return `${v.x.toFixed(2)} ${v.y.toFixed(2)} ${v.w.toFixed(2)} ${v.h.toFixed(2)}`; },
     role: "group",
     aria: { label: "Subway network map. Use arrow keys to move along a line, L to switch line at an interchange, Enter to open a station." },

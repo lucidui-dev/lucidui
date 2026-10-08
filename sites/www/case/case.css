@@ -199,3 +199,20 @@
   .honest-list { grid-template-columns: minmax(0, 1fr); }
   .case-close { padding: 36px 26px; }
 }
+
+@media (max-width: 720px) {
+  .matrix-scroll { overflow: visible; }
+  .matrix { min-width: 0; }
+  .matrix thead { display: none; }
+  .matrix, .matrix tbody, .matrix tr { display: block; }
+  .matrix tr { padding: 16px 18px 12px; box-shadow: inset 0 -1px 0 var(--lucid-line); }
+  .matrix tbody tr:last-child { box-shadow: none; }
+  .matrix tbody th { display: block; width: auto; padding: 0 0 10px; font-size: 15px; font-weight: 650; box-shadow: none; }
+  .matrix td { display: grid; grid-template-columns: 112px minmax(0, 1fr); align-items: start; gap: 12px; padding: 7px 0; box-shadow: none; }
+  .matrix td::before { content: attr(data-name); font-size: 12.5px; font-weight: 600; color: var(--lucid-ink-3); padding-top: 1px; }
+  .matrix td.matrix-lucid { margin: 0 -10px 4px; padding: 9px 10px; border-radius: 12px; }
+  .matrix td.matrix-lucid::before { color: var(--lucid-ink); }
+  .matrix tbody tr:hover th, .matrix tbody tr:hover td { background: none; }
+  .matrix tbody tr:hover td.matrix-lucid { background: color-mix(in oklab, var(--site-obsidian) 9%, transparent); }
+  .matrix td > :not(.matrix-cell) { grid-column: 1 / -1; }
+}

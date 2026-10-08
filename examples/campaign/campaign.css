@@ -299,3 +299,6 @@ body { background: var(--cr-bg); color: var(--cr-ink); font-family: Barlow, syst
   .cr-night-list li { grid-template-columns: minmax(0, 1fr) 64px 110px; }
   .cr-night-list li .lucid-dotmeter, .cr-night-list li > :nth-child(2) { display: none; }
 }
+@media (max-width: 640px) {
+  .cr-tabs { mask-image: linear-gradient(90deg, #000 calc(100% - 36px), transparent); -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 36px), transparent); padding-right: 28px; }
+}

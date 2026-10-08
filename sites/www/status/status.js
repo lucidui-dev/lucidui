@@ -261,7 +261,8 @@ function Scope() {
   };
   const leave = () => { mouse = null; tip.dataset.show = "false"; if (still) draw(performance.now()); };
   wrap.addEventListener("pointermove", hover);
-  wrap.addEventListener("pointerleave", leave);
+  wrap.addEventListener("pointerdown", hover);
+  wrap.addEventListener("pointerleave", e => { if (e.pointerType !== "touch") leave(); });
 
   queueMicrotask(() => {
     size();
@@ -303,7 +304,7 @@ function Hero() {
         const [a, b] = HEADLINES[overall.value];
         return [a, h("span", { class: "st-gold" }, b)];
       }),
-      h("p", { class: "st-lede" }, `Checked from your browser, not from our servers. Every 15 seconds this page reaches out to the ${COUNT} places Lucid UI lives and draws what comes back. Hover the trace to see who answered.`)),
+      h("p", { class: "st-lede" }, `Checked from your browser, not from our servers. Every 15 seconds this page reaches out to the ${COUNT} places Lucid UI lives and draws what comes back. Hover or tap the trace to see who answered.`)),
     Scope(),
     h("div", { class: "st-wrap st-facts" },
       Fact("Reachable", () => `${up.value}/${SERVICES.length}`, () => (down.value ? "down" : "up")),
@@ -379,7 +380,7 @@ function SignalMap() {
         "data-hot": () => String(focus.value === n.s.id),
         aria: { label: () => `${n.s.name}, ${STATE_LABEL[n.s.state.value]}${n.s.ms.value != null ? `, ${fmtMs(n.s.ms.value)}` : ""}. Show its card` },
         onPointerenter: () => { focus.value = n.s.id; },
-        onPointerleave: () => { if (focus.peek() === n.s.id) focus.value = null; },
+        onPointerleave: e => { if (e.pointerType !== "touch" && focus.peek() === n.s.id) focus.value = null; },
         onFocus: () => { focus.value = n.s.id; },
         onBlur: () => { if (focus.peek() === n.s.id) focus.value = null; },
         onClick: () => showCard(n.s.id),
@@ -440,7 +441,7 @@ function SignalMap() {
 
   return h("section", { class: "st-map", id: "map" },
     h("div", { class: "st-wrap" },
-      Head("Signal map", `${COUNT[0].toUpperCase()}${COUNT.slice(1)} doors, one browser.`, "Every dot that leaves you is a real request. Gold comes back fast, white comes back slow, red never comes back. Hover a service to read it, select it to jump to its card."),
+      Head("Signal map", `${COUNT[0].toUpperCase()}${COUNT.slice(1)} doors, one browser.`, "Every dot that leaves you is a real request. Gold comes back fast, white comes back slow, red never comes back. Tap or hover a service to read it, and select it to jump to its card."),
       h("div", { class: "st-map-frame" }, svg, card)));
 }
 
@@ -477,7 +478,7 @@ function Strip(s, readout) {
       parts.push(h("g", {
         class: "st-strip-slot", "data-state": e.state, "data-last": String(i === KEEP - 1),
         onPointerenter: () => { readout.value = `${clock(e.at)} · ${e.ok ? fmtMs(e.ms) : "unreachable"}`; },
-        onPointerleave: () => { readout.value = null; }
+        onPointerleave: e => { if (e.pointerType !== "touch") readout.value = null; }
       },
         h("rect", { x: i * slot, y: 0, width: slot, height: H, class: "st-strip-hit" }),
         e.ok ? h("line", { x1: x, x2: x, y1: H - 4, y2: y, class: "st-strip-stem" }) : null,
@@ -494,7 +495,7 @@ function ServiceCard(s) {
     class: "st-card", id: `svc-${s.id}`, tabindex: -1, "data-state": s.state,
     "data-hot": () => String(focus.value === s.id),
     onPointerenter: () => { focus.value = s.id; },
-    onPointerleave: () => { if (focus.peek() === s.id) focus.value = null; }
+    onPointerleave: e => { if (e.pointerType !== "touch" && focus.peek() === s.id) focus.value = null; }
   },
     h("div", { class: "st-card-top" },
       h("i", { class: "st-dot", "data-state": s.state }),
@@ -526,7 +527,7 @@ function Board() {
   return h("section", { class: "st-board", id: "services" },
     h("div", { class: "st-wrap" },
       h("div", { class: "st-board-head" },
-        Head("Services", "Every heartbeat, as it lands.", "The last 40 checks for each service. Taller means slower. Hover any beat to read it."),
+        Head("Services", "Every heartbeat, as it lands.", "The last 40 checks for each service. Taller means slower. Hover or tap any beat to read it."),
         h("div", { class: "st-board-actions" },
           Button({ variant: "primary", icon: "zap", onClick: () => { runRound(); toast(`Checking all ${COUNT} now`); } }, "Check now"),
           Button({ variant: "ghost", icon: "clock", onClick: () => { paused.value = !paused.peek(); if (!paused.peek()) runRound(); else { clearTimeout(roundTimer); nextAt.value = Infinity; } } }, () => (paused.value ? "Resume" : "Pause")))),
@@ -587,7 +588,7 @@ function Train() {
   const pick = signal(null);
   return h("section", { class: "st-train", id: "releases" },
     h("div", { class: "st-wrap" },
-      Head("Releases", "The release line.", "Every version on npm, in order. The gaps between stops are real time. Hover a stop for when it shipped."),
+      Head("Releases", "The release line.", "Every version on npm, in order. The gaps between stops are real time. Hover or tap a stop for when it shipped."),
       h("div", { class: "st-line", ref: el => effect(() => { if (releases.value?.length) requestAnimationFrame(() => { el.scrollLeft = el.scrollWidth; }); }) }, () => {
         const list = releases.value;
         if (list === null) return h("p", { class: "st-quiet" }, "npm didn't answer, so the release line can't be drawn right now.");
@@ -595,7 +596,7 @@ function Train() {
         return h("ol", { class: "st-stops", style: { "--n": list.length } },
           list.map((r, i) => h("li", {
             class: "st-stop", "data-latest": String(i === list.length - 1), tabindex: 0,
-            onPointerenter: () => { pick.value = i; }, onPointerleave: () => { pick.value = null; },
+            onPointerenter: () => { pick.value = i; }, onPointerleave: e => { if (e.pointerType !== "touch") pick.value = null; },
             onFocus: () => { pick.value = i; }, onBlur: () => { pick.value = null; }
           },
             i ? h("span", { class: "st-gap" }, `+${ago(r.at - list[i - 1].at)}`) : null,

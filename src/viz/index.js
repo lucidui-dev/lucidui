@@ -415,10 +415,12 @@ export function DotCalendar({ days, unit = "events", label } = {}) {
   root = frame({
     aria: { label: label ?? "Activity calendar" },
     render: width => {
-      const list = read(days) ?? [];
-      if (!list.length) return null;
+      const all = read(days) ?? [];
+      if (!all.length) return null;
       const gutter = 30;
       const top = 18;
+      const fit = Math.max(4, Math.floor((width - gutter) / 8)) - 1;
+      const list = Math.ceil(all.length / 7) > fit ? all.slice(-fit * 7) : all;
       const first = new Date(list[0].date);
       const offset = (first.getDay() + 6) % 7;
       const weeks = Math.ceil((list.length + offset) / 7);
@@ -492,7 +494,7 @@ export function ChartCard({ title, subtitle, actions, table } = {}, chart) {
   };
   return h("section", { class: "lucid-card lucid-chart-card" },
     h("header", { class: "lucid-chart-head" },
-      h("div", { style: { flex: 1, minWidth: 0 } },
+      h("div", { class: "lucid-chart-heading" },
         h("h3", { class: "lucid-chart-title" }, title),
         subtitle ? h("p", { class: "lucid-chart-sub" }, subtitle) : null),
       actions ?? null,

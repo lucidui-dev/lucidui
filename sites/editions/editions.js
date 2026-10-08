@@ -461,7 +461,7 @@ const PLATES = [
 function Collection(L) {
   return h("section", { class: "ed-collection", id: "collection" },
     h("div", { class: "ed-wrap" },
-      Head("The collection", "Numbered, and released one at a time.", "Each Edition is designed, built and tested before the next one starts. Hover one to see exactly what's inside."),
+      Head("The collection", "Numbered, and released one at a time.", "Each Edition is designed, built and tested before the next one starts. Hover one, or tap What's inside, to see exactly what you get."),
       h("div", { class: "ed-shelf" },
         PLATES.map(p => {
           const ed = EDITIONS[p.key];

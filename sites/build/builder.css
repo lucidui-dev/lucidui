@@ -178,6 +178,7 @@ body.builder {
 .b-soon p { margin: 3px 0 0; font-size: 12.5px; line-height: 1.5; color: rgb(245 242 234 / .75); }
 .b-agent { display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px 0 10px; border: 0; border-radius: 8px; font: inherit; font-size: var(--lucid-text-sm); font-weight: 500; color: var(--lucid-ink-2); background: transparent; cursor: pointer; transition: background-color 160ms, color 160ms; }
 .b-agent:hover { color: var(--lucid-ink); background: var(--lucid-hover); }
+.b-show-sm { display: none; }
 .b-agent:focus-visible, .b-leave:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--lucid-ring); }
 .b-agent-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--lucid-ink-4, var(--lucid-ink-3)); opacity: .5; transition: background-color 300ms, box-shadow 300ms, opacity 300ms; }
 .b-agent[data-state="on"] { color: var(--lucid-ink); background: color-mix(in oklab, var(--b-champagne) 14%, transparent); }
@@ -224,6 +225,7 @@ body.builder {
   .b-editor { height: 56vh; }
   .b-right { grid-template-rows: 60vh 300px; }
   .b-hide-sm { display: none; }
+  .b-show-sm { display: inline; }
   .b-slash { display: none; }
   .b-run .lucid-kbd, .b-theme { display: none; }
 }
