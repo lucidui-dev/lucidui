@@ -1,5 +1,5 @@
-import { signal, h, onCleanup } from "/lucid/index.js";
-import { Button, Icon } from "/lucid/ui/index.js";
+import { signal, computed, h, onCleanup } from "/lucid/index.js";
+import { Button, Icon, Dialog, place } from "/lucid/ui/index.js";
 import { mountPage, jump } from "/shared/chrome.js";
 
 const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -49,6 +49,25 @@ const LAYOUTS = {
     { x: 32, y: 4, w: 11, h: 23, a: 0.12 },
     { x: 33, y: 5, w: 8, h: 1, a: 0.8 },
     { x: 33, y: 8, w: 9, h: 12, kind: "lines", gap: 3, a: 0.4 }
+  ],
+  ops: [
+    { x: 0, y: 0, w: 7, h: 28, a: 0.16 },
+    { x: 2, y: 3, w: 3, h: 1, a: 1, gold: true },
+    { x: 2, y: 6, w: 3, h: 1, a: 0.5 },
+    { x: 2, y: 9, w: 3, h: 1, a: 0.5 },
+    { x: 2, y: 12, w: 3, h: 1, a: 0.5 },
+    { x: 9, y: 1, w: 8, h: 4, a: 0.18 },
+    { x: 10, y: 2, w: 5, h: 2, a: 1, gold: true },
+    { x: 18, y: 1, w: 8, h: 4, a: 0.18 },
+    { x: 27, y: 1, w: 8, h: 4, a: 0.18 },
+    { x: 36, y: 1, w: 8, h: 4, a: 0.18 },
+    { x: 9, y: 7, w: 22, h: 20, kind: "lines", gap: 2, a: 0.32 },
+    { x: 32, y: 7, w: 12, h: 2, a: 0.7 },
+    { x: 33, y: 11, w: 5, h: 1, a: 1, gold: true },
+    { x: 35, y: 14, w: 8, h: 1, a: 0.6 },
+    { x: 33, y: 17, w: 3, h: 1, a: 0.6 },
+    { x: 36, y: 20, w: 7, h: 1, a: 1, gold: true },
+    { x: 32, y: 7, w: 12, h: 20, a: 0.1 }
   ],
   ledger: [
     { x: 0, y: 0, w: 44, h: 2, a: 0.16 },
@@ -173,6 +192,90 @@ function Plate({ layout, dim = false, label }) {
   return box;
 }
 
+const EDITIONS = {
+  "01": {
+    no: "No. 01", name: "Meridian", kind: "Revenue and customer console", href: "/meridian/",
+    summary: "A complete back office for a subscription business: revenue, customers, billing, support and the team, in one app.",
+    rows: [
+      ["Screens", "Overview, Customers, a customer page with six tabs, Plans and billing, Invoices, Inbox, Team with an audit log, and Settings with seven sections."],
+      ["Data", "2,385 customers, 11,771 invoices, 1,460 support conversations and 3,240 audit events, across 18 months of history."],
+      ["Feel", "A flush sidebar with sub-rails, warm grey and blue. Light, dark and system themes."],
+      ["Built with", "Lucid UI only. Plain ES modules, no build step. About 2,500 lines of JavaScript and 650 of CSS."],
+      ["Works", "Phone to desktop, keyboard and ⌘K, Undo on every change, previews for each role."],
+      ["You get", "The full source, a guide for AI agents, a README, a commercial licence and updates."],
+      ["Not included", "A backend, sign-in or real payments. The data is generated in the browser; connect your own API in one file."]
+    ]
+  },
+  "02": {
+    no: "No. 02", name: "Nightjar", kind: "AI operations console", href: "/nightjar/",
+    summary: "The console behind an AI platform: live traffic, every run and its trace, model routing, prompts, evals, keys and alerts.",
+    rows: [
+      ["Screens", "Pulse, Runs with a trace inspector, Customers, Models and routing, Prompts with version diffs, Evals, Keys and limits, Alerts and Settings."],
+      ["Data", "24,000 runs with step-by-step traces, 140 customers, 202 API keys, 8 models from 4 providers, 90 days of traffic and 14 prompts with history."],
+      ["Feel", "A floating dock and a three-panel run explorer, violet night and lilac paper, with an iridescent accent."],
+      ["Built with", "Lucid UI only. Plain ES modules, no build step. About 1,500 lines of JavaScript and 600 of CSS."],
+      ["Works", "Phone to desktop, keyboard and ⌘K, Undo on every change, live counters and a streaming run feed."],
+      ["You get", "The full source, a guide for AI agents, a README, a commercial licence and updates."],
+      ["Not included", "Real model calls or a log pipeline. Point it at your gateway's runs and usage, one file to change."]
+    ]
+  }
+};
+
+const openSheet = signal(null);
+
+function BreakdownBody(ed) {
+  return [
+    h("p", { class: "ed-bd-summary" }, ed.summary),
+    h("dl", { class: "ed-bd-rows" }, ed.rows.map(([k, v]) => h("div", { "data-k": k }, h("dt", k), h("dd", v))))
+  ];
+}
+
+function Breakdowns() {
+  const cards = new Map();
+  for (const [key, ed] of Object.entries(EDITIONS)) {
+    cards.set(key, h("div", { class: "ed-bd", popover: "manual", role: "tooltip", id: `ed-bd-${key}` },
+      h("header", h("span", { class: "ed-no" }, `${ed.no} · ${ed.name}`), h("small", ed.kind)),
+      BreakdownBody(ed),
+      h("footer", h("span", "Click to open the live preview"), Icon({ name: "arrow-up-right", size: 13 }))));
+  }
+  let current = null, timer = 0;
+  const hideNow = () => { if (current?.card.matches(":popover-open")) current.card.hidePopover(); current?.anchor.removeAttribute("aria-describedby"); current = null; };
+  const show = anchor => {
+    clearTimeout(timer);
+    const card = cards.get(anchor.dataset.edition);
+    if (!card) return;
+    timer = setTimeout(() => {
+      if (current && current.card !== card) hideNow();
+      current = { anchor, card };
+      anchor.setAttribute("aria-describedby", card.id);
+      if (!card.matches(":popover-open")) card.showPopover();
+      const r = anchor.getBoundingClientRect();
+      const side = r.left + r.width / 2 < innerWidth / 2 ? "right" : "left";
+      place(anchor, card, { placement: innerWidth < 980 ? (r.top < innerHeight / 2 ? "bottom-center" : "top-center") : `${side}-start`, offset: 14 });
+    }, current ? 0 : 220);
+  };
+  const hide = () => { clearTimeout(timer); timer = setTimeout(hideNow, 160); };
+  const anchorOf = node => node?.closest?.("[data-edition]");
+  document.addEventListener("pointerover", e => {
+    if (e.pointerType !== "mouse") return;
+    if (e.target.closest?.(".ed-bd")) { clearTimeout(timer); return; }
+    const a = anchorOf(e.target);
+    if (a) show(a);
+  });
+  document.addEventListener("pointerout", e => {
+    if (e.pointerType !== "mouse") return;
+    const from = anchorOf(e.target) ?? e.target.closest?.(".ed-bd");
+    if (from && !from.contains(e.relatedTarget) && !e.relatedTarget?.closest?.(".ed-bd") && !anchorOf(e.relatedTarget)) hide();
+  });
+  document.addEventListener("focusin", e => { const a = anchorOf(e.target); if (a && a.matches(":focus-visible")) show(a); });
+  document.addEventListener("focusout", e => { if (anchorOf(e.target)) hide(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") hideNow(); });
+  window.addEventListener("scroll", () => { if (current) hideNow(); }, { passive: true });
+  return [...cards.values(), Dialog({ open: computed(() => Boolean(openSheet.value)), size: "md", title: () => (openSheet.value ? `${EDITIONS[openSheet.value].no} · ${EDITIONS[openSheet.value].name}` : ""), description: () => (openSheet.value ? EDITIONS[openSheet.value].kind : ""), onClose: () => { openSheet.value = null; },
+    footer: () => (openSheet.value ? [h("span", { class: "lucid-spacer" }), Button({ variant: "primary", href: EDITIONS[openSheet.value].href, iconRight: "arrow-up-right" }, "Open the live preview")] : null) },
+  () => (openSheet.value ? h("div", { class: "ed-bd ed-bd-inline" }, BreakdownBody(EDITIONS[openSheet.value])) : null))];
+}
+
 function Hero(L) {
   return h("section", { class: "ed-hero" },
     h("div", { class: "ed-wrap ed-hero-grid" },
@@ -181,9 +284,9 @@ function Hero(L) {
         h("h1", { class: "ed-title" }, "Finished apps,", h("br"), h("em", "made to be yours.")),
         h("p", { class: "ed-lede" }, "Complete apps built only from Lucid UI. Every screen and every state designed, light and dark, phone to desktop. You get the source, a licence to ship it, and docs your agent can read, so it can extend the app from day one."),
         h("div", { class: "ed-actions" },
-          Button({ variant: "primary", size: "lg", href: "/meridian/", iconRight: "arrow-up-right" }, "Preview No. 01, Meridian"),
+          Button({ variant: "primary", size: "lg", href: "/meridian/", iconRight: "arrow-up-right", "data-edition": "01" }, "Preview No. 01, Meridian"),
           Button({ size: "lg", iconRight: "arrow-down", onClick: jump("collection") }, "See the collection"))),
-      h("a", { class: "ed-plate ed-plate-hero ed-plate-link", href: "/meridian/", aria: { label: "Open the live preview of Meridian, Edition No. 01" } },
+      h("a", { class: "ed-plate ed-plate-hero ed-plate-link", href: "/meridian/", "data-edition": "01", aria: { label: "Open the live preview of Meridian, Edition No. 01" } },
         h("div", { class: "ed-plate-head" },
           h("span", { class: "ed-no" }, "No. 01 · Meridian"),
           h("span", { class: "ed-plate-state" }, h("i"), "Live preview")),
@@ -232,8 +335,8 @@ function How() {
 }
 
 const PLATES = [
-  { no: "No. 01", name: "Meridian", layout: "console", state: "Live preview", now: true },
-  { no: "No. 02", layout: "shop", state: "Unannounced" },
+  { key: "01", no: "No. 01", name: "Meridian", layout: "console", state: "Live preview", now: true },
+  { key: "02", no: "No. 02", name: "Nightjar", layout: "ops", state: "Live preview", now: true },
   { no: "No. 03", layout: "planner", state: "Unannounced" },
   { no: "No. 04", layout: "ledger", state: "Unannounced" }
 ];
@@ -241,14 +344,21 @@ const PLATES = [
 function Collection(L) {
   return h("section", { class: "ed-collection", id: "collection" },
     h("div", { class: "ed-wrap" },
-      Head("The collection", "Numbered, and released one at a time.", "Each Edition is designed, built and tested before the next one starts. No. 01, Meridian, is open to try now."),
+      Head("The collection", "Numbered, and released one at a time.", "Each Edition is designed, built and tested before the next one starts. Hover one to see exactly what's inside."),
       h("div", { class: "ed-shelf" },
-        PLATES.map(p => h("figure", { class: "ed-plate", "data-now": String(Boolean(p.now)) },
-          h("div", { class: "ed-plate-head" },
-            h("span", { class: "ed-no" }, p.name ? `${p.no} · ${p.name}` : p.no),
-            h("span", { class: "ed-plate-state" }, h("i"), p.state)),
-          Plate({ layout: p.layout, dim: !p.now, label: p.now ? "The first Edition, in progress" : "An unannounced Edition" }),
-          h("figcaption", { class: "ed-plate-foot" }, p.now ? [h("span", "Revenue and customer console"), h("a", { href: "/meridian/" }, "Open the live preview", Icon({ name: "arrow-up-right", size: 13 }))] : h("span", "Details when it's ready")))))));
+        PLATES.map(p => {
+          const ed = EDITIONS[p.key];
+          return h("figure", { class: "ed-plate", "data-now": String(Boolean(p.now)) },
+            h("div", { class: "ed-plate-head" },
+              h("span", { class: "ed-no" }, p.name ? `${p.no} · ${p.name}` : p.no),
+              h("span", { class: "ed-plate-state" }, h("i"), p.state)),
+            ed ? h("a", { class: "ed-plate-hit", href: ed.href, "data-edition": p.key, aria: { label: `Open the live preview of ${ed.name}` } }, Plate({ layout: p.layout, label: `A sketch of ${ed.name}, drawn in dots` })) : Plate({ layout: p.layout, dim: true, label: "An unannounced Edition" }),
+            h("figcaption", { class: "ed-plate-foot" }, ed
+              ? [h("span", ed.kind), h("span", { class: "ed-plate-links" },
+                  h("button", { type: "button", class: "ed-inside-btn", onClick: () => { openSheet.value = p.key; } }, "What's inside"),
+                  h("a", { href: ed.href, "data-edition": p.key }, "Live preview", Icon({ name: "arrow-up-right", size: 13 })))]
+              : h("span", "Details when it's ready")));
+        }))));
 }
 
 function Free(L) {
@@ -295,7 +405,7 @@ function Head(eyebrow, title, lead) {
 
 mountPage({
   site: "editions",
-  main: L => [h("div", { class: "ed" }, Hero(L), Collection(L), Inside(), How(), Free(L), Faq())],
+  main: L => [h("div", { class: "ed" }, Hero(L), Collection(L), Inside(), How(), Free(L), Faq(), Breakdowns())],
   commands: [
     { group: "Editions", label: "The collection", icon: "star", run: jump("collection") },
     { group: "Editions", label: "What's in an Edition", icon: "layers", run: jump("inside") },

@@ -3,6 +3,8 @@ import { Badge } from "/lucid/ui/index.js";
 import { mountPage, SectionHead } from "/shared/chrome.js";
 
 const UPDATES = [
+  { date: "8 October 2026", area: "Editions", kind: "New", title: "Edition No. 02, Nightjar, is open to try", text: "Nightjar is an operations console for an AI platform: live traffic, 24,000 runs with step-by-step traces, model routing, prompts with version diffs, evals, keys and alerts, in violet night and lilac paper. Try it at editions.lucidui.dev/nightjar." },
+  { date: "8 October 2026", area: "Editions", kind: "Improved", title: "Hover an Edition to see what's inside", text: "Each Edition on editions.lucidui.dev now has a compact breakdown of its screens, data, build and what isn't included. It appears when you hover or focus an Edition, and opens as a dialog on phones." },
   { date: "8 October 2026", area: "Editions", kind: "Improved", title: "Meridian has a share card", text: "Links to the Meridian preview now show a card with the live Overview when shared on X and elsewhere." },
   { date: "8 October 2026", area: "Editions", kind: "New", title: "Edition No. 01, Meridian, is open to try", text: "Meridian is a revenue and customer console built only from Lucid UI: an overview with cohort retention, 2,385 customers, plans and failed payments, 11,771 invoices, a support inbox, team roles with an audit log, and full settings. Try the live preview at editions.lucidui.dev/meridian." },
   { date: "8 October 2026", area: "Site", kind: "Improved", title: "A quieter footer", text: "The footer now ends with the copyright line." },

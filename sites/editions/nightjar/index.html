@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Nightjar · Live preview · Lucid Editions</title>
+  <meta name="description" content="Live preview of Nightjar, Lucid Editions No. 02: an operations console for an AI platform, built only from Lucid UI.">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#13102a">
+  <meta property="og:site_name" content="Lucid Editions">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Nightjar · Lucid Editions No. 02">
+  <meta property="og:description" content="An operations console for an AI platform, built only with Lucid UI: live traffic, 24,000 runs with traces, model routing, prompts, evals and alerts. Try the live preview.">
+  <meta property="og:url" content="https://editions.lucidui.dev/nightjar/">
+  <meta property="og:image" content="/media/og/editions-nightjar.jpg">
+  <meta property="og:image:width" content="2400">
+  <meta property="og:image:height" content="1260">
+  <meta property="og:image:alt" content="Nightjar, Lucid Editions No. 02: an AI operations console showing requests, spend and a live run stream">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@lucidui_">
+  <meta name="twitter:title" content="Nightjar · Lucid Editions No. 02">
+  <meta name="twitter:description" content="An AI operations console built only with Lucid UI. Try the live preview.">
+  <meta name="twitter:image" content="/media/og/editions-nightjar.jpg">
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Geist+Mono:wght@400..600&display=swap">
+  <link rel="stylesheet" href="./app.css">
+  <script>
+    try {
+      const theme = localStorage.getItem("nightjar:theme");
+      if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme;
+    } catch {}
+  </script>
+  <style>
+    .ed-badge { position: fixed; z-index: 30; right: 16px; bottom: 16px; display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 14px; border-radius: 999px; font: 500 12.5px/1 "Geist", system-ui, sans-serif; color: #f5f2ea; background: rgb(27 22 56 / .9); box-shadow: 0 0 0 1px rgb(232 214 168 / .3), 0 18px 40px -18px #000; backdrop-filter: blur(10px); }
+    .ed-badge b { font-weight: 600; color: #e8d6a8; }
+    .ed-badge a { display: inline-flex; align-items: center; height: 26px; padding: 0 12px; border-radius: 999px; color: #111; background: #e8d6a8; text-decoration: none; font-weight: 600; }
+    .ed-badge a:focus-visible { outline: 2px solid #e8d6a8; outline-offset: 2px; }
+    .ed-badge button { display: grid; place-items: center; width: 26px; height: 26px; padding: 0; border: 0; border-radius: 50%; color: rgb(245 242 234 / .6); background: none; cursor: pointer; font: inherit; font-size: 15px; }
+    .ed-badge button:hover { color: #f5f2ea; background: rgb(245 242 234 / .08); }
+    .ed-badge[hidden] { display: none; }
+    @media (max-width: 900px) { .ed-badge { bottom: 12px; right: 12px; } .ed-badge span { display: none; } }
+  </style>
+</head>
+<body class="lucid-app">
+  <div id="app"></div>
+  <aside class="ed-badge" id="ed-badge" aria-label="Lucid Editions">
+    <span><b>Lucid Editions</b> No. 02 · live preview</span>
+    <a href="https://editions.lucidui.dev">Back to Editions</a>
+    <button type="button" aria-label="Hide this badge" onclick="document.getElementById('ed-badge').hidden = true">×</button>
+  </aside>
+  <script>if (window.top !== window.self) document.getElementById("ed-badge").hidden = true;</script>
+  <noscript>Nightjar needs JavaScript.</noscript>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
