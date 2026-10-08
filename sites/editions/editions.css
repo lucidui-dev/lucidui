@@ -154,3 +154,7 @@
 .ed-shelf .ed-plate-links { gap: 16px; }
 @media (max-width: 960px) { .ed-shelf { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 600px) { .ed-shelf { grid-template-columns: minmax(0, 1fr); } }
+.ed-shelf { display: grid; grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: calc((100% - 3 * 14px) / 4); overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scroll-padding-inline: 2px; padding: 8px 2px 14px; margin-inline: -2px; scrollbar-width: thin; scrollbar-color: rgb(232 214 168 / .25) transparent; }
+.ed-shelf > .ed-plate { scroll-snap-align: start; min-width: 0; }
+@media (max-width: 960px) { .ed-shelf { grid-template-columns: none; grid-auto-columns: calc((100% - 14px) / 2); } }
+@media (max-width: 600px) { .ed-shelf { grid-template-columns: none; grid-auto-columns: 86%; } }
