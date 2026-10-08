@@ -3,6 +3,7 @@ import { Badge } from "/lucid/ui/index.js";
 import { mountPage, SectionHead } from "/shared/chrome.js";
 
 const UPDATES = [
+  { date: "8 October 2026", area: "Editions", kind: "Fixed", title: "Edition cards line up", text: "The cards in the collection now share one height and one baseline, with each Edition's one-liner above its preview link." },
   { date: "8 October 2026", area: "Editions", kind: "New", title: "Edition No. 02, Nightjar, is open to try", text: "Nightjar is an operations console for an AI platform: live traffic, 24,000 runs with step-by-step traces, model routing, prompts with version diffs, evals, keys and alerts, in violet night and lilac paper. Try it at editions.lucidui.dev/nightjar." },
   { date: "8 October 2026", area: "Editions", kind: "Improved", title: "Hover an Edition to see what's inside", text: "Each Edition on editions.lucidui.dev now has a compact breakdown of its screens, data, build and what isn't included. It appears when you hover or focus an Edition, and opens as a dialog on phones." },
   { date: "8 October 2026", area: "Editions", kind: "Improved", title: "Meridian has a share card", text: "Links to the Meridian preview now show a card with the live Overview when shared on X and elsewhere." },
