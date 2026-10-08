@@ -98,6 +98,24 @@ const LAYOUTS = {
     { x: 13, y: 25, w: 18, h: 2, a: 0.18 },
     { x: 14, y: 25, w: 3, h: 1, a: 0.7 }
   ],
+  desk: [
+    { x: 0, y: 0, w: 44, h: 2, a: 0.16 },
+    { x: 1, y: 0, w: 5, h: 1, a: 0.8 },
+    { x: 8, y: 0, w: 12, h: 1, a: 1, gold: true },
+    { x: 0, y: 3, w: 44, h: 1, kind: "lines", gap: 1, a: 0.3 },
+    { x: 1, y: 5, w: 24, h: 13, a: 0.14 },
+    { x: 2, y: 7, w: 22, h: 10, kind: "bars", seed: [5, 6, 4, 7, 8, 6, 9, 7, 10, 8, 11, 9] },
+    { x: 26, y: 5, w: 17, h: 5, a: 0.14 },
+    { x: 27, y: 7, w: 8, h: 1, a: 1, gold: true },
+    { x: 26, y: 11, w: 8, h: 16, a: 0.12 },
+    { x: 27, y: 12, w: 6, h: 14, kind: "lines", gap: 2, a: 0.45 },
+    { x: 35, y: 11, w: 8, h: 16, a: 0.12 },
+    { x: 36, y: 12, w: 6, h: 14, kind: "lines", gap: 1, a: 0.3 },
+    { x: 1, y: 19, w: 12, h: 8, a: 0.14 },
+    { x: 2, y: 20, w: 10, h: 6, kind: "lines", gap: 2, a: 0.4 },
+    { x: 14, y: 19, w: 11, h: 8, a: 0.14 },
+    { x: 15, y: 25, w: 9, h: 1, a: 1, gold: true }
+  ],
   ledger: [
     { x: 0, y: 0, w: 44, h: 2, a: 0.16 },
     { x: 2, y: 4, w: 20, h: 3, a: 0.85 },
@@ -264,6 +282,19 @@ const EDITIONS = {
       ["You get", "The full source, a guide for AI agents, a README, a commercial licence and updates."],
       ["Not included", "An agent runtime or real model calls. Feed it your own flows and run logs; one file to change."]
     ]
+  },
+  "04": {
+    no: "No. 04", name: "Ledgerline", kind: "Market terminal", href: "/ledgerline/",
+    summary: "A trading and research terminal where every tool is a panel you drag, resize, link and save into workspaces.",
+    rows: [
+      ["Screens", "One desk of 14 panels: Chart, Quote, Watchlist, Movers, Heatmap, Macro strip, Order ticket, Order book, Time and sales, Positions, Orders, News, Economic calendar and Alerts."],
+      ["Data", "50 instruments ticking live every second, a year of daily history, today's minute bars, 120 headlines, 46 orders, 12 positions and an economic calendar."],
+      ["Feel", "A masthead with a command line, a scrolling ticker tape, a panel library on the right, midnight navy and cream paper, dense mono figures."],
+      ["Built with", "Lucid UI only. Plain ES modules, no build step. About 1,100 lines of JavaScript and 400 of CSS."],
+      ["Works", "Drag, resize, maximise and close panels; colour link groups; saved workspaces on F1 to F9; a command line; Undo for layout and orders; phone to desktop."],
+      ["You get", "The full source, a guide for AI agents, a README, a commercial licence and updates."],
+      ["Not included", "A market data feed or a broker. Swap the seeded market and the order actions for your own APIs; two files to change."]
+    ]
   }
 };
 
@@ -384,7 +415,7 @@ const PLATES = [
   { key: "01", no: "No. 01", name: "Meridian", layout: "console", state: "Live preview", now: true },
   { key: "02", no: "No. 02", name: "Nightjar", layout: "ops", state: "Live preview", now: true },
   { key: "03", no: "No. 03", name: "Relay", layout: "flow", state: "Live preview", now: true },
-  { no: "No. 04", layout: "ledger", state: "Unannounced" }
+  { key: "04", no: "No. 04", name: "Ledgerline", layout: "desk", state: "Live preview", now: true }
 ];
 
 function Collection(L) {
