@@ -137,16 +137,22 @@ function Plate({ layout, dim = false, label }) {
     const age = still ? 1e9 : t - born;
     const live = new Float32Array(COLS * ROWS);
     for (const b of bars) {
-      const breathe = still || dim ? 0 : Math.round(Math.sin(t / 900 + b.col * 0.6) * 0.6);
+      const breathe = still ? 0 : Math.round(Math.sin(t / (dim ? 1400 : 900) + b.col * 0.6) * 0.6);
       const height2 = Math.max(1, b.height + breathe);
       for (let k = 0; k < height2; k++) live[(b.base - k) * COLS + b.col] = b.last ? 2 : 0.85;
     }
+    const sweep = still ? -99 : ((t / (dim ? 70 : 45)) % (COLS + 24)) - 12;
     for (let row = 0; row < ROWS; row++) {
       for (let c = 0; c < COLS; c++) {
         const i = row * COLS + c;
         const reveal = Math.min(1, Math.max(0, (age - (c + row) * 22) / 500));
         let a = Math.max(cells[i], live[i] > 1 ? 1 : live[i]);
         let g = gold[i] || live[i] > 1;
+        if (!still) {
+          const d = Math.abs(c - sweep + row * 0.35);
+          if (d < 4) a += (1 - d / 4) * (cells[i] > 0.1 || live[i] ? 0.45 : 0.12);
+          if (g) a *= 0.8 + 0.2 * Math.sin(t / 520 + i * 1.7);
+        }
         const x = c * pitch + pitch / 2;
         const y = row * pitch + pitch / 2;
         if (mouse && !dim) {
@@ -154,7 +160,7 @@ function Plate({ layout, dim = false, label }) {
           if (d < 64) a = Math.max(a, 0.12) + (1 - d / 64) * 0.4;
         }
         const base = 0.06;
-        const alpha = dim ? base + a * 0.22 : base + a * 0.9 * reveal;
+        const alpha = dim ? base + a * 0.3 : base + a * 0.9 * reveal;
         ctx.beginPath();
         ctx.arc(x, y, a > 0.7 && !dim ? r * 1.2 : r, 0, Math.PI * 2);
         ctx.fillStyle = g && !dim ? `rgba(232,214,168,${Math.min(1, alpha)})` : `rgba(245,242,234,${Math.min(1, alpha)})`;
@@ -185,7 +191,7 @@ function Plate({ layout, dim = false, label }) {
       if (visible && !was && !still && !dim) born = Math.min(born, performance.now());
     });
     io.observe(box);
-    if (still || dim) draw(performance.now());
+    if (still) draw(performance.now());
     else frame = requestAnimationFrame(loop);
     onCleanup(() => { ro.disconnect(); io.disconnect(); cancelAnimationFrame(frame); });
   });
