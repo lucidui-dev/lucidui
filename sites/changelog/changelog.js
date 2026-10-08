@@ -3,6 +3,7 @@ import { Badge } from "/lucid/ui/index.js";
 import { mountPage, SectionHead } from "/shared/chrome.js";
 
 const UPDATES = [
+  { date: "8 October 2026", area: "Editions", kind: "Improved", title: "Meridian has a share card", text: "Links to the Meridian preview now show a card with the live Overview when shared on X and elsewhere." },
   { date: "8 October 2026", area: "Editions", kind: "New", title: "Edition No. 01, Meridian, is open to try", text: "Meridian is a revenue and customer console built only from Lucid UI: an overview with cohort retention, 2,385 customers, plans and failed payments, 11,771 invoices, a support inbox, team roles with an audit log, and full settings. Try the live preview at editions.lucidui.dev/meridian." },
   { date: "8 October 2026", area: "Site", kind: "Improved", title: "A quieter footer", text: "The footer now ends with the copyright line." },
   { date: "8 October 2026", area: "Site", kind: "Fixed", title: "The sandbox preview describes all eight demos", text: "Hovering Sandbox in the menu now describes the eight apps in the sandbox, not only the issue tracker it started with." },
