@@ -181,17 +181,17 @@ function Hero(L) {
         h("h1", { class: "ed-title" }, "Finished apps,", h("br"), h("em", "made to be yours.")),
         h("p", { class: "ed-lede" }, "Complete apps built only from Lucid UI. Every screen and every state designed, light and dark, phone to desktop. You get the source, a licence to ship it, and docs your agent can read, so it can extend the app from day one."),
         h("div", { class: "ed-actions" },
-          Button({ variant: "primary", size: "lg", iconRight: "arrow-down", onClick: jump("collection") }, "See the collection"),
-          Button({ size: "lg", href: L.playground, icon: "board" }, "Try the free demos"))),
-      h("figure", { class: "ed-plate ed-plate-hero" },
+          Button({ variant: "primary", size: "lg", href: "/meridian/", iconRight: "arrow-up-right" }, "Preview No. 01, Meridian"),
+          Button({ size: "lg", iconRight: "arrow-down", onClick: jump("collection") }, "See the collection"))),
+      h("a", { class: "ed-plate ed-plate-hero ed-plate-link", href: "/meridian/", aria: { label: "Open the live preview of Meridian, Edition No. 01" } },
         h("div", { class: "ed-plate-head" },
-          h("span", { class: "ed-no" }, "No. 01"),
-          h("span", { class: "ed-plate-state" }, h("i"), "In the studio")),
-        Plate({ layout: "console", label: "A sketch of the first Edition: an app console drawn in dots" }),
-        h("figcaption", { class: "ed-plate-foot" },
-          h("span", "Lucid UI only"),
-          h("span", "Light and dark"),
-          h("span", "Agent-ready")))));
+          h("span", { class: "ed-no" }, "No. 01 · Meridian"),
+          h("span", { class: "ed-plate-state" }, h("i"), "Live preview")),
+        Plate({ layout: "console", label: "A sketch of Meridian, a revenue console, drawn in dots" }),
+        h("div", { class: "ed-plate-foot" },
+          h("span", "Revenue console"),
+          h("span", "2,385 customers"),
+          h("span", "Open it")))));
 }
 
 const INSIDE = [
@@ -232,7 +232,7 @@ function How() {
 }
 
 const PLATES = [
-  { no: "No. 01", layout: "console", state: "In the studio", now: true },
+  { no: "No. 01", name: "Meridian", layout: "console", state: "Live preview", now: true },
   { no: "No. 02", layout: "shop", state: "Unannounced" },
   { no: "No. 03", layout: "planner", state: "Unannounced" },
   { no: "No. 04", layout: "ledger", state: "Unannounced" }
@@ -241,14 +241,14 @@ const PLATES = [
 function Collection(L) {
   return h("section", { class: "ed-collection", id: "collection" },
     h("div", { class: "ed-wrap" },
-      Head("The collection", "Numbered, and released one at a time.", "Each Edition is designed, built and tested before the next one starts. The first is in the studio now."),
+      Head("The collection", "Numbered, and released one at a time.", "Each Edition is designed, built and tested before the next one starts. No. 01, Meridian, is open to try now."),
       h("div", { class: "ed-shelf" },
         PLATES.map(p => h("figure", { class: "ed-plate", "data-now": String(Boolean(p.now)) },
           h("div", { class: "ed-plate-head" },
-            h("span", { class: "ed-no" }, p.no),
+            h("span", { class: "ed-no" }, p.name ? `${p.no} · ${p.name}` : p.no),
             h("span", { class: "ed-plate-state" }, h("i"), p.state)),
           Plate({ layout: p.layout, dim: !p.now, label: p.now ? "The first Edition, in progress" : "An unannounced Edition" }),
-          h("figcaption", { class: "ed-plate-foot" }, p.now ? [h("span", "Coming first"), h("a", { href: L.x, target: "_blank", rel: "noopener" }, "Follow for the release", Icon({ name: "arrow-up-right", size: 13 }))] : h("span", "Details when it's ready")))))));
+          h("figcaption", { class: "ed-plate-foot" }, p.now ? [h("span", "Revenue and customer console"), h("a", { href: "/meridian/" }, "Open the live preview", Icon({ name: "arrow-up-right", size: 13 }))] : h("span", "Details when it's ready")))))));
 }
 
 function Free(L) {

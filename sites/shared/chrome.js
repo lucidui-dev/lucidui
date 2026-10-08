@@ -42,8 +42,6 @@ export function links(site) {
     npm: "https://www.npmjs.com/package/@lucidui-dev/core",
     reddit: "https://www.reddit.com/user/lucidui_",
     discord: "https://discord.gg/ZsWe7AqFV",
-    maintainer: "https://x.com/thisisez_",
-    maintainer_github: "https://github.com/thisisezra",
     hello: "mailto:hello@lucidui.dev",
     press_mail: "mailto:press@lucidui.dev",
     security: "mailto:security@lucidui.dev",
@@ -350,12 +348,7 @@ function Footer(L) {
       column("Company", [["Press", L.press], ["Privacy", L.privacy], ["License", L.license], ["legal@lucidui.dev", L.legal]])),
     h("div", { class: "site-wrap foot-base" },
       h("span", { class: "foot-copy" },
-        `© ${new Date().getFullYear()} Lucid UI`,
-        h("span", { class: "foot-sep", "aria-hidden": "true" }, "|"),
-        "maintained by ",
-        h("a", { href: L.maintainer_github, target: "_blank", rel: "noopener" }, "Ezra"),
-        h("span", { class: "foot-sep", "aria-hidden": "true" }, "·"),
-        h("a", { href: L.maintainer, target: "_blank", rel: "noopener", aria: { label: "@thisisez_ on X" } }, "@thisisez_")),
+        `© ${new Date().getFullYear()} Lucid UI`),
       h("span", { class: "foot-base-links" }, h("a", { href: L.press }, "Press"), h("a", { href: L.privacy }, "Privacy"), h("a", { href: L.license }, "License"))));
 }
 

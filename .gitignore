@@ -7,3 +7,5 @@ _INTERNAL/
 CHANGELOG-RAW.md
 bundle/
 media/video/*.mp4
+sites/editions/meridian/app.js
+sites/editions/meridian/app.css
