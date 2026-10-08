@@ -141,7 +141,6 @@ function Plate({ layout, dim = false, label }) {
       const height2 = Math.max(1, b.height + breathe);
       for (let k = 0; k < height2; k++) live[(b.base - k) * COLS + b.col] = b.last ? 2 : 0.85;
     }
-    const sweep = still ? -99 : ((t / (dim ? 70 : 45)) % (COLS + 24)) - 12;
     for (let row = 0; row < ROWS; row++) {
       for (let c = 0; c < COLS; c++) {
         const i = row * COLS + c;
@@ -149,9 +148,8 @@ function Plate({ layout, dim = false, label }) {
         let a = Math.max(cells[i], live[i] > 1 ? 1 : live[i]);
         let g = gold[i] || live[i] > 1;
         if (!still) {
-          const d = Math.abs(c - sweep + row * 0.35);
-          if (d < 4) a += (1 - d / 4) * (cells[i] > 0.1 || live[i] ? 0.45 : 0.12);
-          if (g) a *= 0.8 + 0.2 * Math.sin(t / 520 + i * 1.7);
+          if (g) a *= 0.72 + 0.28 * Math.sin(t / 520 + i * 1.7);
+          else if (cells[i] > 0.1) a *= 0.82 + 0.18 * Math.sin(t / 760 + i * 2.3);
         }
         const x = c * pitch + pitch / 2;
         const y = row * pitch + pitch / 2;
