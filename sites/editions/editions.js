@@ -116,6 +116,32 @@ const LAYOUTS = {
     { x: 14, y: 19, w: 11, h: 8, a: 0.14 },
     { x: 15, y: 25, w: 9, h: 1, a: 1, gold: true }
   ],
+  feed: [
+    { x: 0, y: 0, w: 6, h: 28, a: 0.14 },
+    { x: 2, y: 2, w: 2, h: 1, a: 1, gold: true },
+    { x: 2, y: 5, w: 2, h: 1, a: 0.5 },
+    { x: 2, y: 8, w: 2, h: 1, a: 0.5 },
+    { x: 2, y: 11, w: 2, h: 1, a: 0.5 },
+    { x: 1, y: 22, w: 4, h: 2, a: 1, gold: true },
+    { x: 8, y: 1, w: 22, h: 3, a: 0.14 },
+    { x: 9, y: 2, w: 9, h: 1, a: 0.6 },
+    { x: 8, y: 6, w: 2, h: 2, a: 0.7 },
+    { x: 11, y: 6, w: 6, h: 1, a: 0.85 },
+    { x: 11, y: 8, w: 17, h: 1, a: 0.4 },
+    { x: 8, y: 11, w: 2, h: 2, a: 0.7 },
+    { x: 11, y: 11, w: 5, h: 1, a: 0.85 },
+    { x: 11, y: 13, w: 18, h: 5, a: 0.16 },
+    { x: 20, y: 14, w: 3, h: 2, a: 1, gold: true },
+    { x: 8, y: 21, w: 2, h: 2, a: 0.7 },
+    { x: 11, y: 21, w: 7, h: 1, a: 0.85 },
+    { x: 11, y: 23, w: 15, h: 1, a: 0.4 },
+    { x: 11, y: 25, w: 12, h: 1, a: 0.4 },
+    { x: 32, y: 1, w: 12, h: 12, a: 0.12 },
+    { x: 33, y: 3, w: 9, h: 9, kind: "lines", gap: 2, a: 0.45 },
+    { x: 32, y: 15, w: 12, h: 12, a: 0.12 },
+    { x: 33, y: 17, w: 10, h: 8, kind: "lines", gap: 3, a: 0.35 },
+    { x: 33, y: 17, w: 2, h: 1, a: 1, gold: true }
+  ],
   ledger: [
     { x: 0, y: 0, w: 44, h: 2, a: 0.16 },
     { x: 2, y: 4, w: 20, h: 3, a: 0.85 },
@@ -295,6 +321,19 @@ const EDITIONS = {
       ["You get", "The full source, a guide for AI agents, a README, a commercial licence and updates."],
       ["Not included", "A market data feed or a broker. Swap the seeded market and the order actions for your own APIs; two files to change."]
     ]
+  },
+  "05": {
+    no: "No. 05", name: "Murmur", kind: "Microblog, rethought", href: "/murmur/",
+    summary: "A calmer social app built around the original question, “what are you doing?”: now lines, a feed that ends, lenses instead of an algorithm.",
+    rows: [
+      ["Screens", "Home with four lenses, a conversation pane, Explore with topics, Notifications, Messages, Profiles with a year of activity, Saved and Settings."],
+      ["Data", "50 people and a year of history: about 13,500 murmurs with threads, quotes, polls, pictures and links, 140 notifications and 12 message threads."],
+      ["Feel", "A floating icon dock, a full-width feed, a Now column that turns into the conversation, sage paper and moss night with a lime accent."],
+      ["Built with", "Lucid UI only. Plain ES modules, no build step. About 1,200 lines of JavaScript and 450 of CSS, plus a custom icon set."],
+      ["Works", "Live new murmurs, a caught-up line, quiet numbers, fleeting posts, a composer with polls and pictures, Undo on everything, phone to wide screen."],
+      ["You get", "The full source, a guide for AI agents, a README, a commercial licence and updates."],
+      ["Not included", "Accounts, a backend or real-time delivery. Point the store at your API; one file to change."]
+    ]
   }
 };
 
@@ -415,7 +454,8 @@ const PLATES = [
   { key: "01", no: "No. 01", name: "Meridian", layout: "console", state: "Live preview", now: true },
   { key: "02", no: "No. 02", name: "Nightjar", layout: "ops", state: "Live preview", now: true },
   { key: "03", no: "No. 03", name: "Relay", layout: "flow", state: "Live preview", now: true },
-  { key: "04", no: "No. 04", name: "Ledgerline", layout: "desk", state: "Live preview", now: true }
+  { key: "04", no: "No. 04", name: "Ledgerline", layout: "desk", state: "Live preview", now: true },
+  { key: "05", no: "No. 05", name: "Murmur", layout: "feed", state: "Live preview", now: true }
 ];
 
 function Collection(L) {
