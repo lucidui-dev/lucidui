@@ -394,3 +394,14 @@ a.b-name:hover { color: var(--lucid-ink-2); }
   .b-ins-browse, .b-ins-dialog .lucid-dialog-foot .lucid-spacer { display: none; }
   .b-ins-dialog .lucid-dialog-foot .lucid-btn { flex: 1 1 auto; justify-content: center; }
 }
+.b-gh { display: grid; gap: 14px; min-height: 120px; }
+.b-gh p { margin: 0; font-size: 14px; line-height: 1.6; color: var(--lucid-ink-2); }
+.b-gh ul { display: grid; gap: 6px; margin: 12px 0 0; padding-left: 20px; font-size: 13.5px; color: var(--lucid-ink-2); }
+.b-gh-wait { color: var(--lucid-ink-3) !important; }
+.b-gh-code { display: grid; justify-items: center; gap: 14px; padding: 8px 0; text-align: center; }
+.b-gh-user-code { padding: 14px 22px; border: 0; border-radius: 12px; font: 600 30px/1 var(--lucid-font-mono); letter-spacing: .12em; color: var(--lucid-ink); background: var(--lucid-surface-sunken); box-shadow: inset 0 0 0 1px var(--lucid-line); cursor: copy; }
+.b-gh-form { display: grid; gap: 16px; }
+.b-gh-who { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; color: var(--lucid-ink) !important; }
+.b-gh-who svg { color: var(--lucid-success); }
+.b-gh a { color: var(--lucid-ink); text-underline-offset: 3px; overflow-wrap: anywhere; }
+.b-gh-deploy { display: flex; flex-wrap: wrap; gap: 8px; }

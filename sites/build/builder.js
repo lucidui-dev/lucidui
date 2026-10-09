@@ -1,11 +1,12 @@
 import { signal, computed, effect, h, mount, For, Show, untrack, version } from "/lucid/index.js";
-import { Button, Segmented, Dialog, Tooltip, Kbd, Icon, Menu, Input, Field, EmptyState, hotkey, toast } from "/lucid/ui/index.js";
+import { Button, Segmented, Dialog, Tooltip, Kbd, Icon, Menu, Input, Field, Switch, EmptyState, hotkey, toast } from "/lucid/ui/index.js";
 import { theme, dark } from "/shared/chrome.js";
 import { highlight } from "/shared/code.js";
 import { TEMPLATES } from "/templates.js";
 import * as LucidCore from "/lucid/index.js";
 import * as LucidUI from "/lucid/ui/index.js";
 import * as LucidViz from "/lucid/viz/index.js";
+import * as GitHub from "/github.js";
 import { SETS, COMPONENTS, sourceOf, appSource, usesName, unquoted } from "/shared/catalog.js";
 import { PROJECT, entryOf, safe, dataModule, projectMap, projectStyles, titleFrom, cdn, pageHead, standalone, SANDBOX } from "/runtime.js";
 import { projects, loadProject, saveProject, removeProject, makeProject, snapshot, migrate, fileKind, validName, relink, encodeShare, decodeShare, publishShare, fetchShare, reportShare, zip, since } from "/workspace.js";
@@ -31,6 +32,9 @@ const fullOpen = signal(false);
 const historyOpen = signal(false);
 const shareOpen = signal(false);
 const insertOpen = signal(false);
+const githubOpen = signal(false);
+const githubReady = signal(false);
+GitHub.enabled().then(on => { githubReady.value = on; });
 let editorArea = null;
 const caret = signal(null);
 const naming = signal(null);
@@ -159,9 +163,13 @@ function save(name, data, type) {
   setTimeout(() => URL.revokeObjectURL(url), 4000);
 }
 
+function projectEntries(p) {
+  const readme = `# ${p.name}\n\nBuilt with Lucid UI (https://lucidui.dev) in Builder.\n\nServe this folder with any static server, for example \`npx serve .\`, then open it in a browser. Opening index.html straight from disk won't work, because browsers block ES modules on file://.\n\nTo put it online, see https://docs.lucidui.dev/deploy/\n`;
+  return [{ name: "index.html", text: zipIndex(p.files) }, ...p.files.map(f => ({ name: f.name, text: f.text })), { name: "README.md", text: readme }];
+}
+
 function downloadZip(p) {
-  const readme = `# ${p.name}\n\nBuilt with Lucid UI (https://lucidui.dev) in Builder.\n\nServe this folder with any static server, for example \`npx serve .\`, then open it in a browser. Opening index.html straight from disk won't work, because browsers block ES modules on file://.\n`;
-  save(`${slug(p.name)}.zip`, zip([{ name: "index.html", text: zipIndex(p.files) }, ...p.files, { name: "README.md", text: readme }]));
+  save(`${slug(p.name)}.zip`, zip(projectEntries(p)));
   toast(`${p.name} downloaded`, { tone: "success", description: `${p.files.length} file${p.files.length === 1 ? "" : "s"}, an index.html and a README in one zip.` });
 }
 
@@ -196,7 +204,7 @@ function ExportMenu() {
     placement: "bottom-end",
     width: "270px",
     trigger: Button({ size: "sm", icon: "download", class: "b-export", aria: { label: "Export" } }, h("span", { class: "b-hide-sm" }, "Export")),
-    items: [
+    items: () => [
       { group: "View" },
       { label: "Full screen", icon: "maximize", hint: "⇧⌘F", onSelect: () => { fullOpen.value = true; } },
       { label: "Open in a new tab", icon: "external", hint: "⇧⌘O", onSelect: exportActions.open },
@@ -206,6 +214,7 @@ function ExportMenu() {
       { label: "Download index.html", icon: "download", hint: "One page", onSelect: exportActions.html },
       { label: "Download this file", icon: "download", onSelect: exportActions.file },
       { label: "Copy this file", icon: "copy", onSelect: exportActions.copy },
+      ...(githubReady.value ? [{ separator: true }, { group: "Publish elsewhere" }, { label: "Push to GitHub", icon: "external", hint: "Repo + Pages", onSelect: () => { githubOpen.value = true; } }] : []),
       { separator: true },
       { label: "How to put it online", icon: "info", hint: "Guide", onSelect: () => window.open("https://docs.lucidui.dev/deploy/", "_blank", "noopener") }
     ]
@@ -924,6 +933,103 @@ function InsertDialog() {
         })));
 }
 
+const GH_ERRORS = { exists: "You already have a repository with that name. Pick another name, or choose Update to push into it.", denied: "GitHub sign-in was cancelled.", expired: "The code expired. Start again.", "signed out": "GitHub signed you out. Connect again.", missing: "That repository wasn't found, or Lucid can't write to it.", "slow down": "Too many sign-ins from here in the last hour. Try again soon." };
+
+function GitHubDialog() {
+  const stage = signal("idle");
+  const login = signal("");
+  const device = signal(null);
+  const repo = signal("");
+  const pages = signal(true);
+  const progress = signal("");
+  const result = signal(null);
+  let abort = null;
+  const token = () => GitHub.savedToken();
+  const linked = () => project.value?.github ?? null;
+  effect(() => {
+    if (!githubOpen.value) { abort?.abort(); return; }
+    const p = project.peek();
+    result.value = null; progress.value = "";
+    repo.value = p?.github?.repo ?? GitHub.repoName(p?.name ?? "");
+    const t = token();
+    if (!t) { stage.value = "idle"; return; }
+    stage.value = "checking";
+    GitHub.whoami(t).then(name => { login.value = name; stage.value = "ready"; }, () => { GitHub.saveToken(null); stage.value = "idle"; });
+  });
+  const connect = async () => {
+    stage.value = "starting";
+    abort = new AbortController();
+    try {
+      const start = await GitHub.startSignIn();
+      device.value = start;
+      stage.value = "waiting";
+      const t = await GitHub.waitForToken(start, { signal: abort.signal });
+      GitHub.saveToken(t);
+      login.value = await GitHub.whoami(t);
+      stage.value = "ready";
+    } catch (error) {
+      if (error.message === "cancelled") return;
+      stage.value = "idle";
+      toast("Couldn't connect to GitHub", { tone: "danger", description: GH_ERRORS[error.message] ?? "Try again in a moment." });
+    }
+  };
+  const send = async update => {
+    const p = project.peek();
+    if (!p) return;
+    const name = GitHub.repoName(repo.peek());
+    const owner = update && p.github ? p.github.owner : login.peek();
+    stage.value = "pushing";
+    try {
+      const out = await GitHub.push(token(), { owner, repo: name, files: projectEntries(p), create: !update, description: `${p.name}, built with Lucid UI`, pages: pages.peek(), onProgress: (n, total, file) => { progress.value = file ? `Uploading ${file} (${n + 1} of ${total})` : "Finishing up"; } });
+      const linkedProject = { ...project.peek(), github: { owner, repo: name } };
+      project.value = linkedProject; saveProject(linkedProject);
+      result.value = out;
+      stage.value = "done";
+    } catch (error) {
+      stage.value = "ready";
+      toast("Couldn't push to GitHub", { tone: "danger", description: GH_ERRORS[error.message] ?? "GitHub didn't accept the upload. Try again." });
+    }
+  };
+  const signOut = () => { GitHub.saveToken(null); login.value = ""; stage.value = "idle"; };
+  const copyCode = () => navigator.clipboard?.writeText(device.peek()?.user_code ?? "").then(() => toast("Code copied", { tone: "success" }), () => {});
+  const deployLinks = url => [
+    Button({ size: "sm", icon: "external", href: `https://vercel.com/new/clone?repository-url=${encodeURIComponent(url)}`, target: "_blank", rel: "noopener" }, "Deploy on Vercel"),
+    Button({ size: "sm", icon: "external", href: `https://app.netlify.com/start/deploy?repository=${encodeURIComponent(url)}`, target: "_blank", rel: "noopener" }, "Deploy on Netlify")
+  ];
+  return Dialog({ open: githubOpen, size: "md", title: "Push to GitHub", description: "Put this project in a GitHub repository, then host it on GitHub Pages, Vercel or Netlify.",
+    footer: [() => {
+      const s = stage.value;
+      const close = Button({ variant: "ghost", onClick: () => { githubOpen.value = false; } }, s === "done" ? "Done" : "Cancel");
+      if (s === "idle") return [h("span", { class: "lucid-spacer" }), close, Button({ variant: "primary", icon: "link", onClick: connect }, "Connect GitHub")];
+      if (s === "ready") return [Button({ variant: "ghost", size: "sm", onClick: signOut }, `Not @${login.value}?`), h("span", { class: "lucid-spacer" }), close,
+        linked.value && linked.value.owner === login.value ? Button({ onClick: () => send(true) }, `Update ${linked.value.repo}`) : null,
+        Button({ variant: "primary", icon: "plus", disabled: () => !GitHub.repoName(repo.value), onClick: () => send(false) }, "Create repository")];
+      return [h("span", { class: "lucid-spacer" }), close];
+    }] },
+    h("div", { class: "b-gh" }, () => {
+      const s = stage.value;
+      if (s === "idle") return h("div", { class: "b-gh-intro" },
+        h("p", "Connecting opens GitHub, where you approve Lucid Builder with a short code. Builder can then create public repositories in your account. Your sign-in stays in this tab, and Lucid stores nothing."),
+        h("ul", h("li", "Every file in the project, plus an index.html and a README"), h("li", "Optional GitHub Pages site at your-name.github.io"), h("li", "One-click deploy to Vercel or Netlify after")));
+      if (s === "starting" || s === "checking") return h("p", { class: "b-gh-wait" }, s === "starting" ? "Asking GitHub for a code…" : "Checking your GitHub sign-in…");
+      if (s === "waiting") return h("div", { class: "b-gh-code" },
+        h("p", "Open GitHub and enter this code:"),
+        h("button", { type: "button", class: "b-gh-user-code", onClick: copyCode, aria: { label: "Copy code" } }, () => device.value?.user_code ?? ""),
+        Button({ variant: "primary", icon: "external", href: () => device.value?.verification_uri ?? "https://github.com/login/device", target: "_blank", rel: "noopener" }, "Open github.com/login/device"),
+        h("p", { class: "b-gh-wait" }, "Waiting for you to approve it on GitHub…"));
+      if (s === "ready") return h("div", { class: "b-gh-form" },
+        h("p", { class: "b-gh-who" }, Icon({ name: "check-circle", size: 15 }), "Connected as ", h("b", () => `@${login.value}`)),
+        Field({ label: "Repository name", hint: () => `github.com/${login.value}/${GitHub.repoName(repo.value)}` }, Input({ value: repo, onInput: e => { repo.value = e.target.value; } })),
+        Switch({ label: "Publish it with GitHub Pages", checked: pages.peek(), onChange: e => { pages.value = e.target.checked; } }));
+      if (s === "pushing") return h("p", { class: "b-gh-wait" }, progress);
+      const out = result.value;
+      return h("div", { class: "b-gh-done" },
+        h("p", { class: "b-gh-who" }, Icon({ name: "check-circle", size: 15 }), "Pushed to ", h("a", { href: out.url, target: "_blank", rel: "noopener" }, out.url.replace("https://", ""))),
+        out.site ? h("p", { class: "b-gh-note" }, "GitHub Pages is switched on. Your site appears at ", h("a", { href: out.site, target: "_blank", rel: "noopener" }, out.site.replace("https://", "")), " in a minute or two.") : null,
+        h("div", { class: "b-gh-deploy" }, deployLinks(out.url)));
+    }));
+}
+
 function Thumb(meta) {
   const host = h("div", { class: "b-thumb", "aria-hidden": "true" });
   const io = new IntersectionObserver(([e]) => {
@@ -1109,7 +1215,8 @@ function App() {
     NameDialog(),
     HistoryDialog(),
     ShareDialog(),
-    InsertDialog());
+    InsertDialog(),
+    GitHubDialog());
 }
 
 mount(App, "#app");
