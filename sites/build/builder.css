@@ -403,5 +403,5 @@ a.b-name:hover { color: var(--lucid-ink-2); }
 .b-gh-form { display: grid; gap: 16px; }
 .b-gh-who { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; color: var(--lucid-ink) !important; }
 .b-gh-who svg { color: var(--lucid-success); }
-.b-gh a { color: var(--lucid-ink); text-underline-offset: 3px; overflow-wrap: anywhere; }
+.b-gh a:not(.lucid-btn) { color: var(--lucid-ink); text-underline-offset: 3px; overflow-wrap: anywhere; }
 .b-gh-deploy { display: flex; flex-wrap: wrap; gap: 8px; }
