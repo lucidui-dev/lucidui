@@ -1,8 +1,9 @@
-import { signal, computed, effect, h, mount, For, Show, version } from "/lucid/index.js";
-import { Button, Select, Segmented, Dialog, Tooltip, Kbd, Icon, Menu, hotkey, toast } from "/lucid/ui/index.js";
+import { signal, computed, effect, h, mount, For, Show, untrack, version } from "/lucid/index.js";
+import { Button, Segmented, Dialog, Tooltip, Kbd, Icon, Menu, Input, Field, EmptyState, hotkey, toast } from "/lucid/ui/index.js";
 import { theme, dark } from "/shared/chrome.js";
 import { highlight } from "/shared/code.js";
 import { TEMPLATES } from "/templates.js";
+import { projects, loadProject, saveProject, removeProject, makeProject, snapshot, migrate, fileKind, validName, relink, encodeShare, decodeShare, zip, since } from "/workspace.js";
 
 const store = {
   get(key, fallback) { try { return localStorage.getItem(`lucid-builder:${key}`) ?? fallback; } catch { return fallback; } },
@@ -11,8 +12,10 @@ const store = {
 };
 
 const byKey = Object.fromEntries(TEMPLATES.map(t => [t.value, t]));
-const template = signal(byKey[store.get("template")] ? store.get("template") : TEMPLATES[0].value);
-const code = signal(store.get(`draft2:${template.peek()}`, byKey[template.peek()].code));
+migrate(TEMPLATES);
+const view = signal("home");
+const project = signal(null);
+const code = signal("");
 const auto = signal(store.get("auto", "on") === "on");
 const logs = signal([]);
 const runs = signal(0);
@@ -20,19 +23,33 @@ const status = signal("idle");
 const agentOpen = signal(false);
 const guideOpen = signal(store.get("guide") !== "seen");
 const fullOpen = signal(false);
-try { Object.keys(localStorage).filter(key => key.startsWith("lucid-builder:draft:")).forEach(key => localStorage.removeItem(key)); } catch {}
-const dirty = computed(() => code.value !== byKey[template.value].code);
+const historyOpen = signal(false);
+const shareOpen = signal(false);
+const naming = signal(null);
+const PROJECT = "https://project.lucid";
 
 let frame;
 let seq = 0;
 let started = 0;
+let saveTimer = 0;
 
-effect(() => store.set("template", template.value));
 effect(() => store.set("auto", auto.value ? "on" : "off"));
+
+const files = () => project.peek()?.files ?? [];
+const entryOf = list => list.find(f => f.name === "app.js") ?? list.find(f => fileKind(f.name) === "js") ?? list[0];
+const entryText = () => entryOf(files())?.text ?? "";
+const unsaved = computed(() => { const p = project.value; if (!p) return false; const v = p.versions[0]; return !v || JSON.stringify(v.files) !== JSON.stringify(p.files); });
+
+const persist = (now = false) => { clearTimeout(saveTimer); const go = () => { const p = project.peek(); if (p && !saveProject(p)) toast("This browser is out of space", { tone: "danger", description: "Download or delete a project to make room." }); }; now ? go() : (saveTimer = setTimeout(go, 300)); };
+const update = (fn, { now = false } = {}) => { const p = project.peek(); if (!p) return; project.value = { ...fn(p), updated: Date.now() }; persist(now); };
+
 effect(() => {
-  const value = code.value;
-  if (value === byKey[template.peek()].code) store.drop(`draft2:${template.peek()}`);
-  else store.set(`draft2:${template.peek()}`, value);
+  const text = code.value;
+  const p = untrack(() => project.peek());
+  if (!p) return;
+  const f = p.files.find(x => x.name === p.active);
+  if (!f || f.text === text) return;
+  untrack(() => update(q => ({ ...q, files: q.files.map(x => (x.name === q.active ? { ...x, text } : x)) })));
 });
 
 const resolvedTheme = () => (theme.value === "system" ? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : theme.value);
@@ -70,15 +87,24 @@ import { onDiagnostic } from "@lucidui-dev/core";
 onDiagnostic(d => parent.postMessage({ lucidBuilder: __RUN__, kind: "diagnostic", level: d.level, code: d.code, text: d.message, fix: d.fix, tag: d.element?.tagName?.toLowerCase() }, "*"));
 `;
 
-function documentFor(source, run) {
+const safe = text => text.replace(/<\/script/gi, "<\\/script");
+const dataModule = text => `data:text/javascript;charset=utf-8,${encodeURIComponent(text)}`;
+function projectMap(list, entry) {
+  const map = {};
+  for (const f of list) if (f !== entry && fileKind(f.name) === "js") map[`${PROJECT}/__project/${f.name}`] = dataModule(relink(f.text, PROJECT));
+  return map;
+}
+const projectStyles = list => list.filter(f => fileKind(f.name) === "css").map(f => `<style data-file="${f.name.replace(/"/g, "")}">${f.text.replace(/<\/style/gi, "<\\/style")}</style>`).join("\n");
+
+function documentFor(list, run) {
   const origin = location.origin;
   const v = `?v=${version}`;
   const core = `${origin}/lucid/index.js${v}`;
   const ui = `${origin}/lucid/ui/index.js${v}`;
   const viz = `${origin}/lucid/viz/index.js${v}`;
-  const bundle = `data:text/javascript,${encodeURIComponent(`export * from "${core}"; export * from "${ui}"; export * from "${viz}";`)}`;
-  const map = JSON.stringify({ imports: { "@lucidui-dev/core": core, "@lucidui-dev/core/ui": ui, "@lucidui-dev/core/viz": viz, "@lucidui-dev/core/bundle": bundle } });
-  const safe = text => text.replace(/<\/script/gi, "<\\/script");
+  const bundle = dataModule(`export * from "${core}"; export * from "${ui}"; export * from "${viz}";`);
+  const entry = entryOf(list);
+  const map = JSON.stringify({ imports: { "@lucidui-dev/core": core, "@lucidui-dev/core/ui": ui, "@lucidui-dev/core/viz": viz, "@lucidui-dev/core/bundle": bundle, ...projectMap(list, entry) } });
   return `<!doctype html>
 <html lang="en" data-theme="${resolvedTheme()}">
 <head>
@@ -93,36 +119,32 @@ function documentFor(source, run) {
   .demo-title { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
   .demo-card { max-width: 380px; padding: 24px; border-radius: 16px; background: var(--lucid-surface-raised); box-shadow: 0 0 0 1px var(--lucid-line), var(--lucid-shadow-sm); }
 </style>
+${projectStyles(list)}
 <script type="importmap">${map}</script>
 <script>${safe(BOOT.replaceAll("__RUN__", run))}</script>
 <script type="module">${safe(HOOK.replaceAll("__RUN__", run))}</script>
 </head>
 <body class="lucid-app">
 <div id="app"></div>
-<script type="module">${safe(source)}
+<script type="module">${safe(relink(entry?.text ?? "", PROJECT))}
 window.__lucidReady?.();</script>
 </body>
 </html>`;
 }
 
-function standalone(source, { local = false } = {}) {
+const titleFrom = (list, fallback = "Lucid UI app") => { const source = list.map(f => f.text).join("\n"); return ((/h\(\s*["']h1["'][^"']*["']([^"']{2,60})["']/.exec(source) ?? /Heading\([^)]*\)?,?\s*["']([^"']{2,60})["']/.exec(source) ?? [])[1] ?? fallback).replace(/[<>&]/g, ""); };
+
+function cdn(local) {
   const base = local ? `${location.origin}/lucid` : `https://cdn.jsdelivr.net/npm/@lucidui-dev/core@${version}/src`;
   const v = local ? `?v=${version}` : "";
-  const core = `${base}/index.js${v}`;
-  const ui = `${base}/ui/index.js${v}`;
-  const viz = `${base}/viz/index.js${v}`;
-  const bundle = local
-    ? `data:text/javascript,${encodeURIComponent(`export * from "${core}"; export * from "${ui}"; export * from "${viz}";`)}`
-    : `https://cdn.jsdelivr.net/npm/@lucidui-dev/core@${version}/bundle/lucid.js`;
-  const map = JSON.stringify({ imports: { "@lucidui-dev/core": core, "@lucidui-dev/core/ui": ui, "@lucidui-dev/core/viz": viz, "@lucidui-dev/core/bundle": bundle } }, null, 2);
-  const title = (/h\(\s*["']h1["'][^"']*["']([^"']{2,60})["']/.exec(source) ?? /Heading\([^)]*\)?,?\s*["']([^"']{2,60})["']/.exec(source) ?? [])[1] ?? "Lucid UI app";
-  const safe = text => text.replace(/<\/script/gi, "<\\/script");
-  return `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
+  const core = `${base}/index.js${v}`, ui = `${base}/ui/index.js${v}`, viz = `${base}/viz/index.js${v}`;
+  const bundle = local ? dataModule(`export * from "${core}"; export * from "${ui}"; export * from "${viz}";`) : `https://cdn.jsdelivr.net/npm/@lucidui-dev/core@${version}/bundle/lucid.js`;
+  return { base, v, imports: { "@lucidui-dev/core": core, "@lucidui-dev/core/ui": ui, "@lucidui-dev/core/viz": viz, "@lucidui-dev/core/bundle": bundle } };
+}
+
+const pageHead = (title, base, v) => `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${title.replace(/[<>&]/g, "")}</title>
+<title>${title}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Geist+Mono:wght@400..600&display=swap">
@@ -132,7 +154,17 @@ function standalone(source, { local = false } = {}) {
   body { padding: 28px; background: var(--lucid-surface); color: var(--lucid-ink); font-family: Geist, system-ui, sans-serif; }
   .demo-title { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
   .demo-card { max-width: 380px; padding: 24px; border-radius: 16px; background: var(--lucid-surface-raised); box-shadow: 0 0 0 1px var(--lucid-line), var(--lucid-shadow-sm); }
-</style>
+</style>`;
+
+function standalone(list, { local = false } = {}) {
+  const { base, v, imports } = cdn(local);
+  const entry = entryOf(list);
+  const map = JSON.stringify({ imports: { ...imports, ...projectMap(list, entry) } }, null, 2);
+  return `<!doctype html>
+<html lang="en">
+<head>
+${pageHead(titleFrom(list), base, v)}
+${projectStyles(list)}
 <script type="importmap">
 ${map}
 </script>
@@ -140,33 +172,63 @@ ${map}
 <body class="lucid-app">
 <div id="app"></div>
 <script type="module">
-${safe(source.trim())}
+${safe(relink(entry?.text ?? "", PROJECT).trim())}
 </script>
 </body>
 </html>
 `;
 }
 
-function save(name, text, type) {
-  const url = URL.createObjectURL(new Blob([text], { type }));
+function zipIndex(list) {
+  const { base, v, imports } = cdn(false);
+  const entry = entryOf(list);
+  return `<!doctype html>
+<html lang="en">
+<head>
+${pageHead(titleFrom(list), base, v)}
+${list.filter(f => fileKind(f.name) === "css").map(f => `<link rel="stylesheet" href="./${f.name}">`).join("\n")}
+<script type="importmap">
+${JSON.stringify({ imports }, null, 2)}
+</script>
+</head>
+<body class="lucid-app">
+<div id="app"></div>
+<script type="module" src="./${entry?.name ?? "app.js"}"></script>
+</body>
+</html>
+`;
+}
+
+const slug = name => name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "lucid-app";
+
+function save(name, data, type) {
+  const url = URL.createObjectURL(data instanceof Blob ? data : new Blob([data], { type }));
   h("a", { href: url, download: name }).click();
   setTimeout(() => URL.revokeObjectURL(url), 4000);
 }
 
+function downloadZip(p) {
+  const readme = `# ${p.name}\n\nBuilt with Lucid UI (https://lucidui.dev) in Builder.\n\nServe this folder with any static server, for example \`npx serve .\`, then open it in a browser. Opening index.html straight from disk won't work, because browsers block ES modules on file://.\n`;
+  save(`${slug(p.name)}.zip`, zip([{ name: "index.html", text: zipIndex(p.files) }, ...p.files, { name: "README.md", text: readme }]));
+  toast(`${p.name} downloaded`, { tone: "success", description: `${p.files.length} file${p.files.length === 1 ? "" : "s"}, an index.html and a README in one zip.` });
+}
+
 const exportActions = {
   open() {
-    const url = URL.createObjectURL(new Blob([standalone(code.peek(), { local: true })], { type: "text/html" }));
+    const url = URL.createObjectURL(new Blob([standalone(files(), { local: true })], { type: "text/html" }));
     const tab = window.open(url, "_blank");
     setTimeout(() => URL.revokeObjectURL(url), 60000);
     if (!tab) toast("Your browser blocked the new tab", { tone: "danger", description: "Allow pop-ups for build.lucidui.dev, or download index.html instead." });
   },
+  zip() { if (project.peek()) downloadZip(project.peek()); },
   html() {
-    save("index.html", standalone(code.peek()), "text/html");
-    toast("index.html downloaded", { tone: "success", description: `Opens anywhere. Lucid UI ${version} loads from the CDN.` });
+    save("index.html", standalone(files()), "text/html");
+    toast("index.html downloaded", { tone: "success", description: `One page with every file inside. Lucid UI ${version} loads from the CDN.` });
   },
-  js() {
-    save("app.js", code.peek(), "text/javascript");
-    toast("app.js downloaded", { tone: "success", description: "Import it from a page that maps @lucidui-dev/core, or use it in your project." });
+  file() {
+    const p = project.peek();
+    save(p.active, code.peek(), "text/plain");
+    toast(`${p.active} downloaded`, { tone: "success" });
   },
   copy() {
     navigator.clipboard?.writeText(code.peek()).then(() => toast("Code copied", { tone: "success" }), () => toast("Copy failed", { tone: "danger" }));
@@ -176,7 +238,7 @@ const exportActions = {
 function ExportMenu() {
   return Menu({
     placement: "bottom-end",
-    width: "260px",
+    width: "270px",
     trigger: Button({ size: "sm", icon: "download", class: "b-export", aria: { label: "Export" } }, h("span", { class: "b-hide-sm" }, "Export")),
     items: [
       { group: "View" },
@@ -184,9 +246,10 @@ function ExportMenu() {
       { label: "Open in a new tab", icon: "external", hint: "⇧⌘O", onSelect: exportActions.open },
       { separator: true },
       { group: "Take it with you" },
-      { label: "Download index.html", icon: "download", hint: "Runs anywhere", onSelect: exportActions.html },
-      { label: "Download app.js", icon: "download", hint: "Just the code", onSelect: exportActions.js },
-      { label: "Copy code", icon: "copy", onSelect: exportActions.copy }
+      { label: "Download project (.zip)", icon: "download", hint: "Every file", onSelect: exportActions.zip },
+      { label: "Download index.html", icon: "download", hint: "One page", onSelect: exportActions.html },
+      { label: "Download this file", icon: "download", onSelect: exportActions.file },
+      { label: "Copy this file", icon: "copy", onSelect: exportActions.copy }
     ]
   });
 }
@@ -197,12 +260,12 @@ let mountedMs = 0;
 
 function run() {
   clearTimeout(pending);
-  if (!frame) return;
+  if (!frame || !project.peek()) return;
   runs.value++;
   status.value = "running";
   started = performance.now();
-  push({ kind: "run", level: "run", text: `Run ${runs.peek()} · ${byKey[template.peek()].label}` });
-  frame.srcdoc = documentFor(code.peek(), runs.peek());
+  push({ kind: "run", level: "run", text: `Run ${runs.peek()} · ${project.peek().name}` });
+  frame.srcdoc = documentFor(files(), runs.peek());
 }
 
 window.addEventListener("message", event => {
@@ -225,59 +288,55 @@ effect(() => {
   pending = setTimeout(run, 650);
 });
 
-function Editor() {
-  let area;
-  let escaped = false;
-  const lines = computed(() => code.value.split("\n").length);
-  const keydown = event => {
-    if (event.key === "Escape") { escaped = true; return; }
-    if (event.key !== "Tab" || escaped) return;
-    event.preventDefault();
-    const { selectionStart: start, selectionEnd: end, value } = area;
-    if (event.shiftKey) {
-      const lineStart = value.lastIndexOf("\n", start - 1) + 1;
-      if (value.startsWith("  ", lineStart)) {
-        area.setRangeText("", lineStart, lineStart + 2, "preserve");
-        area.setSelectionRange(Math.max(lineStart, start - 2), Math.max(lineStart, end - 2));
-      }
-    } else area.setRangeText("  ", start, end, "end");
-    code.value = area.value;
-  };
-  return h("section", { class: "b-panel b-editor", aria: { label: "Editor" } },
-    h("header", { class: "b-panel-head" },
-      h("span", { class: "b-tab" }, h("span", { class: "b-tab-dot", "data-dirty": dirty }), "app.js"),
-      h("span", { class: "b-meta" }, () => `${lines.value} lines`),
-      h("span", { class: "lucid-spacer" }),
-      Tooltip({ label: "Copy code" }, Button({ variant: "ghost", size: "xs", icon: "copy", class: "b-ghost", aria: { label: "Copy code" }, onClick: () => {
-        navigator.clipboard?.writeText(code.peek()).then(() => toast("Copied to clipboard", { tone: "success" }), () => toast("Copy failed", { tone: "danger" }));
-      } })),
-      Tooltip({ label: "Reset to template" }, Button({ variant: "ghost", size: "xs", icon: "corner-down-left", class: "b-ghost", aria: { label: "Reset to template" }, disabled: () => !dirty.value, onClick: () => {
-        code.value = byKey[template.peek()].code;
-        run();
-        toast("Template restored", { description: byKey[template.peek()].label });
-      } }))),
-    h("div", { class: "b-code" },
-      h("div", { class: "b-code-inner" },
-        h("pre", { class: "b-code-view", "aria-hidden": "true" }, h("code", () => highlight(code.value.endsWith("\n") ? `${code.value} ` : code.value, "js"))),
-        h("textarea", {
-          class: "b-code-input",
-          spellcheck: false,
-          autocapitalize: "off",
-          autocomplete: "off",
-          wrap: "off",
-          aria: { label: "Code editor. Press Escape, then Tab, to leave." },
-          ref: el => { area = el; },
-          value: () => code.value,
-          onInput: event => { code.value = event.target.value; },
-          onKeydown: keydown,
-          onFocus: () => { escaped = false; }
-        }))),
-    h("footer", { class: "b-editor-foot" },
-      h("span", Kbd("mod", "enter"), " run"),
-      h("span", Kbd("tab"), " indent"),
-      h("span", Kbd("esc"), " leave editor"),
-      h("span", { class: "lucid-spacer" }),
-      h("span", { class: "b-meta" }, "Saved in this browser")));
+function go(hash) { if (location.hash !== hash) location.hash = hash; }
+
+function openProject(id, { replace = false } = {}) {
+  const p = loadProject(id);
+  if (!p) { toast("That project isn't in this browser", { tone: "danger", description: "It may have been deleted, or made in another browser." }); go("#/"); return; }
+  persist(true);
+  project.value = p;
+  code.value = p.files.find(f => f.name === p.active)?.text ?? p.files[0].text;
+  view.value = "editor";
+  logs.value = [];
+  if (replace) history.replaceState(null, "", `#/p/${id}`); else go(`#/p/${id}`);
+  queueMicrotask(run);
+}
+
+function createProject({ name, files: list, template }) {
+  const p = snapshot(makeProject({ name, files: list, template }), "Started");
+  saveProject(p);
+  openProject(p.id);
+  return p;
+}
+
+const fromTemplate = t => createProject({ name: t.label, files: [{ name: "app.js", text: t.code }], template: t.value });
+
+function selectFile(name) {
+  const p = project.peek();
+  if (!p || p.active === name) return;
+  update(q => ({ ...q, active: name }));
+  code.value = p.files.find(f => f.name === name).text;
+}
+
+function saveVersion(label = "Saved by you", quiet = false) {
+  const p = project.peek();
+  if (!p) return;
+  const next = snapshot(p, label);
+  if (next === p) { if (!quiet) toast("No changes since the last version", { icon: "clock" }); return; }
+  project.value = next;
+  persist(true);
+  if (!quiet) toast(`Version ${next.versions.length} saved`, { tone: "success", icon: "clock" });
+}
+
+function restoreVersion(v) {
+  const p = project.peek();
+  const before = p.files;
+  saveVersion("Before restoring", true);
+  update(q => ({ ...q, files: v.files.map(f => ({ ...f })), active: v.files.some(f => f.name === q.active) ? q.active : v.files[0].name }), { now: true });
+  code.value = project.peek().files.find(f => f.name === project.peek().active).text;
+  run();
+  historyOpen.value = false;
+  toast("Version restored", { tone: "success", icon: "clock", action: { label: "Undo", onClick: () => { update(q => ({ ...q, files: before, active: before.some(f => f.name === q.active) ? q.active : before[0].name }), { now: true }); code.value = project.peek().files.find(f => f.name === project.peek().active).text; run(); } } });
 }
 
 const LEVEL_ICON = { log: "chevron-right", info: "info", warn: "alert-circle", error: "alert-circle", ok: "check-circle", run: "zap" };
@@ -359,22 +418,6 @@ function settle(run) {
   });
 }
 
-async function agentRender({ id, code: next, summary }) {
-  const before = code.peek();
-  code.value = next;
-  run();
-  const current = runs.peek();
-  await settle(current);
-  const entries = logs.peek().filter(e => e.run === current && e.kind !== "run" && e.kind !== "done").map(({ level, code: diagnostic, text, fix, tag }) => ({ level, code: diagnostic, text, fix, tag }));
-  answer({ id, status: status.peek() === "running" ? "pending" : status.peek(), mountedMs, logs: entries });
-  const problems = entries.filter(e => e.level === "error" || e.level === "warn").length;
-  toast(summary || "Your agent updated the code", {
-    tone: problems ? "info" : "success",
-    description: problems ? `${problems} issue${problems === 1 ? "" : "s"} sent back to your agent` : "Rendered cleanly",
-    action: { label: "Undo", onClick: () => { code.value = before; run(); } }
-  });
-}
-
 let lostTimer = 0;
 
 function connectBridge(next, { quiet = false } = {}) {
@@ -393,7 +436,7 @@ function connectBridge(next, { quiet = false } = {}) {
     toast("Agent connected", { tone: "success", description: "Your agent can now render here. Ask it for what you want." });
   });
   source.addEventListener("render", event => agentRender(JSON.parse(event.data)));
-  source.addEventListener("get-code", event => answer({ id: JSON.parse(event.data).id, code: code.peek() }));
+  source.addEventListener("get-code", event => answer({ id: JSON.parse(event.data).id, code: entryText() }));
   source.onerror = () => {
     if (!opened) {
       source.close();
@@ -469,30 +512,6 @@ function AgentDialog() {
     h("p", { class: "b-manual-note" }, "Paste what your agent writes into the editor. The console shows each diagnostic and its fix to hand back.")));
 }
 
-function FullPreview() {
-  let full;
-  const titleOf = source => (/<title>([^<]*)<\/title>/.exec(standalone(source)) ?? [])[1] ?? "Lucid UI app";
-  effect(() => {
-    if (!fullOpen.value) return;
-    queueMicrotask(() => {
-      if (!full) return;
-      full.onload = () => {
-        const doc = full.contentDocument?.documentElement;
-        if (doc) doc.dataset.theme = resolvedTheme();
-      };
-      full.srcdoc = standalone(code.peek(), { local: true });
-    });
-  });
-  return Dialog({ open: fullOpen, class: "b-full", width: "95vw", aria: { label: "Full screen preview" } },
-    h("div", { class: "b-full-bar" },
-      h("span", { class: "b-lights", "aria-hidden": "true" }, h("i"), h("i"), h("i")),
-      h("span", { class: "b-url" }, Icon({ name: "lock", size: 11 }), () => (fullOpen.value ? titleOf(code.value) : "")),
-      h("span", { class: "lucid-spacer" }),
-      Button({ variant: "ghost", size: "sm", icon: "external", onClick: exportActions.open }, h("span", { class: "b-hide-sm" }, "Open in a new tab")),
-      Tooltip({ label: "Exit full screen", kbd: "esc" }, Button({ variant: "ghost", size: "sm", icon: "minimize", aria: { label: "Exit full screen" }, onClick: () => { fullOpen.value = false; } }))),
-    h("iframe", { class: "b-full-frame", title: "Full screen preview", ref: el => { full = el; } }));
-}
-
 function GuideDialog() {
   const close = () => { guideOpen.value = false; store.set("guide", "seen"); };
   const way = (n, icon, title, text, action) => h("li", { class: "b-way" },
@@ -513,7 +532,7 @@ function GuideDialog() {
     ]
   },
   h("ol", { class: "b-ways" },
-    way("01", "layers", "Start from a template", "Seven starters in the menu at the top: a dashboard, a settings page, a task list, a sign-up form, dialogs, a counter and a diagnostics tour. Edit the code on the left, and the preview reruns as you type."),
+    way("01", "layers", "Start a project", "Seven starters on the projects page: a dashboard, a settings page, a task list, a sign-up form, dialogs, a counter and a diagnostics tour. Each becomes a project you can keep, split into files and share."),
     way("02", "copy", "Paste code from anywhere", "Drop in what an AI chat, a doc or a teammate wrote. If something is off, the console names the problem and gives you the fix."),
     way("03", "link", "Connect your coding agent", "Claude Code, Cursor and other agents can render straight into this tab, read the diagnostics and fix their own mistakes until the page is clean.",
       h("div", { class: "b-way-actions" },
@@ -527,7 +546,7 @@ function GuideDialog() {
       tip([Icon({ name: "command", size: 13 })], "The console shows logs, errors and every Lucid diagnostic with its fix."),
       tip([Icon({ name: "moon", size: 13 })], "The preview follows the theme switch, so check light and dark."),
       tip([Icon({ name: "download", size: 13 })], "Export opens your build full-screen, or downloads it as a page that runs anywhere."),
-      tip([Icon({ name: "clock", size: 13 })], "Each template keeps your draft in this browser until you reset it."))));
+      tip([Icon({ name: "clock", size: 13 })], "Projects and their history live in this browser. Share a link or download a zip to take one anywhere."))));
 }
 
 function LeaveBuilder() {
@@ -554,35 +573,281 @@ function LeaveBuilder() {
   h("span", { class: "b-leave-confirm" }, () => (state.value === "leaving" ? "Bye" : "Sure?"))));
 }
 
-function Bar() {
-  return h("header", { class: "b-bar" },
-    h("a", { class: "b-brand", href: "https://lucidui.dev", aria: { label: "Lucid UI home" } },
-      h("img", { src: () => (dark() ? "/media/logo/lucidui-wordmark-on-dark.svg" : "/media/logo/lucidui-wordmark-on-light.svg"), alt: "Lucid UI", height: 22, width: 111 })),
-    h("span", { class: "b-slash", "aria-hidden": "true" }, "/"),
-    h("span", { class: "b-name" }, "Builder", h("span", { class: "b-pill" }, "Preview")),
-    Select({
-      value: template,
-      size: "sm",
-      class: "b-template",
-      aria: { label: "Template" },
-      options: TEMPLATES.map(({ value, label, icon, note }) => ({ value, label, icon, keywords: note })),
-      onChange: next => {
-        code.value = store.get(`draft2:${next}`, byKey[next].code);
-        queueMicrotask(run);
-      }
+function FileTabs() {
+  const list = computed(() => project.value?.files ?? []);
+  const active = computed(() => project.value?.active);
+  return h("div", { class: "b-tabs", role: "tablist", aria: { label: "Files" } },
+    () => list.value.map(f => {
+      const isEntry = f === entryOf(list.value);
+      const tab = h("button", { type: "button", role: "tab", class: "b-tab", "aria-selected": () => String(active.value === f.name), onClick: () => selectFile(f.name) },
+        h("span", { class: "b-tab-ico", "data-kind": fileKind(f.name) }, fileKind(f.name) === "css" ? "#" : "JS"), f.name, isEntry ? h("span", { class: "b-tab-entry", title: "Runs first" }, "main") : null);
+      const menu = Menu({
+        placement: "bottom-start",
+        trigger: Button({ variant: "ghost", size: "xs", icon: "more", class: "b-tab-more", aria: { label: `${f.name} options` } }),
+        items: [
+          { label: "Rename", icon: "pen", onSelect: () => { naming.value = { kind: "file", current: f.name }; } },
+          { label: "Delete", icon: "trash", danger: true, disabled: list.value.length < 2 || isEntry, onSelect: () => removeFile(f.name) }
+        ]
+      });
+      return h("div", { class: "b-tab-wrap", "data-active": () => String(active.value === f.name) }, tab, menu);
     }),
+    Tooltip({ label: "New file" }, Button({ variant: "ghost", size: "xs", icon: "plus", class: "b-ghost b-tab-add", aria: { label: "New file" }, onClick: () => { naming.value = { kind: "new-file" }; } })));
+}
+
+function removeFile(name) {
+  const p = project.peek();
+  const gone = p.files.find(f => f.name === name);
+  const index = p.files.indexOf(gone);
+  update(q => { const rest = q.files.filter(f => f.name !== name); return { ...q, files: rest, active: q.active === name ? rest[0].name : q.active }; }, { now: true });
+  code.value = project.peek().files.find(f => f.name === project.peek().active).text;
+  run();
+  toast(`${name} deleted`, { tone: "danger", icon: "trash", action: { label: "Undo", onClick: () => { update(q => { const next = [...q.files]; next.splice(index, 0, gone); return { ...q, files: next }; }, { now: true }); run(); } } });
+}
+
+function Editor() {
+  let area;
+  let escaped = false;
+  const lines = computed(() => code.value.split("\n").length);
+  const kind = computed(() => fileKind(project.value?.active ?? "app.js"));
+  const keydown = event => {
+    if (event.key === "Escape") { escaped = true; return; }
+    if (event.key !== "Tab" || escaped) return;
+    event.preventDefault();
+    const { selectionStart: start, selectionEnd: end, value } = area;
+    if (event.shiftKey) {
+      const lineStart = value.lastIndexOf("\n", start - 1) + 1;
+      if (value.startsWith("  ", lineStart)) {
+        area.setRangeText("", lineStart, lineStart + 2, "preserve");
+        area.setSelectionRange(Math.max(lineStart, start - 2), Math.max(lineStart, end - 2));
+      }
+    } else area.setRangeText("  ", start, end, "end");
+    code.value = area.value;
+  };
+  return h("section", { class: "b-panel b-editor", aria: { label: "Editor" } },
+    h("header", { class: "b-panel-head b-editor-head" },
+      FileTabs(),
+      h("span", { class: "lucid-spacer" }),
+      h("span", { class: "b-meta b-hide-sm" }, () => `${lines.value} lines`),
+      Tooltip({ label: "Copy this file" }, Button({ variant: "ghost", size: "xs", icon: "copy", class: "b-ghost", aria: { label: "Copy this file" }, onClick: exportActions.copy }))),
+    h("div", { class: "b-code" },
+      h("div", { class: "b-code-inner" },
+        h("pre", { class: "b-code-view", "aria-hidden": "true" }, h("code", () => (kind.value === "css" ? h("span", code.value.endsWith("\n") ? `${code.value} ` : code.value) : highlight(code.value.endsWith("\n") ? `${code.value} ` : code.value, "js")))),
+        h("textarea", {
+          class: "b-code-input",
+          spellcheck: false,
+          autocapitalize: "off",
+          autocomplete: "off",
+          wrap: "off",
+          aria: { label: () => `Code editor for ${project.value?.active ?? "app.js"}. Press Escape, then Tab, to leave.` },
+          ref: el => { area = el; },
+          value: () => code.value,
+          onInput: event => { code.value = event.target.value; },
+          onKeydown: keydown,
+          onFocus: () => { escaped = false; }
+        }))),
+    h("footer", { class: "b-editor-foot" },
+      h("span", Kbd("mod", "enter"), " run"),
+      h("span", Kbd("mod", "S"), " save version"),
+      h("span", Kbd("esc"), " leave editor"),
+      h("span", { class: "lucid-spacer" }),
+      h("span", { class: "b-meta" }, () => (unsaved.value ? "Saved in this browser · changes since last version" : "Saved in this browser"))));
+}
+
+async function agentRender({ id, code: next, summary }) {
+  if (!project.peek()) createProject({ name: "Agent project", files: [{ name: "app.js", text: next }], template: null });
+  const p = project.peek();
+  const entry = entryOf(p.files);
+  const before = entry.text;
+  if (p.active !== entry.name) selectFile(entry.name);
+  code.value = next;
+  run();
+  const current = runs.peek();
+  await settle(current);
+  const entries = logs.peek().filter(e => e.run === current && e.kind !== "run" && e.kind !== "done").map(({ level, code: diagnostic, text, fix, tag }) => ({ level, code: diagnostic, text, fix, tag }));
+  answer({ id, status: status.peek() === "running" ? "pending" : status.peek(), mountedMs, logs: entries });
+  const problems = entries.filter(e => e.level === "error" || e.level === "warn").length;
+  saveVersion(`Agent: ${(summary || "updated the code").slice(0, 80)}`, true);
+  toast(summary || "Your agent updated the code", {
+    tone: problems ? "info" : "success",
+    description: problems ? `${problems} issue${problems === 1 ? "" : "s"} sent back to your agent` : "Rendered cleanly and saved as a version",
+    action: { label: "Undo", onClick: () => { if (project.peek()?.active !== entry.name) selectFile(entry.name); code.value = before; run(); } }
+  });
+}
+
+function FullPreview() {
+  let full;
+  effect(() => {
+    if (!fullOpen.value) return;
+    queueMicrotask(() => {
+      if (!full) return;
+      full.onload = () => {
+        const doc = full.contentDocument?.documentElement;
+        if (doc) doc.dataset.theme = resolvedTheme();
+      };
+      full.srcdoc = standalone(files(), { local: true });
+    });
+  });
+  return Dialog({ open: fullOpen, class: "b-full", width: "95vw", aria: { label: "Full screen preview" } },
+    h("div", { class: "b-full-bar" },
+      h("span", { class: "b-lights", "aria-hidden": "true" }, h("i"), h("i"), h("i")),
+      h("span", { class: "b-url" }, Icon({ name: "lock", size: 11 }), () => (fullOpen.value ? project.value?.name ?? "" : "")),
+      h("span", { class: "lucid-spacer" }),
+      Button({ variant: "ghost", size: "sm", icon: "external", onClick: exportActions.open }, h("span", { class: "b-hide-sm" }, "Open in a new tab")),
+      Tooltip({ label: "Exit full screen", kbd: "esc" }, Button({ variant: "ghost", size: "sm", icon: "minimize", aria: { label: "Exit full screen" }, onClick: () => { fullOpen.value = false; } }))),
+    h("iframe", { class: "b-full-frame", title: "Full screen preview", ref: el => { full = el; } }));
+}
+
+function NameDialog() {
+  const value = signal("");
+  const error = signal(null);
+  const open = computed(() => Boolean(naming.value));
+  const flag = signal(false);
+  effect(() => {
+    const n = naming.value;
+    flag.value = Boolean(n);
+    if (!n) return;
+    error.value = null;
+    value.value = n.kind === "file" ? n.current : n.kind === "project" ? (loadProject(n.id)?.name ?? "") : n.kind === "new-file" ? "" : "";
+  });
+  const copy = computed(() => ({ "new-file": ["New file", "A .js module you can import with ./name.js, or a .css file that applies to the preview.", "Create file", "utils.js"], file: ["Rename file", "Imports that use the old name need updating too.", "Rename", ""], project: ["Rename project", "Shown on the projects page and in downloads.", "Rename", ""] })[naming.value?.kind ?? "new-file"]);
+  const submit = () => {
+    const n = naming.peek();
+    const v = value.peek().trim();
+    if (n.kind === "project") {
+      if (!v) { error.value = "Give the project a name"; return; }
+      const p = n.id === project.peek()?.id ? project.peek() : loadProject(n.id);
+      const next = { ...p, name: v.slice(0, 80), updated: Date.now() };
+      if (project.peek()?.id === n.id) project.value = next;
+      saveProject(next);
+      toast("Project renamed", { tone: "success" });
+    } else {
+      const p = project.peek();
+      const problem = validName(v, p.files, n.kind === "file" ? n.current : null);
+      if (problem) { error.value = problem; return; }
+      if (n.kind === "new-file") {
+        const text = fileKind(v) === "css" ? "" : `export const hello = "from ${v}";\n`;
+        update(q => ({ ...q, files: [...q.files, { name: v, text }], active: v }), { now: true });
+        code.value = text;
+        toast(`${v} created`, { tone: "success", description: fileKind(v) === "js" ? `Import it from app.js with: import { hello } from "./${v}";` : "Its styles apply to the preview right away." });
+      } else {
+        update(q => ({ ...q, files: q.files.map(f => (f.name === n.current ? { ...f, name: v } : f)), active: q.active === n.current ? v : q.active }), { now: true });
+        toast(`Renamed to ${v}`, { tone: "success" });
+        run();
+      }
+    }
+    naming.value = null;
+  };
+  return Dialog({
+    open: flag, size: "sm", title: () => copy.value[0], description: () => copy.value[1],
+    onClose: () => { naming.value = null; },
+    footer: [h("span", { class: "lucid-spacer" }), Button({ variant: "ghost", onClick: () => { naming.value = null; } }, "Cancel"), Button({ variant: "primary", onClick: submit }, () => copy.value[2])]
+  },
+  Field({ label: () => (naming.value?.kind === "project" ? "Name" : "File name"), error },
+    Input({ bind: value, placeholder: () => copy.value[3], autofocus: true, onKeydown: e => { if (e.key === "Enter") { e.preventDefault(); submit(); } }, onInput: () => { error.value = null; } })));
+}
+
+function HistoryDialog() {
+  return Dialog({ open: historyOpen, size: "md", title: "Version history", description: "Saved automatically after each agent render, and whenever you press Save version. The latest 40 are kept in this browser.",
+    footer: [h("span", { class: "lucid-spacer" }), Button({ variant: "ghost", onClick: () => { historyOpen.value = false; } }, "Close"), Button({ variant: "primary", icon: "clock", onClick: () => saveVersion() }, "Save version")] },
+  () => {
+    const list = project.value?.versions ?? [];
+    if (!list.length) return EmptyState({ icon: "clock", title: "No versions yet", description: "Save one now, or let your agent render and it saves one for you." });
+    return h("ol", { class: "b-versions" }, list.map((v, i) => h("li",
+      h("span", { class: "b-version-n" }, `v${list.length - i}`),
+      h("div", { class: "b-version-main" }, h("b", v.label), h("small", `${since(v.at)} · ${v.files.length} file${v.files.length === 1 ? "" : "s"} · ${v.files.reduce((s, f) => s + f.text.split("\n").length, 0)} lines`)),
+      i === 0 && !unsaved.value ? h("span", { class: "b-version-current" }, "Current") : Button({ size: "xs", onClick: () => restoreVersion(v) }, "Restore"))));
+  });
+}
+
+function ShareDialog() {
+  const link = signal("");
+  const busy = signal(false);
+  effect(() => {
+    if (!shareOpen.value || !project.peek()) return;
+    busy.value = true;
+    encodeShare(project.peek()).then(text => { link.value = `${location.origin}/#share=${text}`; busy.value = false; }, () => { link.value = ""; busy.value = false; });
+  });
+  const copy = () => navigator.clipboard?.writeText(link.peek()).then(() => toast("Share link copied", { tone: "success", description: "Anyone who opens it gets their own copy to edit." }), () => toast("Copy failed", { tone: "danger" }));
+  return Dialog({ open: shareOpen, size: "md", title: "Share this project", description: "The whole project travels inside the link, compressed. Nothing is uploaded, and whoever opens it gets their own copy.",
+    footer: [h("span", { class: "lucid-spacer" }), Button({ variant: "ghost", onClick: () => { shareOpen.value = false; } }, "Close"), Button({ variant: "primary", icon: "copy", disabled: () => busy.value || !link.value, onClick: copy }, "Copy link")] },
+  h("div", { class: "b-share" },
+    h("code", { class: "b-share-link" }, () => (busy.value ? "Packing…" : link.value ? `${link.value.slice(0, 120)}${link.value.length > 120 ? "…" : ""}` : "Couldn't pack this project in this browser.")),
+    h("small", { class: "b-meta" }, () => (link.value ? `${(link.value.length / 1024).toFixed(1)} KB link${link.value.length > 60000 ? ". Long links can break in some chat apps; send a zip instead." : ""}` : ""))));
+}
+
+function Thumb(meta) {
+  const host = h("div", { class: "b-thumb", "aria-hidden": "true" });
+  const io = new IntersectionObserver(([e]) => {
+    if (!e.isIntersecting) return;
+    io.disconnect();
+    const p = loadProject(meta.id);
+    if (!p) return;
+    const f = h("iframe", { class: "b-thumb-frame", tabindex: -1, title: "", loading: "lazy" });
+    f.srcdoc = documentFor(p.files, -1);
+    host.append(f);
+  }, { rootMargin: "200px" });
+  io.observe(host);
+  return host;
+}
+
+function Home() {
+  const list = projects;
+  const duplicate = meta => { const p = loadProject(meta.id); if (!p) return; const copy = { ...makeProject({ name: `${p.name} copy`, files: p.files, template: p.template }), versions: [] }; saveProject(snapshot(copy, "Duplicated")); toast(`${copy.name} created`, { tone: "success" }); };
+  const remove = meta => { const gone = removeProject(meta.id); toast(`${meta.name} deleted`, { tone: "danger", icon: "trash", action: { label: "Undo", onClick: () => gone && saveProject(gone) } }); };
+  const share = meta => { const p = loadProject(meta.id); project.value = p; shareOpen.value = true; };
+  return h("main", { class: "b-home" },
+    h("section", { class: "b-home-hero" },
+      h("div", h("h1", "Your projects"), h("p", "Saved in this browser, with their history. Nothing is uploaded.")),
+      h("div", { class: "b-home-actions" },
+        Button({ icon: "link", onClick: () => { agentOpen.value = true; } }, "Connect an agent"),
+        Button({ variant: "primary", icon: "plus", onClick: () => fromTemplate(byKey.counter ?? TEMPLATES[0]) }, "New project"))),
+    h("section", { class: "b-home-start" },
+      h("h2", "Start from"),
+      h("div", { class: "b-starters" }, TEMPLATES.map(t => h("button", { type: "button", class: "b-starter", onClick: () => fromTemplate(t) },
+        h("span", { class: "b-starter-ico" }, Icon({ name: t.icon ?? "layers", size: 16 })), h("b", t.label), h("small", t.note ?? ""))))),
+    h("section", { class: "b-home-list" },
+      h("h2", () => `Recent${list.value.length ? ` · ${list.value.length}` : ""}`),
+      () => (list.value.length ? h("div", { class: "b-projects" }, list.value.map(meta => h("article", { class: "b-project" },
+        h("a", { href: `#/p/${meta.id}`, class: "b-project-hit", aria: { label: `Open ${meta.name}` } }, Thumb(meta)),
+        h("div", { class: "b-project-meta" },
+          h("div", h("b", meta.name), h("small", `${meta.files} file${meta.files === 1 ? "" : "s"} · ${since(meta.updated)}`)),
+          Menu({ placement: "bottom-end", trigger: Button({ variant: "ghost", size: "xs", icon: "more", aria: { label: `${meta.name} options` } }), items: [
+            { label: "Open", icon: "arrow-right", onSelect: () => openProject(meta.id) },
+            { label: "Rename", icon: "pen", onSelect: () => { naming.value = { kind: "project", id: meta.id }; } },
+            { label: "Duplicate", icon: "copy", onSelect: () => duplicate(meta) },
+            { label: "Share link", icon: "link", onSelect: () => share(meta) },
+            { label: "Download (.zip)", icon: "download", onSelect: () => { const p = loadProject(meta.id); if (p) downloadZip(p); } },
+            { separator: true },
+            { label: "Delete", icon: "trash", danger: true, onSelect: () => remove(meta) }
+          ] }))))) : h("div", { class: "b-home-empty" }, EmptyState({ icon: "layers", title: "Start your first project", description: "Pick a starter above, or connect your agent and ask it to build something. Every project keeps its own files and history.", action: Button({ variant: "primary", icon: "plus", onClick: () => fromTemplate(TEMPLATES[0]) }, "New project") })))));
+}
+
+function Bar() {
+  const inEditor = computed(() => view.value === "editor");
+  return h("header", { class: "b-bar", "data-view": view },
+    h("a", { class: "b-brand", href: "https://lucidui.dev", aria: { label: "Lucid UI home" } },
+      h("img", { src: "/media/logo/lucidui-icon.svg", alt: "", width: 30, height: 30 })),
+    h("a", { class: "b-name", href: "#/", aria: { label: "Builder, your projects" } }, "Builder", h("span", { class: "b-pill" }, "Preview")),
+    () => (inEditor.value ? [
+      h("span", { class: "b-slash", "aria-hidden": "true" }, "/"),
+      h("button", { type: "button", class: "b-project-name", onClick: () => { naming.value = { kind: "project", id: project.peek().id }; }, aria: { label: () => `Rename ${project.value?.name}` } }, h("span", { class: "b-project-label" }, () => project.value?.name ?? ""), Icon({ name: "pen", size: 12 })),
+      Tooltip({ label: "Version history", kbd: ["mod", "S"] }, Button({ variant: "ghost", size: "sm", icon: "clock", class: "b-ghost b-history-btn", aria: { label: "Version history" }, onClick: () => { historyOpen.value = true; } }, h("span", { class: "b-hide-sm" }, () => `v${project.value?.versions.length ?? 0}`)))
+    ] : null),
     h("span", { class: "lucid-spacer" }),
     Tooltip({ label: "What is Builder?" }, Button({ variant: "ghost", size: "sm", icon: "info", class: "b-ghost", aria: { label: "What is Builder?" }, onClick: () => { guideOpen.value = true; } })),
     h("button", { type: "button", class: "b-agent", "data-state": bridgeState, aria: { label: () => BRIDGE_LABEL[bridgeState.value] }, onClick: () => { agentOpen.value = true; } },
       h("span", { class: "b-agent-dot", "aria-hidden": "true" }),
       h("span", { class: "b-hide-sm" }, () => BRIDGE_LABEL[bridgeState.value]),
       h("span", { class: "b-show-sm", "aria-hidden": "true" }, "Agent")),
-    h("label", { class: "lucid-check b-auto" },
-      h("input", { type: "checkbox", role: "switch", checked: auto, onChange: event => { auto.value = event.target.checked; } }),
-      h("span", { class: "lucid-switch-track", "aria-hidden": "true" }),
-      h("span", { class: "b-hide-sm" }, "Auto-run")),
-    ExportMenu(),
-    Button({ variant: "primary", size: "sm", icon: "zap", class: "b-run", kbd: ["mod", "enter"], onClick: run }, "Run"),
+    () => (inEditor.value ? [
+      h("label", { class: "lucid-check b-auto" },
+        h("input", { type: "checkbox", role: "switch", checked: auto, onChange: event => { auto.value = event.target.checked; } }),
+        h("span", { class: "lucid-switch-track", "aria-hidden": "true" }),
+        h("span", { class: "b-hide-sm" }, "Auto-run")),
+      Tooltip({ label: "Share link" }, Button({ size: "sm", icon: "link", class: "b-share-btn", aria: { label: "Share link" }, onClick: () => { shareOpen.value = true; } }, h("span", { class: "b-hide-md" }, "Share"))),
+      ExportMenu(),
+      Button({ variant: "primary", size: "sm", icon: "zap", class: "b-run", kbd: ["mod", "enter"], onClick: run }, "Run")
+    ] : null),
     Segmented({
       value: theme,
       size: "sm",
@@ -594,30 +859,51 @@ function Bar() {
     LeaveBuilder());
 }
 
+async function importShare(text) {
+  try {
+    const data = await decodeShare(text);
+    history.replaceState(null, "", location.pathname);
+    const p = snapshot(makeProject({ name: data.name, files: data.files, template: null }), "Opened from a share link");
+    saveProject(p);
+    openProject(p.id, { replace: true });
+    toast("Shared project opened", { tone: "success", description: "This is your own copy. Edit away." });
+  } catch {
+    history.replaceState(null, "", location.pathname);
+    toast("That share link is broken", { tone: "danger", description: "It may have been cut short when it was copied." });
+    view.value = "home";
+  }
+}
+
+function route() {
+  const hash = location.hash;
+  const pairing = readPairing(hash);
+  if (pairing) { history.replaceState(null, "", location.pathname + (project.peek() ? `#/p/${project.peek().id}` : "")); connectBridge(pairing); return; }
+  const share = /^#share=([A-Za-z0-9_-]+)/.exec(hash);
+  if (share) { importShare(share[1]); return; }
+  const open = /^#\/p\/([a-z0-9]+)/.exec(hash);
+  if (open) { if (project.peek()?.id !== open[1] || view.peek() !== "editor") openProject(open[1], { replace: true }); return; }
+  persist(true);
+  view.value = "home";
+}
+
 function App() {
   hotkey("mod+enter", run, { inputs: true });
-  hotkey("mod+shift+o", exportActions.open, { inputs: true });
-  hotkey("mod+shift+f", () => { fullOpen.value = !fullOpen.peek(); }, { inputs: true });
-  queueMicrotask(run);
+  hotkey("mod+s", () => { if (view.peek() === "editor") saveVersion(); }, { inputs: true });
+  hotkey("mod+shift+o", () => { if (view.peek() === "editor") exportActions.open(); }, { inputs: true });
+  hotkey("mod+shift+f", () => { if (view.peek() === "editor") fullOpen.value = !fullOpen.peek(); }, { inputs: true });
   queueMicrotask(() => {
-    const fromHash = readPairing(location.hash);
     let saved = null;
     try { saved = readPairing(`bridge=${sessionStorage.getItem("lucid-builder:bridge")}`); } catch {}
-    if (fromHash) history.replaceState(null, "", location.pathname + location.search);
-    if (fromHash) connectBridge(fromHash);
-    else if (saved) connectBridge(saved, { quiet: true });
+    if (saved && !readPairing(location.hash)) connectBridge(saved, { quiet: true });
+    route();
   });
-  window.addEventListener("hashchange", () => {
-    const next = readPairing(location.hash);
-    if (!next) return;
-    history.replaceState(null, "", location.pathname + location.search);
-    connectBridge(next);
-  });
-  return h("div", { class: "b-app" },
+  window.addEventListener("hashchange", route);
+  addEventListener("pagehide", () => persist(true));
+  return h("div", { class: "b-app", "data-view": view },
     Bar(),
-    h("main", { class: "b-main" },
-      Editor(),
-      h("div", { class: "b-right" }, Preview(), Console())),
+    () => (view.value === "editor"
+      ? untrack(() => h("main", { class: "b-main" }, Editor(), h("div", { class: "b-right" }, Preview(), Console())))
+      : untrack(() => Home())),
     h("footer", { class: "b-foot" },
       h("span", `Lucid UI v${version}`),
       h("span", { class: "b-foot-dot", "aria-hidden": "true" }),
@@ -628,7 +914,10 @@ function App() {
       h("a", { href: "https://lucidui.dev" }, "lucidui.dev")),
     AgentDialog(),
     GuideDialog(),
-    FullPreview());
+    FullPreview(),
+    NameDialog(),
+    HistoryDialog(),
+    ShareDialog());
 }
 
 mount(App, "#app");
