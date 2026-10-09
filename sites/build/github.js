@@ -4,6 +4,11 @@ const KEY = "lucid-builder:github";
 export const savedToken = () => { try { return sessionStorage.getItem(KEY); } catch { return null; } };
 export const saveToken = token => { try { if (token) sessionStorage.setItem(KEY, token); else sessionStorage.removeItem(KEY); } catch {} };
 
+const PENDING = "lucid-builder:github-pending";
+export const pendingSignIn = () => { try { const p = JSON.parse(sessionStorage.getItem(PENDING) ?? "null"); return p && p.until > Date.now() ? p : null; } catch { return null; } };
+export const clearPending = () => savePending(null);
+const savePending = value => { try { if (value) sessionStorage.setItem(PENDING, JSON.stringify(value)); else sessionStorage.removeItem(PENDING); } catch {} };
+
 export async function enabled() {
   try { const res = await fetch("/api/github.php?step=status"); return (await res.json()).enabled === true; } catch { return false; }
 }
@@ -12,21 +17,24 @@ export async function startSignIn() {
   const res = await fetch("/api/github.php?step=start", { method: "POST" });
   const body = await res.json().catch(() => ({}));
   if (!res.ok || !body.device_code) throw new Error(body.error ?? "start");
-  return body;
+  const pending = { ...body, until: Date.now() + (body.expires_in || 900) * 1000 };
+  savePending(pending);
+  return pending;
 }
 
 export async function waitForToken(start, { signal } = {}) {
   let interval = Math.max(5, start.interval || 5) * 1000;
-  const until = Date.now() + (start.expires_in || 900) * 1000;
+  const until = start.until ?? Date.now() + (start.expires_in || 900) * 1000;
   while (Date.now() < until) {
     await new Promise((done, fail) => { const t = setTimeout(done, interval); signal?.addEventListener("abort", () => { clearTimeout(t); fail(new Error("cancelled")); }, { once: true }); });
     const res = await fetch("/api/github.php?step=poll", { method: "POST", headers: { "Content-Type": "text/plain" }, body: start.device_code, signal });
     const body = await res.json().catch(() => ({}));
-    if (body.token) return body.token;
+    if (body.token) { savePending(null); return body.token; }
     if (body.pending === "slow_down") interval += 5000;
-    else if (body.pending === "access_denied") throw new Error("denied");
-    else if (body.pending === "expired_token") throw new Error("expired");
+    else if (body.pending === "access_denied") { savePending(null); throw new Error("denied"); }
+    else if (body.pending === "expired_token") { savePending(null); throw new Error("expired"); }
   }
+  savePending(null);
   throw new Error("expired");
 }
 

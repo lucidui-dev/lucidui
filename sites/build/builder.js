@@ -34,7 +34,7 @@ const shareOpen = signal(false);
 const insertOpen = signal(false);
 const githubOpen = signal(false);
 const githubReady = signal(false);
-GitHub.enabled().then(on => { githubReady.value = on; });
+GitHub.enabled().then(on => { githubReady.value = on; if (on && GitHub.pendingSignIn() && !GitHub.savedToken()) githubOpen.value = true; });
 let editorArea = null;
 const caret = signal(null);
 const naming = signal(null);
@@ -993,20 +993,20 @@ function GitHubDialog() {
   const token = () => GitHub.savedToken();
   const linked = () => project.value?.github ?? null;
   effect(() => {
-    if (!githubOpen.value) { abort?.abort(); return; }
+    if (!githubOpen.value) { if (untrack(() => stage.peek()) === "waiting") GitHub.clearPending(); abort?.abort(); return; }
     const p = project.peek();
     result.value = null; progress.value = "";
     repo.value = p?.github?.repo ?? GitHub.repoName(p?.name ?? "");
     const t = token();
-    if (!t) { stage.value = "idle"; return; }
+    if (!t) { const pending = GitHub.pendingSignIn(); if (pending) connect(pending); else stage.value = "idle"; return; }
     stage.value = "checking";
     GitHub.whoami(t).then(name => { login.value = name; stage.value = "ready"; }, () => { GitHub.saveToken(null); stage.value = "idle"; });
   });
-  const connect = async () => {
+  const connect = async resume => {
     stage.value = "starting";
     abort = new AbortController();
     try {
-      const start = await GitHub.startSignIn();
+      const start = resume ?? await GitHub.startSignIn();
       device.value = start;
       stage.value = "waiting";
       const t = await GitHub.waitForToken(start, { signal: abort.signal });
@@ -1052,7 +1052,7 @@ function GitHubDialog() {
     footer: [() => {
       const s = stage.value;
       const close = Button({ variant: "ghost", onClick: () => { githubOpen.value = false; } }, s === "done" ? "Done" : "Cancel");
-      if (s === "idle") return [h("span", { class: "lucid-spacer" }), close, Button({ variant: "primary", icon: "link", onClick: connect }, "Connect GitHub")];
+      if (s === "idle") return [h("span", { class: "lucid-spacer" }), close, Button({ variant: "primary", icon: "link", onClick: () => connect() }, "Connect GitHub")];
       if (s === "ready") return [Button({ variant: "ghost", size: "sm", onClick: signOut }, `Not @${login.value}?`), h("span", { class: "lucid-spacer" }), close,
         linked.value && linked.value.owner === login.value ? Button({ onClick: () => send(true) }, `Update ${linked.value.repo}`) : null,
         Button({ variant: "primary", icon: "plus", disabled: () => !GitHub.repoName(repo.value), onClick: () => send(false) }, "Create repository")];
