@@ -1045,8 +1045,8 @@ function GitHubDialog() {
   const signOut = () => { GitHub.saveToken(null); login.value = ""; stage.value = "idle"; };
   const copyCode = () => navigator.clipboard?.writeText(device.peek()?.user_code ?? "").then(() => toast("Code copied", { tone: "success" }), () => {});
   const deployLinks = url => [
-    Button({ size: "sm", icon: "external", href: `https://vercel.com/new/clone?repository-url=${encodeURIComponent(url)}`, target: "_blank", rel: "noopener" }, "Deploy on Vercel"),
-    Button({ size: "sm", icon: "external", href: `https://app.netlify.com/start/deploy?repository=${encodeURIComponent(url)}`, target: "_blank", rel: "noopener" }, "Deploy on Netlify")
+    Button({ size: "sm", variant: "ghost", icon: "external", href: `https://vercel.com/new/clone?repository-url=${encodeURIComponent(url)}`, target: "_blank", rel: "noopener" }, "Vercel"),
+    Button({ size: "sm", variant: "ghost", icon: "external", href: `https://app.netlify.com/start/deploy?repository=${encodeURIComponent(url)}`, target: "_blank", rel: "noopener" }, "Netlify")
   ];
   return Dialog({ open: githubOpen, size: "md", title: "Push to GitHub", description: "Put this project in a GitHub repository, then host it on GitHub Pages, Vercel or Netlify.",
     footer: [() => {
@@ -1075,10 +1075,18 @@ function GitHubDialog() {
         Switch({ label: "Publish it with GitHub Pages", checked: pages.peek(), onChange: e => { pages.value = e.target.checked; } }));
       if (s === "pushing") return h("p", { class: "b-gh-wait" }, progress);
       const out = result.value;
+      const row = (icon, title, url, note) => h("div", { class: "b-share-row", "data-ready": "true" },
+        h("span", { class: "b-share-ico" }, Icon({ name: icon, size: 15 })),
+        h("div", { class: "b-share-text" }, h("b", title), h("code", url.replace("https://", "")), note ? h("small", note) : null),
+        h("div", { class: "b-share-actions" },
+          Tooltip({ label: "Copy link" }, Button({ size: "sm", variant: "ghost", icon: "copy", aria: { label: `Copy ${title} link` }, onClick: () => navigator.clipboard?.writeText(url).then(() => toast("Link copied", { tone: "success" }), () => {}) })),
+          Button({ size: "sm", icon: "external", href: url, target: "_blank", rel: "noopener" }, "Open")));
       return h("div", { class: "b-gh-done" },
-        h("p", { class: "b-gh-who" }, Icon({ name: "check-circle", size: 15 }), "Pushed to ", h("a", { href: out.url, target: "_blank", rel: "noopener" }, out.url.replace("https://", ""))),
-        out.site ? h("p", { class: "b-gh-note" }, "GitHub Pages is switched on. Your site appears at ", h("a", { href: out.site, target: "_blank", rel: "noopener" }, out.site.replace("https://", "")), " in a minute or two.") : null,
-        h("div", { class: "b-gh-deploy" }, deployLinks(out.url)));
+        row("hash", "Repository", out.url, "Every file, an index.html and a README."),
+        out.site ? row("monitor", "Website", out.site, "GitHub Pages. Live in a minute or two.") : null,
+        h("div", { class: "b-gh-deploy" },
+          h("small", "Or deploy it on"),
+          h("div", deployLinks(out.url))));
     }));
 }
 
