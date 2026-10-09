@@ -1,7 +1,7 @@
 <?php
 require __DIR__ . '/store.php';
 
-const GITHUB_CLIENT_ID = '';
+const GITHUB_CLIENT_ID = 'Ov23liGxPV5iXb2xH6ND';
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
