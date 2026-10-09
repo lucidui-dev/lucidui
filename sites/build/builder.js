@@ -3,6 +3,7 @@ import { Button, Segmented, Dialog, Tooltip, Kbd, Icon, Menu, Input, Field, Empt
 import { theme, dark } from "/shared/chrome.js";
 import { highlight } from "/shared/code.js";
 import { TEMPLATES } from "/templates.js";
+import { PROJECT, entryOf, safe, dataModule, projectMap, projectStyles, titleFrom, cdn, pageHead, standalone, SANDBOX } from "/runtime.js";
 import { projects, loadProject, saveProject, removeProject, makeProject, snapshot, migrate, fileKind, validName, relink, encodeShare, decodeShare, publishShare, fetchShare, reportShare, zip, since } from "/workspace.js";
 
 const store = {
@@ -26,7 +27,6 @@ const fullOpen = signal(false);
 const historyOpen = signal(false);
 const shareOpen = signal(false);
 const naming = signal(null);
-const PROJECT = "https://project.lucid";
 
 let frame;
 let seq = 0;
@@ -36,7 +36,7 @@ let saveTimer = 0;
 effect(() => store.set("auto", auto.value ? "on" : "off"));
 
 const files = () => project.peek()?.files ?? [];
-const entryOf = list => list.find(f => f.name === "app.js") ?? list.find(f => fileKind(f.name) === "js") ?? list[0];
+
 const entryText = () => entryOf(files())?.text ?? "";
 const unsaved = computed(() => { const p = project.value; if (!p) return false; const v = p.versions[0]; return !v || JSON.stringify(v.files) !== JSON.stringify(p.files); });
 
@@ -52,7 +52,6 @@ effect(() => {
   untrack(() => update(q => ({ ...q, files: q.files.map(x => (x.name === q.active ? { ...x, text } : x)) })));
 });
 
-const SANDBOX = "allow-scripts allow-forms allow-popups allow-downloads";
 const resolvedTheme = () => (theme.value === "system" ? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : theme.value);
 
 effect(() => {
@@ -88,15 +87,6 @@ import { onDiagnostic } from "@lucidui-dev/core";
 onDiagnostic(d => parent.postMessage({ lucidBuilder: __RUN__, kind: "diagnostic", level: d.level, code: d.code, text: d.message, fix: d.fix, tag: d.element?.tagName?.toLowerCase() }, "*"));
 `;
 
-const safe = text => text.replace(/<\/script/gi, "<\\/script");
-const dataModule = text => `data:text/javascript;charset=utf-8,${encodeURIComponent(text)}`;
-function projectMap(list, entry) {
-  const map = {};
-  for (const f of list) if (f !== entry && fileKind(f.name) === "js") map[`${PROJECT}/__project/${f.name}`] = dataModule(relink(f.text, PROJECT));
-  return map;
-}
-const projectStyles = list => list.filter(f => fileKind(f.name) === "css").map(f => `<style data-file="${f.name.replace(/"/g, "")}">${f.text.replace(/<\/style/gi, "<\\/style")}</style>`).join("\n");
-
 function documentFor(list, run) {
   const origin = location.origin;
   const v = `?v=${version}`;
@@ -116,6 +106,7 @@ function documentFor(list, run) {
 <link rel="stylesheet" href="${origin}/lucid/ui/lucid.css${v}">
 <style>
   html, body { margin: 0; min-height: 100%; }
+  html { background: var(--lucid-surface); }
   body { padding: 28px; background: var(--lucid-surface); color: var(--lucid-ink); font-family: Geist, system-ui, sans-serif; }
   .demo-title { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
   .demo-card { max-width: 380px; padding: 24px; border-radius: 16px; background: var(--lucid-surface-raised); box-shadow: 0 0 0 1px var(--lucid-line), var(--lucid-shadow-sm); }
@@ -131,53 +122,6 @@ ${projectStyles(list)}
 window.__lucidReady?.();</script>
 </body>
 </html>`;
-}
-
-const titleFrom = (list, fallback = "Lucid UI app") => { const source = list.map(f => f.text).join("\n"); return ((/h\(\s*["']h1["'][^"']*["']([^"']{2,60})["']/.exec(source) ?? /Heading\([^)]*\)?,?\s*["']([^"']{2,60})["']/.exec(source) ?? [])[1] ?? fallback).replace(/[<>&]/g, ""); };
-
-function cdn(local) {
-  const base = local ? `${location.origin}/lucid` : `https://cdn.jsdelivr.net/npm/@lucidui-dev/core@${version}/src`;
-  const v = local ? `?v=${version}` : "";
-  const core = `${base}/index.js${v}`, ui = `${base}/ui/index.js${v}`, viz = `${base}/viz/index.js${v}`;
-  const bundle = local ? dataModule(`export * from "${core}"; export * from "${ui}"; export * from "${viz}";`) : `https://cdn.jsdelivr.net/npm/@lucidui-dev/core@${version}/bundle/lucid.js`;
-  return { base, v, imports: { "@lucidui-dev/core": core, "@lucidui-dev/core/ui": ui, "@lucidui-dev/core/viz": viz, "@lucidui-dev/core/bundle": bundle } };
-}
-
-const pageHead = (title, base, v) => `<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${title}</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Geist+Mono:wght@400..600&display=swap">
-<link rel="stylesheet" href="${base}/ui/lucid.css${v}">
-<style>
-  html, body { margin: 0; min-height: 100%; }
-  body { padding: 28px; background: var(--lucid-surface); color: var(--lucid-ink); font-family: Geist, system-ui, sans-serif; }
-  .demo-title { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
-  .demo-card { max-width: 380px; padding: 24px; border-radius: 16px; background: var(--lucid-surface-raised); box-shadow: 0 0 0 1px var(--lucid-line), var(--lucid-shadow-sm); }
-</style>`;
-
-function standalone(list, { local = false } = {}) {
-  const { base, v, imports } = cdn(local);
-  const entry = entryOf(list);
-  const map = JSON.stringify({ imports: { ...imports, ...projectMap(list, entry) } }, null, 2);
-  return `<!doctype html>
-<html lang="en">
-<head>
-${pageHead(titleFrom(list), base, v)}
-${projectStyles(list)}
-<script type="importmap">
-${map}
-</script>
-</head>
-<body class="lucid-app">
-<div id="app"></div>
-<script type="module">
-${safe(relink(entry?.text ?? "", PROJECT).trim())}
-</script>
-</body>
-</html>
-`;
 }
 
 function zipIndex(list) {
@@ -765,54 +709,62 @@ const SHARE_ERRORS = { "too big": "This project is over 256 KB packed. Download 
 
 function ShareDialog() {
   const long = signal("");
-  const short = signal("");
+  const made = signal("");
   const busy = signal(false);
   const packing = signal(false);
-  let packed = "";
   effect(() => {
     if (!shareOpen.value) return;
     const p = project.peek();
     if (!p) return;
-    long.value = ""; short.value = ""; packing.value = true;
+    long.value = ""; made.value = ""; packing.value = true;
     encodeShare(p).then(text => {
-      packed = text;
       long.value = `${location.origin}/#share=${text}`;
-      if (p.share?.sig === sig(text)) short.value = `${location.origin}/s/${p.share.id}`;
+      if (p.share?.sig === sig(text)) made.value = p.share.id;
       packing.value = false;
     }, () => { packing.value = false; });
   });
-  const copy = (text, title) => navigator.clipboard?.writeText(text).then(() => toast(title, { tone: "success", description: "Anyone who opens it gets their own copy to edit." }), () => toast("Copy failed", { tone: "danger" }));
+  const url = kind => `${location.origin}/${kind}/${made.peek()}`;
+  const copy = (text, title, description) => navigator.clipboard?.writeText(text).then(() => toast(title, { tone: "success", description }), () => toast("Copy failed", { tone: "danger" }));
   const create = async () => {
     const p = project.peek();
     if (!p || busy.peek()) return;
     busy.value = true;
     try {
-      const made = await publishShare(p);
-      short.value = made.url;
+      const out = await publishShare(p);
+      made.value = out.id;
+      const share = { id: out.id, sig: sig(out.text) };
       const latest = project.peek();
-      if (latest?.id === p.id) { project.value = { ...latest, share: { id: made.id, sig: sig(made.text) } }; saveProject(project.peek()); }
-      else { const stored = loadProject(p.id); if (stored) saveProject({ ...stored, share: { id: made.id, sig: sig(made.text) } }); }
-      toast("Short link ready", { tone: "success", description: "Copy it and post it anywhere." });
+      if (latest?.id === p.id) { project.value = { ...latest, share }; saveProject(project.peek()); }
+      else { const stored = loadProject(p.id); if (stored) saveProject({ ...stored, share }); }
+      toast("Published", { tone: "success", description: "Your app link and remix link are ready to copy." });
     } catch (error) {
-      toast("Couldn't make a short link", { tone: "danger", description: SHARE_ERRORS[error.message] ?? "Builder couldn't reach lucidui.dev. Copy the full link instead; it needs no upload." });
+      toast("Couldn't publish", { tone: "danger", description: SHARE_ERRORS[error.message] ?? "Builder couldn't reach lucidui.dev. Copy the full link instead; it needs no upload." });
     }
     busy.value = false;
   };
-  return Dialog({ open: shareOpen, size: "md", title: "Share this project", description: "A short link you can post anywhere. Whoever opens it gets their own copy to edit.",
+  const row = (kind, icon, title, note, toastText) => h("div", { class: "b-share-row", "data-ready": () => (made.value ? "true" : "false") },
+    h("span", { class: "b-share-ico" }, Icon({ name: icon, size: 15 })),
+    h("div", { class: "b-share-text" },
+      h("b", title),
+      h("code", () => (made.value ? `${location.host}/${kind}/${made.value}` : packing.value ? "Packing…" : `${location.host}/${kind}/········`)),
+      h("small", note)),
+    h("div", { class: "b-share-actions" },
+      () => (made.value && kind === "a" ? Tooltip({ label: "Open app" }, Button({ size: "sm", variant: "ghost", icon: "external", aria: { label: "Open app" }, onClick: () => window.open(url("a"), "_blank", "noopener") })) : null),
+      Button({ size: "sm", icon: "copy", disabled: () => !made.value, onClick: () => copy(url(kind), toastText[0], toastText[1]) }, "Copy")));
+  return Dialog({ open: shareOpen, size: "md", title: "Share this project", description: "Publish a link to the running app, and a link that opens it in Builder for others to remix.",
     footer: [h("span", { class: "lucid-spacer" }), Button({ variant: "ghost", onClick: () => { shareOpen.value = false; } }, "Close"),
-      () => (short.value
-        ? Button({ variant: "primary", icon: "copy", onClick: () => copy(short.peek(), "Short link copied") }, "Copy link")
-        : Button({ variant: "primary", icon: "link", disabled: () => busy.value || packing.value || !long.value, onClick: create }, () => (busy.value ? "Creating…" : "Create short link")))] },
+      () => (made.value
+        ? Button({ variant: "primary", icon: "copy", onClick: () => copy(url("a"), "App link copied", "It runs full screen, and phones can add it to the home screen.") }, "Copy app link")
+        : Button({ variant: "primary", icon: "zap", disabled: () => busy.value || packing.value || !long.value, onClick: create }, () => (busy.value ? "Publishing…" : "Publish")))] },
   h("div", { class: "b-share" },
-    h("div", { class: "b-share-short", "data-ready": () => (short.value ? "true" : "false") },
-      () => Icon({ name: short.value ? "link" : "lock", size: 14 }),
-      h("code", () => (short.value ? short.value.replace(/^https?:\/\//, "") : packing.value ? "Packing…" : `${location.host}/s/········`))),
-    h("p", { class: "b-share-note" }, () => (short.value
-      ? "This link opens the version you shared. Share again after changes to send the latest."
-      : "Creating a link stores this project on lucidui.dev so the link can open it. Only people with the link can find it.")),
+    row("a", "monitor", "App", "Runs full screen for anyone. Phones can add it to the home screen.", ["App link copied", "It runs full screen, and phones can add it to the home screen."]),
+    row("s", "layers", "Remix", "Opens in Builder as the visitor's own copy to edit.", ["Remix link copied", "Anyone who opens it gets their own copy to edit."]),
+    h("p", { class: "b-share-note" }, () => (made.value
+      ? "Both links show the version you published. Publish again after changes to send the latest."
+      : "Publishing stores this version on lucidui.dev so the links can open it. Only people with a link can find it.")),
     h("div", { class: "b-share-alt" },
-      h("div", h("b", "Full link"), h("small", () => (long.value ? `Nothing uploaded, but ${(long.value.length / 1024).toFixed(1)} KB long. Fine for messages, too long for most posts.` : "Packing…"))),
-      Button({ size: "sm", icon: "copy", disabled: () => !long.value, onClick: () => copy(long.peek(), "Full link copied") }, "Copy"))));
+      h("div", h("b", "Full link"), h("small", () => (long.value ? `Opens in Builder with nothing uploaded, but it's ${(long.value.length / 1024).toFixed(1)} KB long. Fine for messages, too long for most posts.` : "Packing…"))),
+      Button({ size: "sm", icon: "copy", disabled: () => !long.value, onClick: () => copy(long.peek(), "Full link copied", "Anyone who opens it gets their own copy to edit.") }, "Copy"))));
 }
 
 function Thumb(meta) {
