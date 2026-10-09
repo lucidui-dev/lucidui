@@ -2,6 +2,20 @@
 $root = dirname(__DIR__);
 $path = rawurldecode(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '/');
 $docroot = $_SERVER['DOCUMENT_ROOT'];
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Private-Network: true');
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
+    http_response_code(204);
+    return true;
+}
+if (preg_match('#^/s/([A-Za-z0-9]{8})/?$#', $path, $m) && is_file($docroot . '/api/page.php')) {
+    $_GET['id'] = $m[1];
+    require $docroot . '/api/page.php';
+    return true;
+}
+if (str_ends_with($path, '.php') && is_file($docroot . $path)) {
+    return false;
+}
 $map = [
     '/tracker/' => $root . '/examples/tracker/',
     '/transit/' => $root . '/examples/transit/',

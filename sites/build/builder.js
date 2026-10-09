@@ -3,7 +3,7 @@ import { Button, Segmented, Dialog, Tooltip, Kbd, Icon, Menu, Input, Field, Empt
 import { theme, dark } from "/shared/chrome.js";
 import { highlight } from "/shared/code.js";
 import { TEMPLATES } from "/templates.js";
-import { projects, loadProject, saveProject, removeProject, makeProject, snapshot, migrate, fileKind, validName, relink, encodeShare, decodeShare, zip, since } from "/workspace.js";
+import { projects, loadProject, saveProject, removeProject, makeProject, snapshot, migrate, fileKind, validName, relink, encodeShare, decodeShare, publishShare, fetchShare, reportShare, zip, since } from "/workspace.js";
 
 const store = {
   get(key, fallback) { try { return localStorage.getItem(`lucid-builder:${key}`) ?? fallback; } catch { return fallback; } },
@@ -21,7 +21,7 @@ const logs = signal([]);
 const runs = signal(0);
 const status = signal("idle");
 const agentOpen = signal(false);
-const guideOpen = signal(store.get("guide") !== "seen");
+const guideOpen = signal(store.get("guide") !== "seen" && !/^\/s\//.test(location.pathname) && !location.hash.startsWith("#share="));
 const fullOpen = signal(false);
 const historyOpen = signal(false);
 const shareOpen = signal(false);
@@ -52,12 +52,12 @@ effect(() => {
   untrack(() => update(q => ({ ...q, files: q.files.map(x => (x.name === q.active ? { ...x, text } : x)) })));
 });
 
+const SANDBOX = "allow-scripts allow-forms allow-popups allow-downloads";
 const resolvedTheme = () => (theme.value === "system" ? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : theme.value);
 
 effect(() => {
   const mode = resolvedTheme();
-  const doc = frame?.contentDocument?.documentElement;
-  if (doc) doc.dataset.theme = mode;
+  frame?.contentWindow?.postMessage({ lucidTheme: mode }, "*");
 });
 
 const push = entry => { logs.value = [...logs.peek().slice(-199), { id: ++seq, at: Date.now(), run: runs.peek(), ...entry }]; };
@@ -78,6 +78,7 @@ const BOOT = `
   }
   addEventListener("error", event => send({ kind: "log", level: "error", text: event.message || "Script error" }));
   addEventListener("unhandledrejection", event => send({ kind: "log", level: "error", text: "Unhandled: " + show(event.reason) }));
+  addEventListener("message", event => { if (event.source === parent && event.data && event.data.lucidTheme) document.documentElement.dataset.theme = event.data.lucidTheme; });
   window.__lucidReady = () => send({ kind: "ready" });
 })();
 `;
@@ -213,9 +214,13 @@ function downloadZip(p) {
   toast(`${p.name} downloaded`, { tone: "success", description: `${p.files.length} file${p.files.length === 1 ? "" : "s"}, an index.html and a README in one zip.` });
 }
 
+const themed = html => html.replace("<html lang=\"en\">", `<html lang="en" data-theme="${resolvedTheme()}">`);
+const attr = text => text.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
+const wrapped = (html, title) => `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${attr(title)}</title><style>html, body, iframe { display: block; width: 100%; height: 100%; margin: 0; border: 0; }</style></head><body><iframe sandbox="${SANDBOX}" srcdoc="${attr(html)}"></iframe></body></html>`;
+
 const exportActions = {
   open() {
-    const url = URL.createObjectURL(new Blob([standalone(files(), { local: true })], { type: "text/html" }));
+    const url = URL.createObjectURL(new Blob([wrapped(themed(standalone(files(), { local: true })), project.peek()?.name ?? "Lucid UI app")], { type: "text/html" }));
     const tab = window.open(url, "_blank");
     setTimeout(() => URL.revokeObjectURL(url), 60000);
     if (!tab) toast("Your browser blocked the new tab", { tone: "danger", description: "Allow pop-ups for build.lucidui.dev, or download index.html instead." });
@@ -383,7 +388,7 @@ function Preview() {
       Tooltip({ label: "Reload preview" }, Button({ variant: "ghost", size: "xs", icon: "zap", class: "b-ghost", aria: { label: "Reload preview" }, onClick: run })),
       Tooltip({ label: "Full screen", kbd: ["mod", "shift", "F"] }, Button({ variant: "ghost", size: "xs", icon: "maximize", class: "b-ghost", aria: { label: "Full screen preview" }, onClick: () => { fullOpen.value = true; } }))),
     h("div", { class: "b-stage" },
-      h("iframe", { class: "b-frame", title: "Preview", ref: el => { frame = el; } })));
+      h("iframe", { class: "b-frame", title: "Preview", sandbox: SANDBOX, ref: el => { frame = el; } })));
 }
 
 const PROMPT = "Build this with Lucid UI from lucidui.dev, the npm package @lucidui-dev/core. Read https://lucidui.dev/llms-full.txt in full first. Import from \"@lucidui-dev/core\", \"@lucidui-dev/core/ui\" and \"@lucidui-dev/core/viz\". Output a single app.js that calls mount(App, \"#app\").";
@@ -525,7 +530,7 @@ function GuideDialog() {
     description: "A workbench for Lucid UI that runs entirely in your browser. Write an app and watch it render as you type, or let your AI agent build here with you.",
     size: "lg",
     footer: [
-      h("span", { class: "b-guide-note" }, Icon({ name: "lock", size: 13 }), "Nothing you write leaves this browser."),
+      h("span", { class: "b-guide-note" }, Icon({ name: "lock", size: 13 }), "Nothing you write leaves this browser unless you share it."),
       h("span", { class: "lucid-spacer" }),
       Button({ variant: "ghost", href: "https://docs.lucidui.dev" }, "Read the docs"),
       Button({ variant: "primary", iconRight: "arrow-right", onClick: close }, "Start building")
@@ -680,11 +685,7 @@ function FullPreview() {
     if (!fullOpen.value) return;
     queueMicrotask(() => {
       if (!full) return;
-      full.onload = () => {
-        const doc = full.contentDocument?.documentElement;
-        if (doc) doc.dataset.theme = resolvedTheme();
-      };
-      full.srcdoc = standalone(files(), { local: true });
+      full.srcdoc = themed(standalone(files(), { local: true }));
     });
   });
   return Dialog({ open: fullOpen, class: "b-full", width: "95vw", aria: { label: "Full screen preview" } },
@@ -694,7 +695,7 @@ function FullPreview() {
       h("span", { class: "lucid-spacer" }),
       Button({ variant: "ghost", size: "sm", icon: "external", onClick: exportActions.open }, h("span", { class: "b-hide-sm" }, "Open in a new tab")),
       Tooltip({ label: "Exit full screen", kbd: "esc" }, Button({ variant: "ghost", size: "sm", icon: "minimize", aria: { label: "Exit full screen" }, onClick: () => { fullOpen.value = false; } }))),
-    h("iframe", { class: "b-full-frame", title: "Full screen preview", ref: el => { full = el; } }));
+    h("iframe", { class: "b-full-frame", title: "Full screen preview", sandbox: SANDBOX, ref: el => { full = el; } }));
 }
 
 function NameDialog() {
@@ -759,20 +760,59 @@ function HistoryDialog() {
   });
 }
 
+const sig = text => { let x = 2166136261; for (let i = 0; i < text.length; i++) x = Math.imul(x ^ text.charCodeAt(i), 16777619); return `${text.length}.${(x >>> 0).toString(36)}`; };
+const SHARE_ERRORS = { "too big": "This project is over 256 KB packed. Download a zip instead.", "slow down": "Too many links in the last hour. Try again soon, or copy the full link." };
+
 function ShareDialog() {
-  const link = signal("");
+  const long = signal("");
+  const short = signal("");
   const busy = signal(false);
+  const packing = signal(false);
+  let packed = "";
   effect(() => {
-    if (!shareOpen.value || !project.peek()) return;
-    busy.value = true;
-    encodeShare(project.peek()).then(text => { link.value = `${location.origin}/#share=${text}`; busy.value = false; }, () => { link.value = ""; busy.value = false; });
+    if (!shareOpen.value) return;
+    const p = project.peek();
+    if (!p) return;
+    long.value = ""; short.value = ""; packing.value = true;
+    encodeShare(p).then(text => {
+      packed = text;
+      long.value = `${location.origin}/#share=${text}`;
+      if (p.share?.sig === sig(text)) short.value = `${location.origin}/s/${p.share.id}`;
+      packing.value = false;
+    }, () => { packing.value = false; });
   });
-  const copy = () => navigator.clipboard?.writeText(link.peek()).then(() => toast("Share link copied", { tone: "success", description: "Anyone who opens it gets their own copy to edit." }), () => toast("Copy failed", { tone: "danger" }));
-  return Dialog({ open: shareOpen, size: "md", title: "Share this project", description: "The whole project travels inside the link, compressed. Nothing is uploaded, and whoever opens it gets their own copy.",
-    footer: [h("span", { class: "lucid-spacer" }), Button({ variant: "ghost", onClick: () => { shareOpen.value = false; } }, "Close"), Button({ variant: "primary", icon: "copy", disabled: () => busy.value || !link.value, onClick: copy }, "Copy link")] },
+  const copy = (text, title) => navigator.clipboard?.writeText(text).then(() => toast(title, { tone: "success", description: "Anyone who opens it gets their own copy to edit." }), () => toast("Copy failed", { tone: "danger" }));
+  const create = async () => {
+    const p = project.peek();
+    if (!p || busy.peek()) return;
+    busy.value = true;
+    try {
+      const made = await publishShare(p);
+      short.value = made.url;
+      const latest = project.peek();
+      if (latest?.id === p.id) { project.value = { ...latest, share: { id: made.id, sig: sig(made.text) } }; saveProject(project.peek()); }
+      else { const stored = loadProject(p.id); if (stored) saveProject({ ...stored, share: { id: made.id, sig: sig(made.text) } }); }
+      toast("Short link ready", { tone: "success", description: "Copy it and post it anywhere." });
+    } catch (error) {
+      toast("Couldn't make a short link", { tone: "danger", description: SHARE_ERRORS[error.message] ?? "Builder couldn't reach lucidui.dev. Copy the full link instead; it needs no upload." });
+    }
+    busy.value = false;
+  };
+  return Dialog({ open: shareOpen, size: "md", title: "Share this project", description: "A short link you can post anywhere. Whoever opens it gets their own copy to edit.",
+    footer: [h("span", { class: "lucid-spacer" }), Button({ variant: "ghost", onClick: () => { shareOpen.value = false; } }, "Close"),
+      () => (short.value
+        ? Button({ variant: "primary", icon: "copy", onClick: () => copy(short.peek(), "Short link copied") }, "Copy link")
+        : Button({ variant: "primary", icon: "link", disabled: () => busy.value || packing.value || !long.value, onClick: create }, () => (busy.value ? "Creating…" : "Create short link")))] },
   h("div", { class: "b-share" },
-    h("code", { class: "b-share-link" }, () => (busy.value ? "Packing…" : link.value ? `${link.value.slice(0, 120)}${link.value.length > 120 ? "…" : ""}` : "Couldn't pack this project in this browser.")),
-    h("small", { class: "b-meta" }, () => (link.value ? `${(link.value.length / 1024).toFixed(1)} KB link${link.value.length > 60000 ? ". Long links can break in some chat apps; send a zip instead." : ""}` : ""))));
+    h("div", { class: "b-share-short", "data-ready": () => (short.value ? "true" : "false") },
+      () => Icon({ name: short.value ? "link" : "lock", size: 14 }),
+      h("code", () => (short.value ? short.value.replace(/^https?:\/\//, "") : packing.value ? "Packing…" : `${location.host}/s/········`))),
+    h("p", { class: "b-share-note" }, () => (short.value
+      ? "This link opens the version you shared. Share again after changes to send the latest."
+      : "Creating a link stores this project on lucidui.dev so the link can open it. Only people with the link can find it.")),
+    h("div", { class: "b-share-alt" },
+      h("div", h("b", "Full link"), h("small", () => (long.value ? `Nothing uploaded, but ${(long.value.length / 1024).toFixed(1)} KB long. Fine for messages, too long for most posts.` : "Packing…"))),
+      Button({ size: "sm", icon: "copy", disabled: () => !long.value, onClick: () => copy(long.peek(), "Full link copied") }, "Copy"))));
 }
 
 function Thumb(meta) {
@@ -782,7 +822,7 @@ function Thumb(meta) {
     io.disconnect();
     const p = loadProject(meta.id);
     if (!p) return;
-    const f = h("iframe", { class: "b-thumb-frame", tabindex: -1, title: "", loading: "lazy" });
+    const f = h("iframe", { class: "b-thumb-frame", tabindex: -1, title: "", loading: "lazy", sandbox: SANDBOX });
     f.srcdoc = documentFor(p.files, -1);
     host.append(f);
   }, { rootMargin: "200px" });
@@ -797,7 +837,7 @@ function Home() {
   const share = meta => { const p = loadProject(meta.id); project.value = p; shareOpen.value = true; };
   return h("main", { class: "b-home" },
     h("section", { class: "b-home-hero" },
-      h("div", h("h1", "Your projects"), h("p", "Saved in this browser, with their history. Nothing is uploaded.")),
+      h("div", h("h1", "Your projects"), h("p", "Saved in this browser, with their history. Nothing is uploaded unless you share.")),
       h("div", { class: "b-home-actions" },
         Button({ icon: "link", onClick: () => { agentOpen.value = true; } }, "Connect an agent"),
         Button({ variant: "primary", icon: "plus", onClick: () => fromTemplate(byKey.counter ?? TEMPLATES[0]) }, "New project"))),
@@ -817,6 +857,7 @@ function Home() {
             { label: "Duplicate", icon: "copy", onSelect: () => duplicate(meta) },
             { label: "Share link", icon: "link", onSelect: () => share(meta) },
             { label: "Download (.zip)", icon: "download", onSelect: () => { const p = loadProject(meta.id); if (p) downloadZip(p); } },
+            ...(meta.from ? [{ label: "Report the shared original", icon: "alert-circle", onSelect: () => report(meta.from) }] : []),
             { separator: true },
             { label: "Delete", icon: "trash", danger: true, onSelect: () => remove(meta) }
           ] }))))) : h("div", { class: "b-home-empty" }, EmptyState({ icon: "layers", title: "Start your first project", description: "Pick a starter above, or connect your agent and ask it to build something. Every project keeps its own files and history.", action: Button({ variant: "primary", icon: "plus", onClick: () => fromTemplate(TEMPLATES[0]) }, "New project") })))));
@@ -859,6 +900,25 @@ function Bar() {
     LeaveBuilder());
 }
 
+function report(id) {
+  reportShare(id).then(ok => toast(ok ? "Reported" : "Couldn't send the report", ok ? { tone: "success", description: "Thanks. We'll look at that link and remove it if it breaks the rules." } : { tone: "danger", description: "Try again in a moment." }), () => toast("Couldn't send the report", { tone: "danger" }));
+}
+
+async function importShort(id) {
+  history.replaceState(null, "", "/");
+  document.title = "Builder · Lucid UI";
+  try {
+    const data = await fetchShare(id);
+    const p = snapshot({ ...makeProject({ name: data.name, files: data.files, template: null }), from: id }, "Opened from a share link");
+    saveProject(p);
+    openProject(p.id, { replace: true });
+    toast("Shared project opened", { tone: "success", description: "This is your own copy. Edit away.", duration: 9000, action: { label: "Report", onClick: () => report(id) } });
+  } catch {
+    toast("That link has expired or was removed", { tone: "danger", description: "Ask whoever shared it for a new one." });
+    view.value = "home";
+  }
+}
+
 async function importShare(text) {
   try {
     const data = await decodeShare(text);
@@ -878,6 +938,8 @@ function route() {
   const hash = location.hash;
   const pairing = readPairing(hash);
   if (pairing) { history.replaceState(null, "", location.pathname + (project.peek() ? `#/p/${project.peek().id}` : "")); connectBridge(pairing); return; }
+  const shortLink = /^\/s\/([A-Za-z0-9]{8})\/?$/.exec(location.pathname);
+  if (shortLink) { importShort(shortLink[1]); return; }
   const share = /^#share=([A-Za-z0-9_-]+)/.exec(hash);
   if (share) { importShare(share[1]); return; }
   const open = /^#\/p\/([a-z0-9]+)/.exec(hash);
@@ -907,7 +969,7 @@ function App() {
     h("footer", { class: "b-foot" },
       h("span", `Lucid UI v${version}`),
       h("span", { class: "b-foot-dot", "aria-hidden": "true" }),
-      h("span", "Runs entirely in your browser. Nothing is uploaded."),
+      h("span", "Runs entirely in your browser. Nothing is uploaded unless you share."),
       h("span", { class: "lucid-spacer" }),
       h("a", { href: "https://docs.lucidui.dev" }, "Docs"),
       h("a", { href: "https://sandbox.lucidui.dev" }, "Sandbox"),

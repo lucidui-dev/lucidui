@@ -14,7 +14,7 @@ effect(() => write("projects", projects.value));
 export const loadProject = id => read(`project:${id}`);
 export function saveProject(p) {
   const ok = write(`project:${p.id}`, p);
-  const meta = { id: p.id, name: p.name, created: p.created, updated: p.updated, files: p.files.length, template: p.template, size: p.files.reduce((s, f) => s + f.text.length, 0) };
+  const meta = { id: p.id, name: p.name, created: p.created, updated: p.updated, files: p.files.length, template: p.template, from: p.from ?? null, size: p.files.reduce((s, f) => s + f.text.length, 0) };
   projects.value = [meta, ...projects.peek().filter(x => x.id !== p.id)].sort((a, b) => b.updated - a.updated);
   return ok;
 }
@@ -81,6 +81,21 @@ export async function decodeShare(text) {
   if (data?.v !== 1 || !Array.isArray(data.files) || !data.files.length) throw new Error("bad share");
   return { name: String(data.name || "Shared project").slice(0, 80), files: data.files.slice(0, 40).map(f => ({ name: String(f.name).slice(0, 60), text: String(f.text) })) };
 }
+
+export async function publishShare(p) {
+  const text = await encodeShare(p);
+  const res = await fetch("/api/share.php", { method: "POST", headers: { "Content-Type": "text/plain" }, body: text });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok || !body.id) throw new Error(res.status === 413 ? "too big" : res.status === 429 ? "slow down" : "failed");
+  return { id: body.id, url: `${location.origin}/s/${body.id}`, text };
+}
+export async function fetchShare(id) {
+  const res = await fetch(`/api/share.php?id=${encodeURIComponent(id)}`);
+  if (!res.ok) throw new Error("gone");
+  const body = await res.json();
+  return decodeShare(body.data);
+}
+export const reportShare = (id, note = "") => fetch(`/api/share.php?report=${encodeURIComponent(id)}`, { method: "POST", headers: { "Content-Type": "text/plain" }, body: note }).then(res => res.ok);
 
 const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
 const crc32 = bytes => { let c = 0xffffffff; for (const b of bytes) c = CRC[(c ^ b) & 0xff] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };

@@ -1,0 +1,7 @@
+RewriteEngine On
+RewriteRule ^s/([A-Za-z0-9]{8})/?$ api/page.php?id=$1 [L,QSA]
+<IfModule mod_headers.c>
+  <FilesMatch "\.(js|css)$">
+    Header set Access-Control-Allow-Origin "*"
+  </FilesMatch>
+</IfModule>
