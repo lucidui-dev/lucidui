@@ -496,7 +496,8 @@
   .lucid-dialog-head { display: flex; align-items: flex-start; gap: 12px; padding: 18px 20px 6px; }
   .lucid-dialog-title { margin: 0; font-size: var(--lucid-text-md); font-weight: 600; letter-spacing: -.015em; }
   .lucid-dialog-desc { margin: 4px 0 0; color: var(--lucid-ink-2); font-size: var(--lucid-text-sm); }
-  .lucid-dialog-body { flex: 1; min-height: 0; overflow: auto; padding: 12px 20px 20px; }
+  .lucid-dialog-body { flex: 1 1 auto; min-height: 0; overflow: auto; padding: 12px 20px 20px; }
+  .lucid-dialog-head, .lucid-dialog-foot { flex: none; }
   .lucid-dialog-body:empty { display: none; }
   .lucid-dialog-foot {
     display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap;
@@ -504,6 +505,9 @@
     box-shadow: inset 0 1px 0 var(--lucid-line);
   }
 
+  @media (pointer: coarse) {
+    .lucid-input input, .lucid-input textarea, .lucid-textarea, textarea.lucid-input, .lucid-menu-search input { font-size: max(16px, 1em); }
+  }
   .lucid-command { --w: 620px; top: 12vh; margin-top: 0; max-height: min(520px, 76dvh); }
   .lucid-command .lucid-dialog-body { padding: 0; display: flex; flex-direction: column; overflow: hidden; }
   .lucid-command .lucid-command-input { padding: 6px 8px; box-shadow: inset 0 -1px 0 var(--lucid-line); }

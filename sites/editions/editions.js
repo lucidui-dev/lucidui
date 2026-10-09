@@ -1,5 +1,5 @@
-import { signal, computed, h, onCleanup } from "/lucid/index.js";
-import { Button, Icon, Dialog, place } from "/lucid/ui/index.js";
+import { signal, computed, h, onCleanup, untrack } from "/lucid/index.js";
+import { Button, Icon } from "/lucid/ui/index.js";
 import { mountPage, jump } from "/shared/chrome.js";
 
 const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -337,61 +337,6 @@ const EDITIONS = {
   }
 };
 
-const openSheet = signal(null);
-
-function BreakdownBody(ed) {
-  return [
-    h("p", { class: "ed-bd-summary" }, ed.summary),
-    h("dl", { class: "ed-bd-rows" }, ed.rows.map(([k, v]) => h("div", { "data-k": k }, h("dt", k), h("dd", v))))
-  ];
-}
-
-function Breakdowns() {
-  const cards = new Map();
-  for (const [key, ed] of Object.entries(EDITIONS)) {
-    cards.set(key, h("div", { class: "ed-bd", popover: "manual", role: "tooltip", id: `ed-bd-${key}` },
-      h("header", h("span", { class: "ed-no" }, `${ed.no} · ${ed.name}`), h("small", ed.kind)),
-      BreakdownBody(ed),
-      h("footer", h("span", "Click to open the live preview"), Icon({ name: "arrow-up-right", size: 13 }))));
-  }
-  let current = null, timer = 0;
-  const hideNow = () => { if (current?.card.matches(":popover-open")) current.card.hidePopover(); current?.anchor.removeAttribute("aria-describedby"); current = null; };
-  const show = anchor => {
-    clearTimeout(timer);
-    const card = cards.get(anchor.dataset.edition);
-    if (!card) return;
-    timer = setTimeout(() => {
-      if (current && current.card !== card) hideNow();
-      current = { anchor, card };
-      anchor.setAttribute("aria-describedby", card.id);
-      if (!card.matches(":popover-open")) card.showPopover();
-      const r = anchor.getBoundingClientRect();
-      const side = r.left + r.width / 2 < innerWidth / 2 ? "right" : "left";
-      place(anchor, card, { placement: innerWidth < 980 ? (r.top < innerHeight / 2 ? "bottom-center" : "top-center") : `${side}-start`, offset: 14 });
-    }, current ? 0 : 220);
-  };
-  const hide = () => { clearTimeout(timer); timer = setTimeout(hideNow, 160); };
-  const anchorOf = node => node?.closest?.("[data-edition]");
-  document.addEventListener("pointerover", e => {
-    if (e.pointerType !== "mouse") return;
-    if (e.target.closest?.(".ed-bd")) { clearTimeout(timer); return; }
-    const a = anchorOf(e.target);
-    if (a) show(a);
-  });
-  document.addEventListener("pointerout", e => {
-    if (e.pointerType !== "mouse") return;
-    const from = anchorOf(e.target) ?? e.target.closest?.(".ed-bd");
-    if (from && !from.contains(e.relatedTarget) && !e.relatedTarget?.closest?.(".ed-bd") && !anchorOf(e.relatedTarget)) hide();
-  });
-  document.addEventListener("focusin", e => { const a = anchorOf(e.target); if (a && a.matches(":focus-visible")) show(a); });
-  document.addEventListener("focusout", e => { if (anchorOf(e.target)) hide(); });
-  document.addEventListener("keydown", e => { if (e.key === "Escape") hideNow(); });
-  window.addEventListener("scroll", () => { if (current) hideNow(); }, { passive: true });
-  return [...cards.values(), Dialog({ open: computed(() => Boolean(openSheet.value)), size: "md", title: () => (openSheet.value ? `${EDITIONS[openSheet.value].no} · ${EDITIONS[openSheet.value].name}` : ""), description: () => (openSheet.value ? EDITIONS[openSheet.value].kind : ""), onClose: () => { openSheet.value = null; },
-    footer: () => (openSheet.value ? [h("span", { class: "lucid-spacer" }), Button({ variant: "primary", href: EDITIONS[openSheet.value].href, iconRight: "arrow-up-right" }, "Open the live preview")] : null) },
-  () => (openSheet.value ? h("div", { class: "ed-bd ed-bd-inline" }, BreakdownBody(EDITIONS[openSheet.value])) : null))];
-}
-
 function Hero(L) {
   return h("section", { class: "ed-hero" },
     h("div", { class: "ed-wrap ed-hero-grid" },
@@ -400,9 +345,9 @@ function Hero(L) {
         h("h1", { class: "ed-title" }, "Finished apps,", h("br"), h("em", "made to be yours.")),
         h("p", { class: "ed-lede" }, "Complete apps built only from Lucid UI. Every screen and every state designed, light and dark, phone to desktop. You get the source, a licence to ship it, and docs your agent can read, so it can extend the app from day one."),
         h("div", { class: "ed-actions" },
-          Button({ variant: "primary", size: "lg", href: "/meridian/", iconRight: "arrow-up-right", "data-edition": "01" }, "Preview No. 01, Meridian"),
+          Button({ variant: "primary", size: "lg", href: "/meridian/", iconRight: "arrow-up-right" }, "Preview No. 01, Meridian"),
           Button({ size: "lg", iconRight: "arrow-down", onClick: jump("collection") }, "See the collection"))),
-      h("a", { class: "ed-plate ed-plate-hero ed-plate-link", href: "/meridian/", "data-edition": "01", aria: { label: "Open the live preview of Meridian, Edition No. 01" } },
+      h("a", { class: "ed-plate ed-plate-hero ed-plate-link", href: "/meridian/", aria: { label: "Open the live preview of Meridian, Edition No. 01" } },
         h("div", { class: "ed-plate-head" },
           h("span", { class: "ed-no" }, "No. 01 · Meridian"),
           h("span", { class: "ed-plate-state" }, h("i"), "Live preview")),
@@ -458,24 +403,59 @@ const PLATES = [
   { key: "05", no: "No. 05", name: "Murmur", layout: "feed", state: "Live preview", now: true }
 ];
 
+const picked = signal("01");
+
+function Picker() {
+  const plate = computed(() => PLATES.find(p => p.key === picked.value));
+  const ed = computed(() => EDITIONS[picked.value]);
+  const options = [];
+  const choose = (key, focus) => {
+    picked.value = key;
+    if (focus) options.find(o => o.dataset.key === key)?.focus();
+  };
+  const onKey = e => {
+    const i = PLATES.findIndex(p => p.key === picked.peek());
+    const next = { ArrowDown: i + 1, ArrowRight: i + 1, ArrowUp: i - 1, ArrowLeft: i - 1, Home: 0, End: PLATES.length - 1 }[e.key];
+    if (next === undefined) return;
+    e.preventDefault();
+    choose(PLATES[(next + PLATES.length) % PLATES.length].key, true);
+  };
+  return h("div", { class: "ed-picker" },
+    h("div", { class: "ed-stage" },
+      h("a", { class: "ed-screen", href: () => ed.value.href, aria: { label: () => `Open the live preview of ${ed.value.name}` } },
+        () => { const p = plate.value; return untrack(() => h("div", { class: "ed-screen-plate", key: p.key }, Plate({ layout: p.layout, label: `A sketch of ${EDITIONS[p.key].name}, drawn in dots` }))); },
+        h("div", { class: "ed-screen-top" }, h("span", { class: "ed-no" }, () => `${plate.value.no} · ${plate.value.name}`), h("span", { class: "ed-plate-state" }, h("i"), "Live preview")),
+        h("span", { class: "ed-screen-play" }, h("span", { class: "ed-play-icon" }, Icon({ name: "arrow-up-right", size: 18 })), h("span", "Open the live preview"))),
+      h("div", { class: "ed-stage-info", "aria-live": "polite" }, () => {
+        const e = ed.value;
+        return h("div", { class: "ed-info", key: picked.value },
+          h("div", { class: "ed-info-head" },
+            h("div", h("h3", e.name), h("p", e.kind)),
+            Button({ variant: "primary", href: e.href, iconRight: "arrow-up-right" }, "Live preview")),
+          h("p", { class: "ed-info-summary" }, e.summary),
+          h("dl", { class: "ed-info-rows" }, e.rows.map(([k, v], i) => h("div", { style: { "--i": i } }, h("dt", k), h("dd", v)))));
+      })),
+    h("div", { class: "ed-list-wrap" },
+      h("div", { class: "ed-list-head" }, h("b", "All Editions"), h("span", `${PLATES.length} live`)),
+      h("div", { class: "ed-list", role: "listbox", aria: { label: "Editions", orientation: "vertical" }, onKeydown: onKey },
+        PLATES.map((p, i) => {
+          const e = EDITIONS[p.key];
+          const opt = h("div", {
+            class: "ed-item", role: "option", tabindex: () => (picked.value === p.key ? 0 : -1), "data-key": p.key,
+            "aria-selected": () => String(picked.value === p.key), onClick: () => choose(p.key), style: { "--i": i }
+          },
+            h("div", { class: "ed-item-thumb", "aria-hidden": "true" }, Plate({ layout: p.layout, label: `${p.name}` }), h("span", { class: "ed-item-n" }, p.no.replace("No. ", ""))),
+            h("div", { class: "ed-item-text" }, h("b", p.name), h("span", e.kind), h("small", h("i"), "Live preview")));
+          options.push(opt);
+          return opt;
+        }))));
+}
+
 function Collection(L) {
   return h("section", { class: "ed-collection", id: "collection" },
     h("div", { class: "ed-wrap" },
-      Head("The collection", "Numbered, and released one at a time.", "Each Edition is designed, built and tested before the next one starts. Hover one, or tap What's inside, to see exactly what you get."),
-      h("div", { class: "ed-shelf" },
-        PLATES.map(p => {
-          const ed = EDITIONS[p.key];
-          return h("figure", { class: "ed-plate", "data-now": String(Boolean(p.now)) },
-            h("div", { class: "ed-plate-head" },
-              h("span", { class: "ed-no" }, p.name ? `${p.no} · ${p.name}` : p.no),
-              h("span", { class: "ed-plate-state" }, h("i"), p.state)),
-            ed ? h("a", { class: "ed-plate-hit", href: ed.href, "data-edition": p.key, aria: { label: `Open the live preview of ${ed.name}` } }, Plate({ layout: p.layout, label: `A sketch of ${ed.name}, drawn in dots` })) : Plate({ layout: p.layout, dim: true, label: "An unannounced Edition" }),
-            h("figcaption", { class: "ed-plate-foot" }, ed
-              ? [h("span", ed.kind), h("span", { class: "ed-plate-links" },
-                  h("button", { type: "button", class: "ed-inside-btn", onClick: () => { openSheet.value = p.key; } }, "What's inside"),
-                  h("a", { href: ed.href, "data-edition": p.key }, "Live preview", Icon({ name: "arrow-up-right", size: 13 })))]
-              : h("span", "Details when it's ready")));
-        }))));
+      Head("The collection", "Numbered, and released one at a time.", "Each Edition is designed, built and tested before the next one starts. Pick one to see exactly what you get."),
+      Picker()));
 }
 
 function Free(L) {
@@ -522,7 +502,7 @@ function Head(eyebrow, title, lead) {
 
 mountPage({
   site: "editions",
-  main: L => [h("div", { class: "ed" }, Hero(L), Collection(L), Inside(), How(), Free(L), Faq(), Breakdowns())],
+  main: L => [h("div", { class: "ed" }, Hero(L), Collection(L), Inside(), How(), Free(L), Faq())],
   commands: [
     { group: "Editions", label: "The collection", icon: "star", run: jump("collection") },
     { group: "Editions", label: "What's in an Edition", icon: "layers", run: jump("inside") },

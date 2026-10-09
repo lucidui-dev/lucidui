@@ -3,6 +3,8 @@ import { Badge } from "/lucid/ui/index.js";
 import { mountPage, SectionHead } from "/shared/chrome.js";
 
 const UPDATES = [
+  { date: "8 October 2026", area: "Editions", kind: "Improved", title: "Pick an Edition like a playlist", text: "The collection is now a picker: the selected Edition plays on a large stage with everything that's inside it below, and every Edition sits in a list beside it. On phones the list becomes a strip you swipe. The hover cards and the details dialog are gone." },
+  { date: "8 October 2026", area: "Library", kind: "Fixed", title: "Dialogs behave on iPhone", text: "A dialog's content no longer collapses to a sliver in Safari, and typing into an input no longer zooms the page and pushes the dialog off screen, because inputs use 16px text on touch screens." },
   { date: "8 October 2026", area: "Library", kind: "Fixed", title: "Chart headers and calendars fit small screens", text: "A chart card's title and subtitle now move above its controls when space is tight, instead of squeezing into a narrow column. DotCalendar shows as many recent weeks as fit, so a year of activity never runs past its card on a phone." },
   { date: "8 October 2026", area: "Site", kind: "Improved", title: "Every page checked on a phone", text: "The comparison table on the case page now stacks into one card per question, code wraps without splitting strings, the WordPress note reads as a sentence, the video chapters form a tidy list, and the status page answers taps as well as hovers." },
   { date: "8 October 2026", area: "Builder", kind: "Fixed", title: "Clearer toolbar on phones", text: "Leave and Agent now show their labels on small screens instead of a bare arrow and a dot, and the agent button always has a name for screen readers." },
