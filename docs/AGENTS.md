@@ -2,7 +2,7 @@
 
 [Watch Claude build a wind farm dashboard in Builder, in 47 seconds.](https://lucidui.dev/#watch)
 
-Lucid UI is made to be written by AI coding agents as well as people. There are three ways to work with one: connect it to Builder so it renders, reads its own mistakes and fixes them while you watch; ask any chatbot for a link that opens its work in Builder; or give it the docs and paste what it writes.
+Lucid UI is made to be written by AI coding agents as well as people. There are four ways to work with one: connect a coding agent on your computer to Builder, so it renders, reads its own mistakes and fixes them while you watch; connect claude.ai, ChatGPT or another web app through the hosted bridge; ask any chatbot for a link that opens its work in Builder; or give it the docs and paste what it writes.
 
 ## Option 1: connect your agent to Builder (recommended)
 
@@ -59,7 +59,21 @@ Each render shows a toast with Undo, so you can step back. Edit the code yoursel
 - **The agent doesn't see a `lucid` tool.** Start a new agent session after adding the bridge, and check its MCP list.
 - **Port in use.** The bridge tries 7357 and the next few ports. Set `LUCID_BRIDGE_PORT` to choose another.
 
-## Option 2: any chatbot, with a link that opens in Builder
+## Option 2: claude.ai, ChatGPT and other web apps
+
+AI apps that run in the browser can't start the bridge on your computer, so Lucid hosts one for them. Add it once as a remote MCP connector:
+
+```text
+https://build.lucidui.dev/mcp
+```
+
+- **claude.ai:** Settings → Connectors → Add custom connector, then paste the address.
+- **ChatGPT:** turn on developer mode, then add a connector under Connectors with the same address.
+- **Any other app** that supports remote MCP servers over HTTP: use the same address. No sign-in is needed.
+
+Then ask your agent to connect to Lucid Builder and open the link it gives you, which ends in `#relay=`. Keep that Builder tab open while the agent works: it renders there, reads every diagnostic and fixes its own code, just like the local bridge. Your code passes through Lucid's server only to reach your tab, and pairings expire when you disconnect.
+
+## Option 3: any chatbot, with a link that opens in Builder
 
 Grok, ChatGPT, Gemini, Muse and other assistants that can't use MCP can still hand their work straight to Builder. Ask for an "Open in Builder" link at the end, or paste the brief below, which asks for one. The link looks like this:
 
@@ -69,7 +83,7 @@ https://build.lucidui.dev/#name=Pomodoro&code=import%20%7B%20signal...
 
 Opening it creates a project from the code and runs it. Builder explains any mistake with its fix, and Share → Publish gives you a short link to post. The code travels in the part of the link after `#`, which browsers never send to a server.
 
-## Option 3: paste the brief
+## Option 4: paste the brief
 
 Any AI chat works, with or without tools. Copy this brief, paste it before your request, then paste the code it writes into Builder or your own page:
 

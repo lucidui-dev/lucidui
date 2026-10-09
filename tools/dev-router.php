@@ -13,6 +13,10 @@ if (preg_match('#^/s/([A-Za-z0-9]{8})/?$#', $path, $m) && is_file($docroot . '/a
     require $docroot . '/api/page.php';
     return true;
 }
+if (preg_match('#^/mcp/?$#', $path) && is_file($docroot . '/api/mcp.php')) {
+    require $docroot . '/api/mcp.php';
+    return true;
+}
 if (preg_match('#^/a/([A-Za-z0-9]{8})/?$#', $path, $m) && is_file($docroot . '/api/app.php')) {
     $_GET['id'] = $m[1];
     require $docroot . '/api/app.php';

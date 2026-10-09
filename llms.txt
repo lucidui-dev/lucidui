@@ -49,7 +49,7 @@ Encode both parts with `encodeURIComponent` (newlines become `%0A`) and keep `co
 
 ## Live preview for agents
 
-If you can use MCP tools, the Lucid bridge renders your code in the user's Lucid Builder tab and returns errors and diagnostics with fixes. Setup for Claude Code: `claude mcp add --scope user lucid -- npx -y @lucidui-dev/bridge`. Call `connect_builder`, show the user the link, then call `render` with your module and repeat until it reports no problems.
+If you can use MCP tools, the Lucid bridge renders your code in the user's Lucid Builder tab and returns errors and diagnostics with fixes. Setup for Claude Code: `claude mcp add --scope user lucid -- npx -y @lucidui-dev/bridge`. AI apps in the browser, such as claude.ai and ChatGPT, can add the hosted bridge instead, as a remote MCP connector at `https://build.lucidui.dev/mcp`. Both offer the same tools. Call `connect_builder`, show the user the link, then call `render` with your module and repeat until it reports no problems.
 
 ## Docs
 

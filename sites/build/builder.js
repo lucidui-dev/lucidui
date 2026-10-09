@@ -27,7 +27,7 @@ const logs = signal([]);
 const runs = signal(0);
 const status = signal("idle");
 const agentOpen = signal(false);
-const guideOpen = signal(store.get("guide") !== "seen" && !/^\/s\//.test(location.pathname) && !/^#(share|code|name)=/.test(location.hash));
+const guideOpen = signal(store.get("guide") !== "seen" && !/^\/s\//.test(location.pathname) && !/^#(share|code|name|relay|bridge)=/.test(location.hash));
 const fullOpen = signal(false);
 const historyOpen = signal(false);
 const shareOpen = signal(false);
@@ -366,9 +366,15 @@ const bridgeState = signal("off");
 let source = null;
 
 const bridgeUrl = (path, b = bridge.peek()) => `http://127.0.0.1:${b.port}${path}${path.includes("?") ? "&" : "?"}token=${b.token}`;
-const answer = payload => fetch(bridgeUrl("/reply"), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) }).catch(() => {});
+const answer = payload => {
+  const b = bridge.peek();
+  if (b?.relay) return fetch(`/api/relay.php?step=reply&key=${b.relay}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) }).catch(() => {});
+  return fetch(bridgeUrl("/reply"), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) }).catch(() => {});
+};
 
 function readPairing(text) {
+  const relay = /relay=([A-Za-z0-9]{24})/.exec(text ?? "");
+  if (relay) return { relay: relay[1] };
   const match = /bridge=(\d{2,5})\.([a-f0-9]{16,64})/i.exec(text ?? "");
   return match ? { port: Number(match[1]), token: match[2] } : null;
 }
@@ -387,11 +393,44 @@ function settle(run) {
 
 let lostTimer = 0;
 
+let relayTimer = 0;
+
+function connectRelay(next, { quiet = false } = {}) {
+  try { sessionStorage.setItem("lucid-builder:bridge", `relay=${next.relay}`); } catch {}
+  bridgeState.value = "connecting";
+  let misses = 0;
+  const poll = async () => {
+    if (bridge.peek()?.relay !== next.relay) return;
+    try {
+      const res = await fetch(`/api/relay.php?step=poll&key=${next.relay}`, { cache: "no-store" });
+      if (res.status === 404) { disconnectBridge(); if (!quiet) toast("That agent link has expired", { tone: "danger", description: "Ask your agent to connect again for a new link." }); return; }
+      const body = await res.json();
+      misses = 0;
+      if (bridgeState.peek() !== "on") {
+        bridgeState.value = "on";
+        agentOpen.value = false;
+        if (!quiet || body.first) toast("Agent connected", { tone: "success", description: "Your agent can now render here. Keep this tab open while it works." });
+      }
+      for (const event of body.events ?? []) {
+        if (event.type === "render") agentRender(event);
+        else if (event.type === "get-code") answer({ id: event.id, code: entryText() });
+      }
+    } catch {
+      misses++;
+      if (misses > 3 && bridgeState.peek() === "on") bridgeState.value = "lost";
+    }
+    relayTimer = setTimeout(poll, document.hidden ? 4000 : 1200);
+  };
+  poll();
+}
+
 function connectBridge(next, { quiet = false } = {}) {
   source?.close();
   clearTimeout(lostTimer);
+  clearTimeout(relayTimer);
   bridge.value = next;
   if (!next) { bridgeState.value = "off"; return; }
+  if (next.relay) { connectRelay(next, { quiet }); return; }
   try { sessionStorage.setItem("lucid-builder:bridge", `${next.port}.${next.token}`); } catch {}
   bridgeState.value = "connecting";
   let opened = false;
@@ -426,6 +465,9 @@ function connectBridge(next, { quiet = false } = {}) {
 
 function disconnectBridge() {
   clearTimeout(lostTimer);
+  clearTimeout(relayTimer);
+  const b = bridge.peek();
+  if (b?.relay) fetch(`/api/relay.php?step=bye&key=${b.relay}`, { method: "POST" }).catch(() => {});
   source?.close();
   source = null;
   bridge.value = null;
@@ -434,6 +476,8 @@ function disconnectBridge() {
 }
 
 const BRIDGE_LABEL = { off: "Connect an agent", connecting: "Connecting…", on: "Agent connected", lost: "Agent reconnecting", failed: "Connect an agent", ended: "Agent disconnected" };
+
+const HOSTED_MCP = "https://build.lucidui.dev/mcp";
 
 function AgentDialog() {
   const copy = (text, what) => navigator.clipboard?.writeText(text).then(() => toast(`${what} copied`, { tone: "success" }), () => toast("Copy failed", { tone: "danger" }));
@@ -444,13 +488,13 @@ function AgentDialog() {
     h("div", { class: "b-step-body" }, h("b", title), h("p", text), action ?? null));
   const tryPaste = () => {
     const found = readPairing(pasted.peek());
-    if (!found) { toast("That doesn't look like a pairing link", { tone: "danger", description: "It ends in #bridge= followed by numbers and letters." }); return; }
+    if (!found) { toast("That doesn't look like a pairing link", { tone: "danger", description: "It ends in #bridge= or #relay= followed by numbers and letters." }); return; }
     connectBridge(found);
   };
   return Dialog({
     open: agentOpen,
     title: "Connect an agent",
-    description: "Your coding agent renders straight into this Builder, and gets every error and Lucid diagnostic back with its fix. It all runs on your computer.",
+    description: "Your agent renders straight into this Builder, and gets every error and Lucid diagnostic back with its fix.",
     size: "md"
   },
   () => bridgeState.value === "on" || bridgeState.value === "lost"
@@ -459,16 +503,18 @@ function AgentDialog() {
         h("div", h("b", () => (bridgeState.value === "on" ? "Your agent is connected" : "Reconnecting to your agent")), h("p", "Ask it for anything, like “make a settings page”. Each render shows up here, and the diagnostics go back to the agent.")),
         Button({ size: "sm", onClick: disconnectBridge }, "Disconnect"))
     : h("ol", { class: "b-steps" },
-        step(1, "Add the Lucid bridge to your agent", "Once per machine. It's a tiny MCP server with no dependencies.",
+        step(1, () => (client.value === "web" ? "Add Lucid as a connector" : "Add the Lucid bridge to your agent"), () => (client.value === "web" ? "Once. In claude.ai, open Settings → Connectors → Add custom connector. In ChatGPT, add it under Connectors in developer mode. Paste this address:" : "Once per machine. It's a tiny MCP server that runs on your computer, with no dependencies."),
           h("div", { class: "b-client" },
-            Segmented({ value: client, size: "sm", aria: { label: "Agent" }, options: [{ value: "claude", label: "Claude Code" }, { value: "json", label: "Cursor and others" }] }),
+            Segmented({ value: client, size: "sm", aria: { label: "Agent" }, options: [{ value: "claude", label: "Claude Code" }, { value: "json", label: "Cursor & more" }, { value: "web", label: "Web apps" }] }),
             () => client.value === "claude"
               ? h("div", { class: "b-copy" }, h("code", ADD_CLAUDE), Button({ size: "xs", icon: "copy", onClick: () => copy(ADD_CLAUDE, "Command") }, "Copy"))
-              : h("div", { class: "b-copy b-copy-prompt" }, h("pre", { class: "b-json" }, ADD_JSON), Button({ size: "xs", icon: "copy", onClick: () => copy(ADD_JSON, "Config") }, "Copy")))),
+              : client.value === "web"
+                ? h("div", { class: "b-copy" }, h("code", HOSTED_MCP), Button({ size: "xs", icon: "copy", onClick: () => copy(HOSTED_MCP, "Address") }, "Copy"))
+                : h("div", { class: "b-copy b-copy-prompt" }, h("pre", { class: "b-json" }, ADD_JSON), Button({ size: "xs", icon: "copy", onClick: () => copy(ADD_JSON, "Config") }, "Copy")))),
         step(2, "Ask it to connect", "Say “connect to Lucid Builder”. Your agent replies with a pairing link."),
-        step(3, "Open the link", "It pairs this tab. If your browser asks to allow access to apps on this device, allow it. Or paste the link here:",
+        step(3, "Open the link", () => (client.value === "web" ? "It pairs this tab. Keep it open while your agent works. Or paste the link here:" : "It pairs this tab. If your browser asks to allow access to apps on this device, allow it. Or paste the link here:"),
           h("form", { class: "b-pair", onSubmit: event => { event.preventDefault(); tryPaste(); } },
-            h("input", { class: "b-pair-input", placeholder: "https://build.lucidui.dev/#bridge=…", value: pasted, onInput: event => { pasted.value = event.target.value; }, aria: { label: "Pairing link" } }),
+            h("input", { class: "b-pair-input", placeholder: "https://build.lucidui.dev/#bridge=… or #relay=…", value: pasted, onInput: event => { pasted.value = event.target.value; }, aria: { label: "Pairing link" } }),
             Button({ size: "sm", variant: "primary", type: "submit" }, "Pair"))),
         () => bridgeState.value === "failed"
           ? h("p", { class: "b-pair-error" }, Icon({ name: "alert-circle", size: 14 }), "Couldn't reach the bridge. Check your agent is still running, then ask it for a fresh link. Safari can block this; use Chrome, Edge or Firefox.")
@@ -631,7 +677,7 @@ function Editor() {
 }
 
 async function agentRender({ id, code: next, summary }) {
-  if (!project.peek()) createProject({ name: "Agent project", files: [{ name: "app.js", text: next }], template: null });
+  if (!project.peek()) { createProject({ name: "Agent project", files: [{ name: "app.js", text: next }], template: null }); await new Promise(done => setTimeout(done, 600)); }
   const p = project.peek();
   const entry = entryOf(p.files);
   const before = entry.text;
@@ -1190,7 +1236,7 @@ function App() {
   hotkey("mod+shift+f", () => { if (view.peek() === "editor") fullOpen.value = !fullOpen.peek(); }, { inputs: true });
   queueMicrotask(() => {
     let saved = null;
-    try { saved = readPairing(`bridge=${sessionStorage.getItem("lucid-builder:bridge")}`); } catch {}
+    try { const stored = sessionStorage.getItem("lucid-builder:bridge") ?? ""; saved = readPairing(stored.startsWith("relay=") ? stored : `bridge=${stored}`); } catch {}
     if (saved && !readPairing(location.hash)) connectBridge(saved, { quiet: true });
     route();
   });
