@@ -3,6 +3,7 @@ import { Badge } from "/lucid/ui/index.js";
 import { mountPage, SectionHead } from "/shared/chrome.js";
 
 const UPDATES = [
+  { date: "8 October 2026", area: "Editions", kind: "New", title: "Edition No. 06, Vesper, is open to try", text: "Vesper is a cinematic portfolio for a creative studio: oversized split-type headlines, layered parallax artwork, a pinned horizontal reel, a cursor that becomes a label, and twelve case studies that each wear their own colours. In blush paper and deep espresso. Try it at editions.lucidui.dev/vesper." },
   { date: "8 October 2026", area: "Editions", kind: "Improved", title: "Pick an Edition like a playlist", text: "The collection is now a picker: the selected Edition plays on a large stage with everything that's inside it below, and every Edition sits in a list beside it. On phones the list becomes a strip you swipe. The hover cards and the details dialog are gone." },
   { date: "8 October 2026", area: "Library", kind: "Fixed", title: "Dialogs behave on iPhone", text: "A dialog's content no longer collapses to a sliver in Safari, and typing into an input no longer zooms the page and pushes the dialog off screen, because inputs use 16px text on touch screens." },
   { date: "8 October 2026", area: "Library", kind: "Fixed", title: "Chart headers and calendars fit small screens", text: "A chart card's title and subtitle now move above its controls when space is tight, instead of squeezing into a narrow column. DotCalendar shows as many recent weeks as fit, so a year of activity never runs past its card on a phone." },

@@ -142,6 +142,20 @@ const LAYOUTS = {
     { x: 33, y: 17, w: 10, h: 8, kind: "lines", gap: 3, a: 0.35 },
     { x: 33, y: 17, w: 2, h: 1, a: 1, gold: true }
   ],
+  folio: [
+    { x: 0, y: 0, w: 44, h: 1, a: 0.14 },
+    { x: 1, y: 0, w: 4, h: 1, a: 0.8 },
+    { x: 2, y: 5, w: 22, h: 3, a: 0.95 },
+    { x: 2, y: 9, w: 17, h: 3, a: 0.95 },
+    { x: 20, y: 9, w: 8, h: 3, a: 1, gold: true },
+    { x: 2, y: 14, w: 12, h: 1, a: 0.4 },
+    { x: 31, y: 3, w: 11, h: 12, a: 0.22 },
+    { x: 33, y: 6, w: 6, h: 6, a: 0.5 },
+    { x: 26, y: 16, w: 8, h: 7, a: 0.18 },
+    { x: 36, y: 18, w: 7, h: 5, a: 1, gold: true },
+    { x: 2, y: 18, w: 20, h: 9, kind: "lines", gap: 3, a: 0.3 },
+    { x: 0, y: 26, w: 44, h: 2, a: 0.12 }
+  ],
   ledger: [
     { x: 0, y: 0, w: 44, h: 2, a: 0.16 },
     { x: 2, y: 4, w: 20, h: 3, a: 0.85 },
@@ -334,6 +348,19 @@ const EDITIONS = {
       ["You get", "The full source, a guide for AI agents, a README, a commercial licence and updates."],
       ["Not included", "Accounts, a backend or real-time delivery. Point the store at your API; one file to change."]
     ]
+  },
+  "06": {
+    no: "No. 06", name: "Vesper", kind: "Studio portfolio", href: "/vesper/",
+    summary: "A cinematic portfolio for a creative studio: oversized type, layered parallax artwork, a pinned reel and twelve case studies that each wear their own colours.",
+    rows: [
+      ["Pages", "Home, Work with grid and list views, twelve case studies, Studio, Services, a Journal with twelve articles, and Contact."],
+      ["Content", "12 projects with briefs, results and credits, 16 people, 24 clients, 14 awards, 12 articles and three offices with live local times."],
+      ["Feel", "Blush paper and deep espresso with a signal-blue accent, Bricolage Grotesque headlines and Instrument Serif italics."],
+      ["Motion", "Split-type reveals, depth parallax, a pinned horizontal reel, a labelled cursor, magnetic buttons and a circular menu reveal. All of it respects reduced motion."],
+      ["Built with", "Lucid UI only. Plain ES modules, no build step. About 800 lines of JavaScript and 500 of CSS, with generated artwork instead of stock photos."],
+      ["You get", "The full source, a guide for AI agents, a README, a commercial licence and updates."],
+      ["Not included", "A CMS or real photography. Content lives in one data file, and the artwork swaps for your images in one place."]
+    ]
   }
 };
 
@@ -400,7 +427,8 @@ const PLATES = [
   { key: "02", no: "No. 02", name: "Nightjar", layout: "ops", state: "Live preview", now: true },
   { key: "03", no: "No. 03", name: "Relay", layout: "flow", state: "Live preview", now: true },
   { key: "04", no: "No. 04", name: "Ledgerline", layout: "desk", state: "Live preview", now: true },
-  { key: "05", no: "No. 05", name: "Murmur", layout: "feed", state: "Live preview", now: true }
+  { key: "05", no: "No. 05", name: "Murmur", layout: "feed", state: "Live preview", now: true },
+  { key: "06", no: "No. 06", name: "Vesper", layout: "folio", state: "Live preview", now: true }
 ];
 
 const picked = signal("01");
