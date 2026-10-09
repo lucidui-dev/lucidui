@@ -26,7 +26,7 @@ const logs = signal([]);
 const runs = signal(0);
 const status = signal("idle");
 const agentOpen = signal(false);
-const guideOpen = signal(store.get("guide") !== "seen" && !/^\/s\//.test(location.pathname) && !location.hash.startsWith("#share="));
+const guideOpen = signal(store.get("guide") !== "seen" && !/^\/s\//.test(location.pathname) && !/^#(share|code|name)=/.test(location.hash));
 const fullOpen = signal(false);
 const historyOpen = signal(false);
 const shareOpen = signal(false);
@@ -113,7 +113,7 @@ function documentFor(list, run) {
 <link rel="stylesheet" href="${origin}/lucid/ui/lucid.css${v}">
 <style>
   html, body { margin: 0; min-height: 100%; }
-  html { background: var(--lucid-surface); }
+  body { min-height: 100vh; box-sizing: border-box; }
   body { padding: 28px; background: var(--lucid-surface); color: var(--lucid-ink); font-family: Geist, system-ui, sans-serif; }
   .demo-title { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
   .demo-card { max-width: 380px; padding: 24px; border-radius: 16px; background: var(--lucid-surface-raised); box-shadow: 0 0 0 1px var(--lucid-line), var(--lucid-shadow-sm); }
@@ -1026,6 +1026,24 @@ async function importShort(id) {
   }
 }
 
+function decodePart(raw) {
+  try { return decodeURIComponent(raw); } catch { return raw.replace(/%([0-9A-Fa-f]{2})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16))); }
+}
+
+function importHandoff(hash) {
+  const at = hash.indexOf("code=");
+  const head = new URLSearchParams(hash.slice(1, at).replace(/&$/, ""));
+  const text = decodePart(hash.slice(at + 5)).replace(/\r\n?/g, "\n");
+  history.replaceState(null, "", location.pathname);
+  if (!text.trim()) { toast("That link had no code in it", { tone: "danger", description: "Ask your agent to send the link again." }); view.value = "home"; return; }
+  const files = [{ name: "app.js", text: text.endsWith("\n") ? text : `${text}\n` }];
+  const name = (head.get("name") ?? "").trim().slice(0, 80) || titleFrom(files, "From your agent");
+  const p = snapshot(makeProject({ name, files, template: null }), "Opened from an agent's link");
+  saveProject(p);
+  openProject(p.id, { replace: true });
+  toast(`${name} opened`, { tone: "success", description: "Your own copy, saved in this browser. Share → Publish to post it.", duration: 7000 });
+}
+
 async function importShare(text) {
   try {
     const data = await decodeShare(text);
@@ -1047,6 +1065,7 @@ function route() {
   if (pairing) { history.replaceState(null, "", location.pathname + (project.peek() ? `#/p/${project.peek().id}` : "")); connectBridge(pairing); return; }
   const shortLink = /^\/s\/([A-Za-z0-9]{8})\/?$/.exec(location.pathname);
   if (shortLink) { importShort(shortLink[1]); return; }
+  if (/^#(?:name=[^&]*&)?code=/.test(hash)) { importHandoff(hash); return; }
   const share = /^#share=([A-Za-z0-9_-]+)/.exec(hash);
   if (share) { importShare(share[1]); return; }
   const open = /^#\/p\/([a-z0-9]+)/.exec(hash);

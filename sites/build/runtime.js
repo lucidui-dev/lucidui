@@ -33,7 +33,7 @@ export const pageHead = (title, base, v) => `<meta charset="utf-8">
 <link rel="stylesheet" href="${base}/ui/lucid.css${v}">
 <style>
   html, body { margin: 0; min-height: 100%; }
-  html { background: var(--lucid-surface); }
+  body { min-height: 100vh; box-sizing: border-box; }
   body { padding: 28px; background: var(--lucid-surface); color: var(--lucid-ink); font-family: Geist, system-ui, sans-serif; }
   .demo-title { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
   .demo-card { max-width: 380px; padding: 24px; border-radius: 16px; background: var(--lucid-surface-raised); box-shadow: 0 0 0 1px var(--lucid-line), var(--lucid-shadow-sm); }

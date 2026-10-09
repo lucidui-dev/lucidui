@@ -50,7 +50,7 @@ export function links(site) {
   };
 }
 
-export const BRIEF = "Build this with Lucid UI from lucidui.dev, the npm package @lucidui-dev/core. Before writing any code, open https://lucidui.dev/llms-full.txt and read all of it: it is the complete documentation. If that link won't open, use https://cdn.jsdelivr.net/npm/@lucidui-dev/core@0.3/llms-full.txt instead. Do not web-search for \"Lucid UI\": unrelated projects share the name, such as AppNexus's React library lucid-ui, and their APIs are different. If you can't open either link, tell me rather than guess. When Lucid reports a diagnostic, apply the fix it gives.";
+export const BRIEF = "Build this with Lucid UI from lucidui.dev, the npm package @lucidui-dev/core. Before writing any code, open https://lucidui.dev/llms-full.txt and read all of it: it is the complete documentation. If that link won't open, use https://cdn.jsdelivr.net/npm/@lucidui-dev/core@0.3/llms-full.txt instead. Do not web-search for \"Lucid UI\": unrelated projects share the name, such as AppNexus's React library lucid-ui, and their APIs are different. If you can't open either link, tell me rather than guess. When Lucid reports a diagnostic, apply the fix it gives. When you finish, give me a link that opens the app in Lucid Builder, as llms-full.txt describes under Hand your code to Builder.";
 
 export function copyBrief() {
   navigator.clipboard?.writeText(BRIEF).then(

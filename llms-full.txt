@@ -39,6 +39,14 @@ Key rules:
 
 Single file: `@lucidui-dev/core/bundle` (bundle/lucid.js plus bundle/lucid.css) exports everything from @lucidui-dev/core, @lucidui-dev/core/ui and @lucidui-dev/core/viz in one module, for pages without a bundler or import map (Shopify themes, Squarespace code blocks, plain HTML). In WordPress, the Lucid UI plugin registers @lucidui-dev/core, @lucidui-dev/core/ui and @lucidui-dev/core/viz as script modules; an app is a file in the theme's lucid/ folder whose default export is a component, used with [lucid app="name"].
 
+## Hand your code to Builder
+
+When you finish an app, end your answer with a link that opens it running in Lucid Builder, so the user can see it, fix it and publish it without copying anything:
+
+`https://build.lucidui.dev/#name=<title>&code=<app.js>`
+
+Encode both parts with `encodeURIComponent` (newlines become `%0A`) and keep `code` last. The code is one ES module: import from `@lucidui-dev/core/bundle` (or `@lucidui-dev/core`, `/ui` and `/viz`) and mount into `"#app"`. Builder shows every error and diagnostic with its fix, and the user's copy stays in their browser until they publish it.
+
 ## Live preview for agents
 
 If you can use MCP tools, the Lucid bridge renders your code in the user's Lucid Builder tab and returns errors and diagnostics with fixes. Setup for Claude Code: `claude mcp add --scope user lucid -- npx -y @lucidui-dev/bridge`. Call `connect_builder`, show the user the link, then call `render` with your module and repeat until it reports no problems.
