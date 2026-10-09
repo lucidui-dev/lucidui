@@ -35,7 +35,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') reply(405, ['error' => 'metho
 
 if ($step === 'start') {
     if (!lucid_limit('github', 20)) reply(429, ['error' => 'slow down']);
-    $data = github_post('https://github.com/login/device/code', ['client_id' => $client, 'scope' => 'public_repo']);
+    $data = github_post('https://github.com/login/device/code', ['client_id' => $client, 'scope' => 'public_repo read:org']);
     if (!$data || empty($data['device_code'])) reply(502, ['error' => 'github']);
     reply(200, [
         'device_code' => $data['device_code'],

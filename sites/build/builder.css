@@ -408,3 +408,5 @@ a.b-name:hover { color: var(--lucid-ink-2); }
 .b-gh-deploy { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-top: 6px; padding-top: 14px; border-top: 1px solid var(--lucid-line); }
 .b-gh-deploy small { font-size: 12.5px; color: var(--lucid-ink-3); }
 .b-gh-deploy > div { display: flex; gap: 4px; }
+.b-gh-note { font-size: 13px !important; color: var(--lucid-ink-3) !important; }
+.b-gh-link { padding: 0; border: 0; font: inherit; color: var(--lucid-ink); background: none; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }

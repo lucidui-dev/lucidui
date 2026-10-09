@@ -41,13 +41,19 @@ export async function waitForToken(start, { signal } = {}) {
 async function call(token, method, path, body) {
   const res = await fetch(API + path, { method, headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28", ...(body ? { "Content-Type": "application/json" } : {}) }, body: body ? JSON.stringify(body) : undefined });
   const data = res.status === 204 ? null : await res.json().catch(() => null);
-  return { ok: res.ok, status: res.status, data };
+  return { ok: res.ok, status: res.status, data, scopes: res.headers.get("x-oauth-scopes") };
 }
 
 export async function whoami(token) {
   const res = await call(token, "GET", "/user");
   if (!res.ok) throw new Error(res.status === 401 ? "signed out" : "github");
   return res.data.login;
+}
+
+export async function orgs(token) {
+  const res = await call(token, "GET", "/user/orgs?per_page=100");
+  const list = res.ok && Array.isArray(res.data) ? res.data.map(o => o.login) : [];
+  return { list, canList: res.scopes == null || /\bread:org\b|\badmin:org\b/.test(res.scopes) };
 }
 
 const base64 = text => {
@@ -59,10 +65,11 @@ const base64 = text => {
 
 export const repoName = name => name.toLowerCase().replace(/[^a-z0-9._-]+/g, "-").replace(/^[-.]+|[-.]+$/g, "").slice(0, 90) || "lucid-app";
 
-export async function push(token, { owner, repo, files, create, description, pages, onProgress }) {
+export async function push(token, { owner, repo, files, create, description, pages, personal = true, onProgress }) {
   if (create) {
-    const made = await call(token, "POST", "/user/repos", { name: repo, description, homepage: pages ? `https://${owner}.github.io/${repo}/` : undefined, has_wiki: false, has_projects: false });
+    const made = await call(token, "POST", personal ? "/user/repos" : `/orgs/${owner}/repos`, { name: repo, description, homepage: pages ? `https://${owner.toLowerCase()}.github.io/${repo}/` : undefined, has_wiki: false, has_projects: false });
     if (made.status === 422) throw new Error("exists");
+    if (made.status === 403 || made.status === 404) throw new Error(personal ? "create" : "org");
     if (!made.ok) throw new Error("create");
   }
   let done = 0;
@@ -81,7 +88,7 @@ export async function push(token, { owner, repo, files, create, description, pag
     const repoInfo = await call(token, "GET", `/repos/${owner}/${repo}`);
     const branch = repoInfo.data?.default_branch ?? "main";
     const on = await call(token, "POST", `/repos/${owner}/${repo}/pages`, { source: { branch, path: "/" } });
-    if (on.ok || on.status === 409) site = `https://${owner}.github.io/${repo}/`;
+    if (on.ok || on.status === 409) site = `https://${owner.toLowerCase()}.github.io/${repo}/`;
   }
   return { url: `https://github.com/${owner}/${repo}`, site };
 }

@@ -1,5 +1,5 @@
 import { signal, computed, effect, h, mount, For, Show, untrack, version } from "/lucid/index.js";
-import { Button, Segmented, Dialog, Tooltip, Kbd, Icon, Menu, Input, Field, Switch, EmptyState, hotkey, toast } from "/lucid/ui/index.js";
+import { Button, Segmented, Dialog, Tooltip, Kbd, Icon, Menu, Input, Field, Switch, Select, EmptyState, hotkey, toast } from "/lucid/ui/index.js";
 import { theme, dark } from "/shared/chrome.js";
 import { highlight } from "/shared/code.js";
 import { TEMPLATES } from "/templates.js";
@@ -979,11 +979,14 @@ function InsertDialog() {
         })));
 }
 
-const GH_ERRORS = { exists: "You already have a repository with that name. Pick another name, or choose Update to push into it.", denied: "GitHub sign-in was cancelled.", expired: "The code expired. Start again.", "signed out": "GitHub signed you out. Connect again.", missing: "That repository wasn't found, or Lucid can't write to it.", "slow down": "Too many sign-ins from here in the last hour. Try again soon." };
+const GH_ERRORS = { org: "GitHub didn't let Lucid Builder create a repository there. An owner of the organization needs to grant Lucid Builder access: github.com → Settings → Applications → Authorized OAuth Apps → Lucid Builder → Grant.", exists: "You already have a repository with that name. Pick another name, or choose Update to push into it.", denied: "GitHub sign-in was cancelled.", expired: "The code expired. Start again.", "signed out": "GitHub signed you out. Connect again.", missing: "That repository wasn't found, or Lucid can't write to it.", "slow down": "Too many sign-ins from here in the last hour. Try again soon." };
 
 function GitHubDialog() {
   const stage = signal("idle");
   const login = signal("");
+  const owner = signal("");
+  const owners = signal([]);
+  const canList = signal(true);
   const device = signal(null);
   const repo = signal("");
   const pages = signal(true);
@@ -1000,8 +1003,13 @@ function GitHubDialog() {
     const t = token();
     if (!t) { const pending = GitHub.pendingSignIn(); if (pending) connect(pending); else stage.value = "idle"; return; }
     stage.value = "checking";
-    GitHub.whoami(t).then(name => { login.value = name; stage.value = "ready"; }, () => { GitHub.saveToken(null); stage.value = "idle"; });
+    GitHub.whoami(t).then(name => { login.value = name; loadOwners(t, name); stage.value = "ready"; }, () => { GitHub.saveToken(null); stage.value = "idle"; });
   });
+  const loadOwners = (t, name) => {
+    owners.value = [name];
+    if (!owner.peek() || owner.peek() === login.peek()) owner.value = project.peek()?.github?.owner ?? name;
+    GitHub.orgs(t).then(found => { owners.value = [name, ...found.list]; canList.value = found.canList; });
+  };
   const connect = async resume => {
     stage.value = "starting";
     abort = new AbortController();
@@ -1012,6 +1020,7 @@ function GitHubDialog() {
       const t = await GitHub.waitForToken(start, { signal: abort.signal });
       GitHub.saveToken(t);
       login.value = await GitHub.whoami(t);
+      loadOwners(t, login.peek());
       stage.value = "ready";
       if (document.hidden) {
         const title = document.title;
@@ -1029,11 +1038,11 @@ function GitHubDialog() {
     const p = project.peek();
     if (!p) return;
     const name = GitHub.repoName(repo.peek());
-    const owner = update && p.github ? p.github.owner : login.peek();
+    const target = update && p.github ? p.github.owner : owner.peek() || login.peek();
     stage.value = "pushing";
     try {
-      const out = await GitHub.push(token(), { owner, repo: name, files: projectEntries(p), create: !update, description: `${p.name}, built with Lucid UI`, pages: pages.peek(), onProgress: (n, total, file) => { progress.value = file ? `Uploading ${file} (${n + 1} of ${total})` : "Finishing up"; } });
-      const linkedProject = { ...project.peek(), github: { owner, repo: name } };
+      const out = await GitHub.push(token(), { owner: target, personal: target === login.peek(), repo: name, files: projectEntries(p), create: !update, description: `${p.name}, built with Lucid UI`, pages: pages.peek(), onProgress: (n, total, file) => { progress.value = file ? `Uploading ${file} (${n + 1} of ${total})` : "Finishing up"; } });
+      const linkedProject = { ...project.peek(), github: { owner: target, repo: name } };
       project.value = linkedProject; saveProject(linkedProject);
       result.value = out;
       stage.value = "done";
@@ -1054,7 +1063,7 @@ function GitHubDialog() {
       const close = Button({ variant: "ghost", onClick: () => { githubOpen.value = false; } }, s === "done" ? "Done" : "Cancel");
       if (s === "idle") return [h("span", { class: "lucid-spacer" }), close, Button({ variant: "primary", icon: "link", onClick: () => connect() }, "Connect GitHub")];
       if (s === "ready") return [Button({ variant: "ghost", size: "sm", onClick: signOut }, `Not @${login.value}?`), h("span", { class: "lucid-spacer" }), close,
-        linked.value && linked.value.owner === login.value ? Button({ onClick: () => send(true) }, `Update ${linked.value.repo}`) : null,
+        linked() ? Button({ onClick: () => send(true) }, `Update ${linked().owner}/${linked().repo}`) : null,
         Button({ variant: "primary", icon: "plus", disabled: () => !GitHub.repoName(repo.value), onClick: () => send(false) }, "Create repository")];
       return [h("span", { class: "lucid-spacer" }), close];
     }] },
@@ -1071,7 +1080,9 @@ function GitHubDialog() {
         h("p", { class: "b-gh-wait" }, "Waiting for you to approve it. When GitHub says you're all set, close that tab and come back here."));
       if (s === "ready") return h("div", { class: "b-gh-form" },
         h("p", { class: "b-gh-who" }, Icon({ name: "check-circle", size: 15 }), "Connected as ", h("b", () => `@${login.value}`)),
-        Field({ label: "Repository name", hint: () => `github.com/${login.value}/${GitHub.repoName(repo.value)}` }, Input({ value: repo, onInput: e => { repo.value = e.target.value; } })),
+        () => owners.value.length > 1 ? Field({ label: "Owner" }, Select({ value: owner, aria: { label: "Owner" }, options: owners.value.map((o, i) => ({ value: o, label: o, icon: i ? "users" : "user", hint: i ? "Organization" : "You" })) })) : null,
+        () => (canList.value ? null : h("p", { class: "b-gh-note" }, "Want to push to an organization? ", h("button", { type: "button", class: "b-gh-link", onClick: () => { signOut(); connect(); } }, "Reconnect GitHub"), " to choose one.")),
+        Field({ label: "Repository name", hint: () => `github.com/${owner.value || login.value}/${GitHub.repoName(repo.value)}` }, Input({ value: repo, onInput: e => { repo.value = e.target.value; } })),
         Switch({ label: "Publish it with GitHub Pages", checked: pages.peek(), onChange: e => { pages.value = e.target.checked; } }));
       if (s === "pushing") return h("p", { class: "b-gh-wait" }, progress);
       const out = result.value;
