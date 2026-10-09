@@ -563,10 +563,20 @@ body.site { background: var(--lucid-surface); min-height: 100dvh; overflow-x: cl
   .guide-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-@media (max-width: 1120px) {
+@media (max-width: 1180px) {
   .site-search span, .site-search .lucid-kbds { display: none; }
   .site-search { width: 32px; padding: 0; justify-content: center; }
   .site-theme { display: none; }
+}
+
+@media (max-width: 940px) {
+  .site-links { margin-left: 10px; gap: 0; }
+  .site-links a { padding-inline: 8px; font-size: 13.5px; }
+  .site-link-builder .site-pill { display: none; }
+}
+
+@media (max-width: 860px) {
+  .site-links a { padding-inline: 6px; }
 }
 
 @media (max-width: 760px) {

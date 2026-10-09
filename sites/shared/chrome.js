@@ -20,11 +20,12 @@ export const commandOpen = signal(false);
 export const DOWNLOAD = `https://github.com/lucidui-dev/lucidui/releases/download/v${version}/lucidui-${version}.zip`;
 
 export function links(site) {
-  const www = path => (["www", "privacy", "license", "press", "case", "manifesto", "status"].includes(site) ? path : `https://lucidui.dev${path}`);
+  const www = path => (["www", "privacy", "license", "press", "case", "manifesto", "status", "components"].includes(site) ? path : `https://lucidui.dev${path}`);
   return {
     home: www("/"),
     case: www("/case/"),
     manifesto: www("/manifesto/"),
+    components: www("/components/"),
     status: www("/status/"),
     press: www("/press/"),
     privacy: www("/privacy/"),
@@ -292,6 +293,7 @@ function Nav(L, site) {
       Brand(L),
       h("nav", { class: "site-links", aria: { label: "Main" } },
         item("case", "Why Lucid"),
+        item("components", "Components"),
         item("docs", "Docs"),
         item("playground", "Sandbox"),
         item("editions", "Editions"),
@@ -342,7 +344,7 @@ function Footer(L) {
         h("p", "Interfaces with taste, in a few kilobytes."),
         h("p", { class: "foot-meta" }, `v${version} · MIT licensed · Built with Lucid UI`),
         Social(L)),
-      column("Product", [["Manifesto", L.manifesto], ["The Case for Lucid", L.case], ["Sandbox", L.playground], ["Builder", L.builder], ["Editions", L.editions], ["Docs", L.docs], ["Changelog", L.changelog], ["Status", L.status], ["Download", DOWNLOAD]]),
+      column("Product", [["Components", L.components], ["Manifesto", L.manifesto], ["The Case for Lucid", L.case], ["Sandbox", L.playground], ["Builder", L.builder], ["Editions", L.editions], ["Docs", L.docs], ["Changelog", L.changelog], ["Status", L.status], ["Download", DOWNLOAD]]),
       column("Source", [["Page source", L.source], ["Core runtime", L.core], ["llms.txt", L.llms]]),
       column("Contact", [["hello@lucidui.dev", L.hello], ["press@lucidui.dev", L.press_mail], ["security@lucidui.dev", L.security]]),
       column("Company", [["Press", L.press], ["Privacy", L.privacy], ["License", L.license], ["legal@lucidui.dev", L.legal]])),
@@ -361,6 +363,7 @@ function Commands(L, extra) {
       { group: "Go to", label: "Home", icon: "hexagon", run: go(L.home) },
       { group: "Go to", label: "Manifesto", icon: "sparkles", keywords: "beliefs principles values why", run: go(L.manifesto) },
       { group: "Go to", label: "The case for Lucid", icon: "target", keywords: "why compare react tailwind shadcn svelte css", run: go(L.case) },
+      { group: "Go to", label: "Components", icon: "layers", keywords: "library gallery catalog primitives charts icons", run: go(L.components) },
       { group: "Go to", label: "Sandbox", icon: "board", run: goToPlayground },
       { group: "Go to", label: "Builder", icon: "command", hint: "Preview", keywords: "console editor agent code", run: go(L.builder) },
       { group: "Go to", label: "Docs", icon: "hash", run: go(L.docs) },
