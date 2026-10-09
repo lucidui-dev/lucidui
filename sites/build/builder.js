@@ -205,7 +205,9 @@ function ExportMenu() {
       { label: "Download project (.zip)", icon: "download", hint: "Every file", onSelect: exportActions.zip },
       { label: "Download index.html", icon: "download", hint: "One page", onSelect: exportActions.html },
       { label: "Download this file", icon: "download", onSelect: exportActions.file },
-      { label: "Copy this file", icon: "copy", onSelect: exportActions.copy }
+      { label: "Copy this file", icon: "copy", onSelect: exportActions.copy },
+      { separator: true },
+      { label: "How to put it online", icon: "info", hint: "Guide", onSelect: () => window.open("https://docs.lucidui.dev/deploy/", "_blank", "noopener") }
     ]
   });
 }

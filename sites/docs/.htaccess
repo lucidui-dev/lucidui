@@ -1,5 +1,5 @@
 RewriteEngine On
-RewriteRule ^(agents|api|diagnostics|components|charts|recipes|wordpress|vision)/?$ index.html [L]
+RewriteRule ^(agents|api|diagnostics|components|charts|recipes|deploy|wordpress|vision)/?$ index.html [L]
 AddType "text/markdown; charset=utf-8" .md
 AddType "text/plain; charset=utf-8" .txt
 <IfModule mod_headers.c>
