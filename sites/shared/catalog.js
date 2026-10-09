@@ -528,9 +528,12 @@ export function sourceOf(entry) {
   return entry.setup ? `${entry.setup}\n\n${entry.code}` : entry.code;
 }
 
+export const unquoted = text => text.replace(/"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'|`(?:[^`\\]|\\.)*`/g, '""');
+export const usesName = (text, name) => new RegExp(`(^|[^\\w.$])${name.replace(/\$/g, "\\$")}\\b`).test(unquoted(text));
+
 export function appSource(entry, modules) {
   const text = sourceOf(entry);
-  const used = name => new RegExp(`(^|[^\\w.])${name}\\b`).test(text);
+  const used = name => usesName(text, name);
   const pick = (names, always = []) => [...new Set([...always, ...names.filter(used)])];
   const wraps = entry.set === "patterns" || entry.set === "shells";
   const core = pick(modules.core, ["mount"]);

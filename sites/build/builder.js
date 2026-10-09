@@ -3,6 +3,10 @@ import { Button, Segmented, Dialog, Tooltip, Kbd, Icon, Menu, Input, Field, Empt
 import { theme, dark } from "/shared/chrome.js";
 import { highlight } from "/shared/code.js";
 import { TEMPLATES } from "/templates.js";
+import * as LucidCore from "/lucid/index.js";
+import * as LucidUI from "/lucid/ui/index.js";
+import * as LucidViz from "/lucid/viz/index.js";
+import { SETS, COMPONENTS, sourceOf, appSource, usesName, unquoted } from "/shared/catalog.js";
 import { PROJECT, entryOf, safe, dataModule, projectMap, projectStyles, titleFrom, cdn, pageHead, standalone, SANDBOX } from "/runtime.js";
 import { projects, loadProject, saveProject, removeProject, makeProject, snapshot, migrate, fileKind, validName, relink, encodeShare, decodeShare, publishShare, fetchShare, reportShare, zip, since } from "/workspace.js";
 
@@ -26,6 +30,9 @@ const guideOpen = signal(store.get("guide") !== "seen" && !/^\/s\//.test(locatio
 const fullOpen = signal(false);
 const historyOpen = signal(false);
 const shareOpen = signal(false);
+const insertOpen = signal(false);
+let editorArea = null;
+const caret = signal(null);
 const naming = signal(null);
 
 let frame;
@@ -553,6 +560,11 @@ function removeFile(name) {
   toast(`${name} deleted`, { tone: "danger", icon: "trash", action: { label: "Undo", onClick: () => { update(q => { const next = [...q.files]; next.splice(index, 0, gone); return { ...q, files: next }; }, { now: true }); run(); } } });
 }
 
+function remember() {
+  if (!editorArea || !project.peek()) return;
+  caret.value = { file: project.peek().active, start: editorArea.selectionStart, end: editorArea.selectionEnd };
+}
+
 function Editor() {
   let area;
   let escaped = false;
@@ -577,6 +589,7 @@ function Editor() {
       FileTabs(),
       h("span", { class: "lucid-spacer" }),
       h("span", { class: "b-meta b-hide-sm" }, () => `${lines.value} lines`),
+      Tooltip({ label: "Insert a component", kbd: ["mod", "I"] }, Button({ variant: "ghost", size: "xs", icon: "plus", class: "b-ghost b-insert-btn", onClick: () => { insertOpen.value = true; } }, "Insert")),
       Tooltip({ label: "Copy this file" }, Button({ variant: "ghost", size: "xs", icon: "copy", class: "b-ghost", aria: { label: "Copy this file" }, onClick: exportActions.copy }))),
     h("div", { class: "b-code" },
       h("div", { class: "b-code-inner" },
@@ -588,10 +601,14 @@ function Editor() {
           autocomplete: "off",
           wrap: "off",
           aria: { label: () => `Code editor for ${project.value?.active ?? "app.js"}. Press Escape, then Tab, to leave.` },
-          ref: el => { area = el; },
+          ref: el => { area = el; editorArea = el; },
           value: () => code.value,
-          onInput: event => { code.value = event.target.value; },
+          onInput: event => { code.value = event.target.value; remember(); },
           onKeydown: keydown,
+          onKeyup: () => remember(),
+          onPointerup: () => remember(),
+          onSelect: () => remember(),
+          onBlur: () => remember(),
           onFocus: () => { escaped = false; }
         }))),
     h("footer", { class: "b-editor-foot" },
@@ -767,6 +784,144 @@ function ShareDialog() {
       Button({ size: "sm", icon: "copy", disabled: () => !long.value, onClick: () => copy(long.peek(), "Full link copied", "Anyone who opens it gets their own copy to edit.") }, "Copy"))));
 }
 
+const MODULES = { core: Object.keys(LucidCore), ui: Object.keys(LucidUI), viz: Object.keys(LucidViz) };
+const SPECIFIERS = { core: "@lucidui-dev/core", ui: "@lucidui-dev/core/ui", viz: "@lucidui-dev/core/viz" };
+
+function addImports(text, snippet) {
+  const wanted = { core: [], ui: [], viz: [] };
+  for (const group of ["core", "ui", "viz"]) for (const name of MODULES[group]) if (/^[A-Za-z_$][\w$]*$/.test(name) && usesName(snippet, name) && !usesName(text.replace(/^(?!import).*$/gm, ""), name)) wanted[group].push(name);
+  const bundle = /^import\s*\{([^}]*)\}\s*from\s*["']@lucidui-dev\/core\/bundle["'];?/m;
+  const groups = bundle.test(text) ? [["bundle", [...wanted.core, ...wanted.ui, ...wanted.viz], "@lucidui-dev/core/bundle"]] : ["core", "ui", "viz"].map(g => [g, wanted[g], SPECIFIERS[g]]);
+  const added = [];
+  for (const [, names, spec] of groups) {
+    if (!names.length) continue;
+    const pattern = new RegExp(`^import\\s*\\{([^}]*)\\}\\s*from\\s*["']${spec.replace(/[/.]/g, "\\$&")}["'];?`, "m");
+    const match = pattern.exec(text);
+    if (match) {
+      const have = match[1].split(",").map(x => x.trim()).filter(Boolean);
+      text = text.slice(0, match.index) + `import { ${[...have, ...names].join(", ")} } from "${spec}";` + text.slice(match.index + match[0].length);
+    } else {
+      const imports = [...text.matchAll(/^import .*$/gm)];
+      const at = imports.length ? imports[imports.length - 1].index + imports[imports.length - 1][0].length + 1 : 0;
+      text = `${text.slice(0, at)}import { ${names.join(", ")} } from "${spec}";\n${text.slice(at)}`;
+    }
+    added.push(...names);
+  }
+  return { text, added };
+}
+
+function renameClashes(entry, text) {
+  let setup = entry.setup ?? "";
+  let body = entry.code;
+  for (const [, name] of setup.matchAll(/\b(?:const|let)\s+([A-Za-z_$][\w$]*)/g)) {
+    if (!new RegExp(`\\b(?:const|let|var|function)\\s+${name}\\b`).test(text)) continue;
+    let next = 2;
+    while (new RegExp(`\\b${name}${next}\\b`).test(text)) next++;
+    const re = new RegExp(`(^|[^\\w.$"'])${name}\\b`, "g");
+    setup = setup.replace(re, `$1${name}${next}`);
+    body = body.replace(re, `$1${name}${next}`);
+  }
+  return { setup, body };
+}
+
+function insertEntry(entry) {
+  const p = project.peek();
+  const spot = caret.peek();
+  if (!p || !spot || spot.file !== p.active || fileKind(p.active) !== "js") return false;
+  const before = code.peek();
+  let text = before;
+  const at = Math.min(spot.start, text.length);
+  const end = Math.min(spot.end, text.length);
+  const lineStart = text.lastIndexOf("\n", at - 1) + 1;
+  const indent = /^[ \t]*/.exec(text.slice(lineStart))[0];
+  const { setup, body } = renameClashes(entry, text);
+  const prev = unquoted(text.slice(0, at)).trimEnd().slice(-1);
+  const next = text.slice(end).trimStart()[0] ?? "";
+  const lead = prev && !/[(\[{,]/.test(prev) ? ", " : "";
+  const sameLine = /\S/.test(text.slice(end).split("\n")[0]);
+  const tail = next && !/[)\]},]/.test(next) ? (sameLine ? `,\n${indent}` : ",") : "";
+  const expression = lead + body.replace(/\n/g, `\n${indent}`) + tail;
+  text = text.slice(0, at) + expression + text.slice(end);
+  let caretAt = at + expression.length;
+  if (setup) {
+    const head = text.slice(0, lineStart);
+    const returns = [...head.matchAll(/^([ \t]*)return\b/gm)];
+    const last = returns[returns.length - 1];
+    const tops = [...head.matchAll(/^(?!import\b|\s|$|\}|\))\S.*$/gm)];
+    const where = last ? last.index : tops.length ? tops[tops.length - 1].index : lineStart;
+    const pad = last ? last[1] : "";
+    const block = setup.split("\n").map(line => pad + line).join("\n") + "\n";
+    text = text.slice(0, where) + block + text.slice(where);
+    caretAt += block.length;
+  }
+  const { text: finished, added } = addImports(text, `${setup}\n${body}`);
+  caretAt += finished.length - text.length;
+  code.value = finished;
+  if (editorArea) { editorArea.value = finished; editorArea.focus(); editorArea.setSelectionRange(caretAt, caretAt); remember(); }
+  if (auto.peek()) run();
+  toast(`${entry.name} inserted`, { tone: "success", description: added.length ? `Imported ${added.join(", ")}.` : "Everything it needs was already imported.", action: { label: "Undo", onClick: () => { code.value = before; if (editorArea) editorArea.value = before; if (auto.peek()) run(); } } });
+  return true;
+}
+
+function newFromEntry(entry) {
+  const p = snapshot(makeProject({ name: entry.name, files: [{ name: "app.js", text: appSource(entry, MODULES) }], template: null }), `Started from ${entry.name}`);
+  saveProject(p);
+  insertOpen.value = false;
+  openProject(p.id);
+  toast(`${entry.name} is a new project`, { tone: "success", description: "Edit it, or insert more components into it." });
+}
+
+function InsertDialog() {
+  const query = signal("");
+  const pick = signal(COMPONENTS[0].id);
+  const list = computed(() => {
+    const terms = query.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    return COMPONENTS.filter(e => { const text = `${e.name} ${e.summary} ${(e.uses ?? []).join(" ")} ${e.set}`.toLowerCase(); return terms.every(t => text.includes(t)); });
+  });
+  const current = computed(() => list.value.find(e => e.id === pick.value) ?? list.value[0] ?? null);
+  const canInsert = computed(() => { const p = project.value; const spot = caret.value; return Boolean(p && spot && spot.file === p.active && fileKind(p.active) === "js"); });
+  const go = () => { const e = current.peek(); if (e && insertEntry(e)) insertOpen.value = false; };
+  const move = step => { const l = list.peek(); if (!l.length) return; const i = Math.max(0, l.indexOf(current.peek())); const n = l[(i + step + l.length) % l.length]; pick.value = n.id; queueMicrotask(() => document.querySelector(`.b-ins-item[data-id="${n.id}"]`)?.scrollIntoView({ block: "nearest" })); };
+  effect(() => { if (insertOpen.value) { query.value = ""; queueMicrotask(() => document.querySelector(".b-ins-search input")?.focus()); } });
+  const copy = () => { const e = current.peek(); if (e) navigator.clipboard?.writeText(sourceOf(e)).then(() => toast(`${e.name} copied`, { tone: "success" }), () => toast("Copy failed", { tone: "danger" })); };
+  return Dialog({ open: insertOpen, size: "xl", class: "b-ins-dialog", title: "Insert a component", description: "Pick one and it goes where your cursor is, with its imports.",
+    footer: [
+      h("a", { class: "b-ins-browse", href: "https://lucidui.dev/components/", target: "_blank", rel: "noopener" }, "See them all live", Icon({ name: "external", size: 13 })),
+      h("span", { class: "lucid-spacer" }),
+      Button({ variant: "ghost", icon: "copy", class: "b-hide-sm", disabled: () => !current.value, onClick: copy }, "Copy"),
+      Button({ icon: "layers", disabled: () => !current.value, onClick: () => current.peek() && newFromEntry(current.peek()) }, "New project from this"),
+      Button({ variant: "primary", icon: "plus", disabled: () => !current.value || !canInsert.value, onClick: go }, "Insert at cursor")] },
+    h("div", { class: "b-ins" },
+      h("div", { class: "b-ins-side" },
+        Input({ icon: "search", placeholder: `Search ${COMPONENTS.length} components`, class: "b-ins-search", value: query, aria: { label: "Search components" },
+          onInput: e => { query.value = e.target.value; },
+          onKeydown: e => { if (e.key === "ArrowDown") { e.preventDefault(); move(1); } else if (e.key === "ArrowUp") { e.preventDefault(); move(-1); } else if (e.key === "Enter") { e.preventDefault(); if (canInsert.peek()) go(); } } }),
+        h("div", { class: "b-ins-list", role: "listbox", aria: { label: "Components" } },
+          () => {
+            const l = list.value;
+            if (!l.length) return h("p", { class: "b-ins-none" }, "Nothing matches. Try chart, form or rail.");
+            return SETS.filter(set => l.some(e => e.set === set.id)).map(set => [
+              h("div", { class: "b-ins-group" }, set.title),
+              l.filter(e => e.set === set.id).map(e => h("button", { type: "button", role: "option", class: "b-ins-item", "data-id": e.id, "aria-selected": () => String(current.value?.id === e.id), onClick: () => { pick.value = e.id; }, onDblclick: () => { pick.value = e.id; if (canInsert.peek()) go(); } },
+                h("b", e.name), h("small", e.summary)))
+            ]);
+          })),
+      h("div", { class: "b-ins-main" },
+        () => {
+          const e = current.value;
+          if (!e) return null;
+          return [
+            h("div", { class: "b-ins-head" }, h("b", e.name), h("p", e.summary)),
+            h("pre", { class: "b-ins-code", tabindex: 0, aria: { label: `${e.name} code` } }, h("code", highlight(sourceOf(e), "js"))),
+            h("p", { class: "b-ins-hint", "data-ok": () => String(canInsert.value) },
+              () => Icon({ name: canInsert.value ? "check-circle" : "info", size: 14 }),
+              () => (canInsert.value
+                ? (e.setup ? "Goes in at your cursor. Its setup lines go above the return, and missing imports are added." : "Goes in at your cursor, and missing imports are added.")
+                : fileKind(project.value?.active ?? "app.js") === "css" ? "Switch to a JavaScript file to insert." : "Click in your code where it should go, then come back. Or start a new project from it."))
+          ];
+        })));
+}
+
 function Thumb(meta) {
   const host = h("div", { class: "b-thumb", "aria-hidden": "true" });
   const io = new IntersectionObserver(([e]) => {
@@ -904,6 +1059,7 @@ function App() {
   hotkey("mod+enter", run, { inputs: true });
   hotkey("mod+s", () => { if (view.peek() === "editor") saveVersion(); }, { inputs: true });
   hotkey("mod+shift+o", () => { if (view.peek() === "editor") exportActions.open(); }, { inputs: true });
+  hotkey("mod+i", () => { if (view.peek() === "editor") insertOpen.value = !insertOpen.peek(); }, { inputs: true });
   hotkey("mod+shift+f", () => { if (view.peek() === "editor") fullOpen.value = !fullOpen.peek(); }, { inputs: true });
   queueMicrotask(() => {
     let saved = null;
@@ -931,7 +1087,8 @@ function App() {
     FullPreview(),
     NameDialog(),
     HistoryDialog(),
-    ShareDialog());
+    ShareDialog(),
+    InsertDialog());
 }
 
 mount(App, "#app");
