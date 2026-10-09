@@ -1013,6 +1013,12 @@ function GitHubDialog() {
       GitHub.saveToken(t);
       login.value = await GitHub.whoami(t);
       stage.value = "ready";
+      if (document.hidden) {
+        const title = document.title;
+        document.title = "✓ GitHub connected · Builder";
+        addEventListener("focus", () => { document.title = title; }, { once: true });
+      }
+      toast(`Connected as @${login.peek()}`, { tone: "success", description: "Name the repository, then create it." });
     } catch (error) {
       if (error.message === "cancelled") return;
       stage.value = "idle";
@@ -1062,7 +1068,7 @@ function GitHubDialog() {
         h("p", "Open GitHub and enter this code:"),
         h("button", { type: "button", class: "b-gh-user-code", onClick: copyCode, aria: { label: "Copy code" } }, () => device.value?.user_code ?? ""),
         Button({ variant: "primary", icon: "external", href: () => device.value?.verification_uri ?? "https://github.com/login/device", target: "_blank", rel: "noopener" }, "Open github.com/login/device"),
-        h("p", { class: "b-gh-wait" }, "Waiting for you to approve it on GitHub…"));
+        h("p", { class: "b-gh-wait" }, "Waiting for you to approve it. When GitHub says you're all set, close that tab and come back here."));
       if (s === "ready") return h("div", { class: "b-gh-form" },
         h("p", { class: "b-gh-who" }, Icon({ name: "check-circle", size: 15 }), "Connected as ", h("b", () => `@${login.value}`)),
         Field({ label: "Repository name", hint: () => `github.com/${login.value}/${GitHub.repoName(repo.value)}` }, Input({ value: repo, onInput: e => { repo.value = e.target.value; } })),
