@@ -359,7 +359,7 @@ function Commands(L, extra) {
   return CommandMenu({
     open: commandOpen,
     placeholder: "Search Lucid UI…",
-    items: [
+    items: () => [
       { group: "Go to", label: "Home", icon: "hexagon", run: go(L.home) },
       { group: "Go to", label: "Manifesto", icon: "sparkles", keywords: "beliefs principles values why", run: go(L.manifesto) },
       { group: "Go to", label: "The case for Lucid", icon: "target", keywords: "why compare react tailwind shadcn svelte css", run: go(L.case) },
@@ -372,7 +372,7 @@ function Commands(L, extra) {
       { group: "Go to", label: "Status", icon: "zap", keywords: "uptime health live down outage cdn npm", run: go(L.status) },
       { group: "Go to", label: "Press kit", icon: "image", run: go(L.press) },
       { group: "Go to", label: "Download", icon: "download", hint: `v${version}`, run: go(DOWNLOAD) },
-      ...extra,
+      ...(typeof extra === "function" ? extra() : extra),
       { group: "Appearance", label: "Light theme", icon: "sun", run: () => { theme.value = "light"; } },
       { group: "Appearance", label: "Dark theme", icon: "moon", run: () => { theme.value = "dark"; } },
       { group: "Appearance", label: "System theme", icon: "monitor", run: () => { theme.value = "system"; } },

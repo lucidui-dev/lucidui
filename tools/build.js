@@ -86,9 +86,9 @@ async function stamp(dir) {
   }
 }
 
-async function site(name, from, { shared = true, lucid = true, extras = [], files = {} } = {}) {
+async function site(name, from, { shared = true, lucid = true, extras = [], files = {}, exclude = () => false } = {}) {
   const out = join(dist, name);
-  await cp(join(root, from), out, { recursive: true, filter: skip });
+  await cp(join(root, from), out, { recursive: true, filter: source => skip(source) && !exclude(source) });
   if (lucid) await cp(join(root, "src"), join(out, "lucid"), { recursive: true, filter: skip });
   if (shared) await cp(join(root, "sites/shared"), join(out, "shared"), { recursive: true, filter: skip });
   for (const [source, target] of extras) await cp(join(root, source), join(out, target), { recursive: true, filter: skip });
@@ -112,12 +112,12 @@ const built = [
   }),
   await site("sandbox.lucidui.dev", "examples/sandbox", { shared: false, extras: [["examples/tracker", "tracker"], ["examples/transit", "transit"], ["examples/campaign", "campaign"], ["examples/checkin", "checkin"], ["examples/fitness", "fitness"], ["examples/beats", "beats"], ["examples/maison", "maison"], ["examples/clinic", "clinic"]] }),
   await site("docs.lucidui.dev", "sites/docs", {
-    extras: /GUIDES_OPEN = true/.test(await readFile(join(root, "sites/docs/docs.js"), "utf8")) ? [["docs", "docs"], ["llms.txt", "llms.txt"], ["llms-full.txt", "llms-full.txt"]] : []
+    extras: [["docs", "docs"], ["llms.txt", "llms.txt"], ["llms-full.txt", "llms-full.txt"]]
   }),
   await site("changelog.lucidui.dev", "sites/changelog"),
   await site("build.lucidui.dev", "sites/build"),
   await site("editions.lucidui.dev", "sites/editions"),
-  await site("media.lucidui.dev", "media", { shared: false, lucid: false, extras: [["dist/press-kit/lucidui-press-kit.zip", "press/lucidui-press-kit.zip"]] })
+  await site("media.lucidui.dev", "media", { shared: false, lucid: false, exclude: source => /\.(mp4|webm|mov)$/i.test(source), extras: [["dist/press-kit/lucidui-press-kit.zip", "press/lucidui-press-kit.zip"]] })
 ];
 
 await writeFile(join(dist, "VERSION"), `${pkg.version}\n`);

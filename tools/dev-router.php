@@ -18,6 +18,11 @@ if (preg_match('#^/a/([A-Za-z0-9]{8})/?$#', $path, $m) && is_file($docroot . '/a
     require $docroot . '/api/app.php';
     return true;
 }
+if (preg_match('#^/[a-z0-9-]+/?$#', $path) && !is_dir($docroot . $path) && preg_match('#RewriteRule \^\(([a-z|-]+)\)#', (string) @file_get_contents($docroot . '/.htaccess'), $routes) && in_array(trim($path, '/'), explode('|', $routes[1]), true)) {
+    header('Content-Type: text/html; charset=utf-8');
+    readfile($docroot . '/index.html');
+    return true;
+}
 if (str_ends_with($path, '.php') && is_file($docroot . $path)) {
     return false;
 }
