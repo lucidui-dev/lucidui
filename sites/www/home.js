@@ -8,7 +8,7 @@ import { mountPage, commandOpen, SectionHead, jump, DownloadButton, copyBrief } 
 import { CodeWindow } from "/shared/code.js";
 import { DotField } from "/shared/field.js";
 
-const FACTS = { core: "5.8 KB", tokens: "1,140", deps: "0" };
+const FACTS = { core: "6.1 KB", all: "38 KB", tokens: "1,140", deps: "0" };
 
 let LINKS;
 
@@ -451,7 +451,7 @@ function Principles() {
       h("ul", { class: "principles" },
         item("monitor", "Browser-native", "Plain elements and plain events. What you write is what the browser runs."),
         item("zap", "No build step", "Import the modules in a script tag and start. Tooling is always optional."),
-        item("hexagon", "Small by contract", `The core is ${FACTS.core} gzipped, and a test fails the build if it grows past its budget.`),
+        item("hexagon", "Small by contract", `The core runtime is ${FACTS.core} gzipped, and a test fails the build if it grows past its budget. Every component, chart and style together is ${FACTS.all}.`),
         item("check-circle", "Accessible by structure", "Keyboard, focus and ARIA live inside the components, not in a checklist."),
         item("sparkles", "Beautiful by default", "A design language with a point of view, in light and dark, from one set of tokens."),
         item("users", "Free, forever", "MIT licensed. No paid tier, no hosted dependency, no lock-in.")),

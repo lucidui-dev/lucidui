@@ -5,7 +5,7 @@ import { mountPage, jump, copyBrief } from "/shared/chrome.js";
 const BELIEFS = [
   {
     title: "Small is a feature.",
-    text: "The whole runtime is 5.8 KB, and a test fails the build if it grows. Not because bytes are expensive, but because every line you can't read is a line you can't trust."
+    text: "The core runtime is 6.1 KB gzipped, and a test fails the build if it grows past its budget. Components, charts and styles are separate, and you only load what you use. Not because bytes are expensive, but because every line you can't read is a line you can't trust."
   },
   {
     title: "Read the source.",

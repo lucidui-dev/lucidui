@@ -42,7 +42,7 @@ const COLOURS = [
 const BOILERPLATE = {
   short: "Lucid UI is a small, dependency-free UI runtime for the web, built for people and the AI agents that now write much of their code.",
   medium: "Lucid UI is a free, open-source UI runtime for the web. It pairs fine-grained signals with finished, accessible components and built-in charts, all in a few kilobytes with no build step. Its entire API fits on one page, so AI coding agents can learn it in a single read, and every mistake comes back with a stable code and a fix.",
-  long: "Lucid UI is a free, open-source UI runtime for the web, released under the MIT license. Instead of a framework you compile, it is a handful of readable JavaScript modules: fine-grained signals that update exactly what changed, a set of components designed together and wired for keyboards and screen readers, and built-in charts with a calm, signature look. The core is 5.8 KB gzipped and has no dependencies. Lucid UI was designed for a world where AI agents write much of the interface: its complete API reference is about 1,100 tokens, small enough for an agent to read whole, and its diagnostics explain every mistake with a code and a fix. Lucid UI's own websites are built with it, unminified, so anyone can read every line."
+  long: "Lucid UI is a free, open-source UI runtime for the web, released under the MIT license. Instead of a framework you compile, it is a handful of readable JavaScript modules: fine-grained signals that update exactly what changed, a set of components designed together and wired for keyboards and screen readers, and built-in charts with a calm, signature look. The core runtime is 6.1 KB gzipped and has no dependencies; every component, chart and style together is about 38 KB. Lucid UI was designed for a world where AI agents write much of the interface: its complete API reference is about 1,100 tokens, small enough for an agent to read whole, and its diagnostics explain every mistake with a code and a fix. Lucid UI's own websites are built with it, unminified, so anyone can read every line."
 };
 
 const NAMES = [
@@ -127,7 +127,7 @@ function Facts() {
       SectionHead({ eyebrow: "at a glance", title: "The short version." }),
       h("div", { class: "press-facts" },
         tile("First release", "Oct", "2026"),
-        tile("Core, gzipped", "5.8", "KB"),
+        tile("Core, gzipped", "6.1", "KB"),
         tile("Dependencies", "0"),
         tile("Whole API reference", "1,140", "tokens"),
         tile("License", "MIT"),
