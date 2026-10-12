@@ -98,6 +98,18 @@ const UPDATES = [
 
 const RELEASES = [
   {
+    version: "0.3.6",
+    date: "12 October 2026",
+    title: "1-bit Lisa",
+    summary: "A second look for every component: pure black and white, a nod to Apple's Lisa and the first Macintosh. Plus fixes for dialogs on iPhone and charts on small screens.",
+    items: [
+      ["New", "1-bit Lisa: import lisa() from @lucidui-dev/core/lisa and add lisa.css. Dithered greys, pinstriped windows, outlines that thicken on hover, presses that invert, and the Chicago typeface, with the same components and API."],
+      ["New", "maximize and minimize icons, with fullscreen and shrink as aliases."],
+      ["Fixed", "Dialogs no longer collapse in Safari, and inputs no longer zoom the page on iPhone."],
+      ["Fixed", "Chart card titles move above their controls when space is tight, and DotCalendar fits a year on a phone."]
+    ]
+  },
+  {
     version: "0.3.5",
     date: "7 October 2026",
     title: "Icons agents can guess",

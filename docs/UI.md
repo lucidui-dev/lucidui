@@ -132,6 +132,22 @@ Menus, selects and tooltips use the browser's popover layer, so they are never c
 
 `hotkey("mod+k", handler)` registers a shortcut and removes it when the component is removed. Plain-key shortcuts are ignored while the user is typing or a dialog is open.
 
+## 1-bit Lisa
+
+A second look for every component: pure black and white, a nod to Apple's Lisa and the first Macintosh. The components and their API don't change.
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lucidui-dev/core@0.3/src/lisa/lisa.css">
+```
+
+```js
+import { lisa } from "@lucidui-dev/core/lisa";
+
+lisa();
+```
+
+`lisa.css` alone gives the still look. `lisa()` adds the live layer: dithered greys, outlines that thicken on hover, presses that invert, dialogs that assemble, and a faint dither glow in panels near the cursor. It returns a `stop()` function. Pass `root` to limit it to part of the page, and mark your own elements with `data-lisa="panel"`, `"fill"` or `"tone"` to draw them in the same style. Reduced motion keeps it still. The Chicago typeface (ChicagoFLF, public domain) loads with `lisa.css`.
+
 ## Icons
 
 Every `icon` prop and `Icon({ name })` takes one of these names. Use only these; an unknown name draws a placeholder and reports `unknown-icon`.
