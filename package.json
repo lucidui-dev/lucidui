@@ -19,8 +19,8 @@
     "./ui": "./src/ui/index.js",
     "./ui.css": "./src/ui/lucid.css",
     "./viz": "./src/viz/index.js",
-    "./granular": "./src/granular/index.js",
-    "./granular.css": "./src/granular/granular.css",
+    "./lisa": "./src/lisa/index.js",
+    "./lisa.css": "./src/lisa/lisa.css",
     "./bundle": "./bundle/lucid.js",
     "./bundle.css": "./bundle/lucid.css"
   },

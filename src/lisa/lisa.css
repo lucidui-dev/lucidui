@@ -1,0 +1,84 @@
+@layer lucid-lisa {
+  .lucid-lisa {
+    --lucid-bg: light-dark(#ffffff, #000000);
+    --lucid-surface: light-dark(#ffffff, #000000);
+    --lucid-surface-raised: light-dark(#ffffff, #000000);
+    --lucid-surface-sunken: light-dark(#ffffff, #000000);
+    --lucid-overlay: light-dark(rgb(255 255 255 / .96), rgb(0 0 0 / .96));
+    --lucid-ink: light-dark(#000000, #ffffff);
+    --lucid-ink-2: light-dark(#000000, #ffffff);
+    --lucid-ink-3: light-dark(#555555, #aaaaaa);
+    --lucid-ink-4: light-dark(#888888, #777777);
+    --lucid-line: light-dark(#000000, #ffffff);
+    --lucid-line-strong: light-dark(#000000, #ffffff);
+    --lucid-hover: transparent;
+    --lucid-press: transparent;
+    --lucid-accent: light-dark(#000000, #ffffff);
+    --lucid-accent-hover: light-dark(#000000, #ffffff);
+    --lucid-accent-ink: light-dark(#000000, #ffffff);
+    --lucid-accent-soft: transparent;
+    --lucid-ring: light-dark(#000000, #ffffff);
+    --lucid-primary: light-dark(#000000, #ffffff);
+    --lucid-primary-hover: light-dark(#000000, #ffffff);
+    --lucid-primary-ink: light-dark(#000000, #ffffff);
+    --lucid-danger: light-dark(#000000, #ffffff);
+    --lucid-success: light-dark(#000000, #ffffff);
+    --lucid-warning: light-dark(#000000, #ffffff);
+    --lucid-series-1: light-dark(#000000, #ffffff);
+    --lucid-series-2: light-dark(#666666, #999999);
+    --lucid-series-3: light-dark(#aaaaaa, #555555);
+    --lucid-font-chicago: "ChicagoFLF", "Chicago", "Pixelify Sans", ui-monospace, monospace;
+    --lucid-font-sans: ui-monospace, "SF Mono", "Geist Mono", Menlo, monospace;
+    --lucid-font-mono: ui-monospace, "SF Mono", "Geist Mono", Menlo, monospace;
+    --lisa-dot: color-mix(in srgb, var(--lucid-ink) 50%, transparent);
+    --lisa-desktop: conic-gradient(at 1px 1px, transparent 75%, var(--lisa-dot) 0) 0 0 / 3px 3px;
+    -webkit-font-smoothing: none;
+    font-family: var(--lucid-font-sans);
+  }
+
+  .lucid-lisa :is(.lucid-btn, .lucid-badge, .lucid-seg, .lucid-field-label, .lucid-nav-group, .lucid-menu-group, .lucid-dialog-title, .lucid-section-title, .lucid-heading, .lucid-page-title, .lucid-chart-title, .lucid-item, .lucid-nav-item, .lucid-check, .lucid-stat-label) {
+    font-family: var(--lucid-font-chicago); letter-spacing: 0; font-weight: 400;
+  }
+  .lucid-lisa :is(.lucid-btn, .lucid-badge, .lucid-item, .lucid-nav-item, .lucid-check, .lucid-seg) { font-size: 15px; }
+  .lucid-lisa .lucid-btn[data-size="xs"] { font-size: 13px; }
+  .lucid-lisa :is(.lucid-field-label, .lucid-nav-group, .lucid-menu-group) { font-size: 13px; text-transform: none; }
+
+  .lucid-lisa :is(.lucid-card, .lucid-section-body, .lucid-pop, .lucid-dialog, .lucid-toast, .lucid-input, .lucid-textarea, .lucid-seg, .lucid-seg-thumb, .lucid-check-box, .lucid-switch-track, .lucid-badge, .lucid-kbd, .lucid-avatar, .lucid-item, .lucid-nav-item) { border-radius: 0; }
+  .lucid-lisa .lucid-btn { border-radius: 6px; color: var(--lucid-ink); }
+  .lucid-lisa :is(.lucid-btn[data-variant="primary"], .lucid-btn[data-variant="accent"]) { border-radius: 8px; }
+  .lucid-lisa .lucid-btn:active:not(:disabled) { color: var(--lucid-bg); transform: none; }
+
+  .lucid-lisa :is(.lucid-btn:not([data-variant="ghost"]), .lucid-input, .lucid-textarea, .lucid-seg, .lucid-check-box, .lucid-switch-track, .lucid-badge, .lucid-kbd) { background: var(--lucid-bg); box-shadow: inset 0 0 0 1px var(--lucid-ink); }
+  .lucid-lisa .lucid-btn[data-variant="ghost"] { background: var(--lucid-bg); box-shadow: none; }
+  .lucid-lisa :is(.lucid-btn[data-variant="primary"], .lucid-btn[data-variant="accent"]) { box-shadow: inset 0 0 0 2px var(--lucid-ink); }
+  .lucid-lisa :is(.lucid-card, .lucid-section-body, .lucid-pop, .lucid-dialog, .lucid-toast) { background: var(--lucid-bg); box-shadow: inset 0 0 0 1px var(--lucid-ink), 2px 2px 0 var(--lucid-ink); }
+
+  .lucid-lisa-live [data-lisa-live] { isolation: isolate; }
+  .lucid-lisa-live :is(.lucid-btn, .lucid-card, .lucid-section-body, .lucid-input, .lucid-seg, .lucid-badge, .lucid-check-box, .lucid-kbd, .lucid-toast)[data-lisa-live] { position: relative; }
+  .lucid-lisa-live :is(.lucid-btn, .lucid-input, .lucid-seg, .lucid-check-box, .lucid-switch-track, .lucid-badge, .lucid-kbd)[data-lisa-live] { box-shadow: none; }
+  .lucid-lisa-live :is(.lucid-card, .lucid-section-body, .lucid-pop, .lucid-dialog, .lucid-toast)[data-lisa-live] { box-shadow: 2px 2px 0 var(--lucid-ink); }
+  .lucid-lisa-canvas { position: absolute !important; inset: 0 !important; z-index: -1 !important; width: 100% !important; height: 100% !important; margin: 0 !important; padding: 0 !important; border: 0 !important; box-shadow: none !important; background: none !important; pointer-events: none; border-radius: inherit; image-rendering: pixelated; }
+
+  .lucid-lisa .lucid-switch-track::after { border-radius: 0; box-shadow: none; outline: 1px solid var(--lucid-ink); background: var(--lucid-bg); }
+  .lucid-lisa .lucid-check input:checked + .lucid-check-box { background: var(--lucid-ink); }
+  .lucid-lisa .lucid-check input:checked + .lucid-check-box svg { color: var(--lucid-bg); }
+  .lucid-lisa .lucid-seg-thumb { box-shadow: none; background: var(--lucid-ink); }
+  .lucid-lisa .lucid-seg [aria-checked="true"] { color: var(--lucid-bg); }
+  .lucid-lisa :is(.lucid-item:hover, .lucid-item:focus, .lucid-item[data-active], .lucid-nav-item[aria-current="page"], .lucid-nav-item:hover) { background: var(--lucid-ink); color: var(--lucid-bg); }
+  .lucid-lisa :is(.lucid-item:hover, .lucid-item:focus, .lucid-item[data-active], .lucid-nav-item[aria-current="page"], .lucid-nav-item:hover) :is(.lucid-icon, .lucid-item-hint, .lucid-nav-badge) { color: inherit; }
+  .lucid-lisa :is(.lucid-btn, .lucid-input, .lucid-seg [role="radio"]):focus-visible { outline: 2px solid var(--lucid-ink); outline-offset: 2px; }
+  .lucid-lisa .lucid-check input:focus-visible + :is(.lucid-check-box, .lucid-switch-track) { outline: 2px solid var(--lucid-ink); outline-offset: 2px; }
+
+  .lucid-lisa .lucid-dialog-head { background-image: repeating-linear-gradient(to bottom, var(--lucid-ink) 0 1px, transparent 1px 3px); background-size: 100% 13px; background-repeat: no-repeat; background-position: 0 20px; }
+  .lucid-lisa .lucid-dialog-title { display: inline-block; padding: 0 10px 0 0; background: var(--lucid-bg); font-size: 16px; line-height: 19px; }
+  .lucid-lisa .lucid-dialog-head .lucid-btn { background: var(--lucid-bg); }
+  .lucid-lisa .lucid-dialog::backdrop { background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .lucid-lisa :is(.lucid-dialog-foot, .lucid-command-foot) { background: var(--lucid-bg); box-shadow: inset 0 1px 0 var(--lucid-ink); }
+  .lucid-lisa .lucid-section-body > * + * { border-top: 1px solid var(--lucid-ink); }
+  .lucid-lisa .lucid-section-body > .lucid-lisa-canvas + * { border-top: 0; }
+  .lucid-lisa .lucid-divider { background: var(--lucid-ink); }
+  .lucid-lisa .lucid-avatar { filter: grayscale(1) contrast(1.6); box-shadow: inset 0 0 0 1px var(--lucid-ink); }
+  .lucid-lisa .lucid-dot { background: var(--lucid-ink); }
+  .lucid-lisa .lucid-shell-side { background: var(--lucid-bg); box-shadow: inset -1px 0 0 var(--lucid-ink); }
+  .lucid-lisa .lucid-toaster .lucid-toast { font-family: var(--lucid-font-chicago); }
+}
