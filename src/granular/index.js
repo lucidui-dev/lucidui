@@ -19,6 +19,27 @@ const MATERIALS = [
   { match: '[data-granular="accent"]', color: "accent", fill: 0.6, hover: 0.72, cursor: 0.3 }
 ];
 
+const BITMAP_PANEL = { color: "ink", fill: 0, hover: 0, edge: 1, edgeFill: 1, cursor: 0.42, glow: 0.24, reach: 110 };
+const BITMAP = {
+  '.lucid-btn[data-variant="primary"]': { color: "ink", fill: 0, edge: 2, edgeFill: 1, cursor: 0, press: 1, thicken: true },
+  '.lucid-btn[data-variant="accent"]': { color: "ink", fill: 0, edge: 2, edgeFill: 1, cursor: 0, press: 1, thicken: true },
+  '.lucid-btn[data-variant="danger"]': { color: "ink", fill: 0, edge: 1, edgeFill: 1, cursor: 0, press: 1, thicken: true },
+  '.lucid-btn[data-variant="ghost"]': { color: "ink", fill: 0, cursor: 0, press: 1, hoverEdge: 1 },
+  ".lucid-btn": { color: "ink", fill: 0, edge: 1, edgeFill: 1, cursor: 0, press: 1, thicken: true },
+  ".lucid-switch-track": { color: "ink", fill: 0.25, edge: 1, edgeFill: 1, cursor: 0.15, checked: { color: "ink", fill: 0.5 } },
+  ".lucid-check-box": { color: "ink", fill: 0, edge: 1, edgeFill: 1, cursor: 0.15, checked: { color: "ink", fill: 1 } },
+  ".lucid-input": { color: "ink", fill: 0, hover: 0, edge: 1, edgeFill: 1, cursor: 0.12, reach: 60, focus: true },
+  ".lucid-seg": { color: "ink", fill: 0, edge: 1, edgeFill: 1, cursor: 0.12, reach: 60 },
+  ".lucid-seg-thumb": { color: "ink", fill: 1, cursor: 0 },
+  ".lucid-badge, .lucid-kbd": { color: "ink", fill: 0, edge: 1, edgeFill: 1, cursor: 0.1, reach: 40 },
+  ".lucid-card, .lucid-section-body": BITMAP_PANEL,
+  ".lucid-pop, .lucid-dialog, .lucid-toast": { ...BITMAP_PANEL, glow: 0.14, assemble: true },
+  '[data-granular="panel"]': BITMAP_PANEL,
+  '[data-granular="fill"]': { color: "ink", fill: 0.5, hover: 0.62, cursor: 0.2 },
+  '[data-granular="accent"]': { color: "ink", fill: 0.25, hover: 0.38, cursor: 0.2 }
+};
+const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+
 const SELECTOR = MATERIALS.map(m => m.match).join(", ");
 const TOKENS = { ink: "--lucid-ink", primary: "--lucid-primary", accent: "--lucid-accent", danger: "--lucid-danger" };
 const TAU = Math.PI * 2;
@@ -36,8 +57,9 @@ const roundedBox = (px, py, hw, hh, r) => {
 
 const ease = t => 1 - Math.pow(1 - Math.min(1, Math.max(0, t)), 3);
 
-export function granular({ root = document.querySelector(".lucid-app") ?? document.body, cell = 4, materials = [] } = {}) {
-  const all = [...materials, ...MATERIALS];
+export function granular({ root = document.querySelector(".lucid-app") ?? document.body, bits, cell = bits === 1 ? 2 : 4, materials = [] } = {}) {
+  const bitmap = bits === 1;
+  const all = [...materials, ...MATERIALS.map(m => (bitmap && BITMAP[m.match] ? { match: m.match, ...BITMAP[m.match] } : m))];
   const selector = [...materials.map(m => m.match), SELECTOR].join(", ");
   const still = matchMedia("(prefers-reduced-motion: reduce)");
   const states = new Map();
@@ -47,6 +69,7 @@ export function granular({ root = document.querySelector(".lucid-app") ?? docume
   let stopped = false;
 
   root.classList.add("lucid-granular", "lucid-granular-live");
+  if (bitmap) root.setAttribute("data-bits", "1");
 
   const probe = document.createElement("span");
   probe.setAttribute("aria-hidden", "true");
@@ -155,12 +178,13 @@ export function granular({ root = document.querySelector(".lucid-app") ?? docume
     const radius = Math.min(parseFloat(getComputedStyle(s.el).borderTopLeftRadius) || 0, w / 2, h / 2);
     const moving = !still.matches;
     const fill = (st.hover ? m.hover ?? m.fill : m.fill) * (st.disabled ? 0.45 : 1);
-    const edgeRings = m.edge ?? 0;
-    const edgeFill = (m.edgeFill ?? 0) * (st.hover ? 1.15 : 1) * (st.disabled ? 0.5 : 1);
+    const edgeRings = (m.edge ?? 0) + (bitmap && st.hover ? (m.thicken ? 1 : m.hoverEdge ?? 0) : 0);
+    const edgeLevel = bitmap && st.hover && !m.edge && m.hoverEdge ? 1 : null;
+    const edgeFill = (edgeLevel ?? m.edgeFill ?? 0) * (st.hover && !bitmap ? 1.15 : 1) * (st.disabled ? 0.5 : 1);
     const reach = m.reach ?? 100;
     const px = pointer && moving ? pointer.x - rect.left : -1e5;
     const py = pointer && moving ? pointer.y - rect.top : -1e5;
-    const press = s.pressAt ? ease((t - s.pressAt) / 160) : 0;
+    const press = s.pressAt ? ease((t - s.pressAt) / (bitmap ? 40 : 160)) : 0;
     const appear = m.assemble && moving ? ease((t - s.openAt) / 520) : 1;
     const half = cell / 2;
     const cx = w / 2;
@@ -175,15 +199,24 @@ export function granular({ root = document.querySelector(".lucid-app") ?? docume
         const n = hash(x, y);
         if (n > appear * 1.02) continue;
         const ring = Math.floor(-d / cell);
-        const edge = ring < edgeRings ? 1 - ring / edgeRings : 0;
+        const edge = ring < edgeRings ? (bitmap ? 1 : 1 - ring / edgeRings) : 0;
         let v = fill + edge * edgeFill;
         const dx = x - px;
         const dy = y - py;
         const near = Math.exp(-(dx * dx + dy * dy) / (reach * reach));
-        v += near * (m.cursor ?? 0) * (edge ? 1 : fill > 0.3 ? 0.4 : Math.min(0.26, 0.29 - fill));
-        if (moving) v *= 1 + 0.16 * Math.sin(t * 0.0022 + n * 40);
+        v += near * (m.cursor ?? 0) * (edge ? 1 : bitmap ? m.glow ?? 0 : fill > 0.3 ? 0.4 : Math.min(0.26, 0.29 - fill));
         if (st.focus && m.focus && edge) v += 0.45 * (0.5 + 0.5 * Math.sin((Math.atan2(y - cy, x - cx) / TAU) * perimeter / 9 - t * 0.008));
         if (st.loading) v *= 0.5 + 0.5 * Math.sin(x * 0.11 - t * 0.009);
+        if (bitmap) {
+          v = Math.max(v, press * (m.press ?? 0));
+          const ix = Math.floor(x / cell);
+          const iy = Math.floor(y / cell);
+          const crawl = moving && near > 0.15 && !edge ? Math.floor(t / 140) : 0;
+          if (v * (st.disabled ? 0.5 : 1) < (BAYER[((ix + crawl) & 3) + ((iy & 3) << 2)] + 0.5) / 16) continue;
+          ctx.rect(x - half, y - half, cell, cell);
+          continue;
+        }
+        if (moving) v *= 1 + 0.16 * Math.sin(t * 0.0022 + n * 40);
         if (v <= 0.02) continue;
         let r;
         if (v < 0.3) {
@@ -220,7 +253,7 @@ export function granular({ root = document.querySelector(".lucid-app") ?? docume
       const key = `${st.checked}${st.disabled}${st.hover}${st.focus}${st.loading}`;
       if (key !== s.key) { s.key = key; s.dirty = true; }
       const animating = moving && (near || s.pressAt || st.focus && s.material.focus || st.loading || t - s.openAt < 560);
-      const ambient = moving && t - s.drawn > 110;
+      const ambient = moving && !bitmap && t - s.drawn > 110;
       if (s.dirty || animating || ambient || near !== s.near) {
         draw(s, t, st, rect);
         s.drawn = t;
@@ -229,7 +262,7 @@ export function granular({ root = document.querySelector(".lucid-app") ?? docume
       s.near = near;
       if (animating) busy = true;
     }
-    if ((moving || busy) && !document.hidden) raf = requestAnimationFrame(frame);
+    if (((moving && !bitmap) || busy) && !document.hidden) raf = requestAnimationFrame(frame);
   }
 
   function wake() {
@@ -269,5 +302,6 @@ export function granular({ root = document.querySelector(".lucid-app") ?? docume
     for (const s of [...states.values()]) detach(s);
     probe.remove();
     root.classList.remove("lucid-granular-live");
+    root.removeAttribute("data-bits");
   };
 }

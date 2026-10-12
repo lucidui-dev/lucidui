@@ -14,7 +14,8 @@ const VALUES = NAMES.map(name => SCOPE[name]);
 const MODULES = { core: Object.keys(Core), ui: Object.keys(UI), viz: Object.keys(Viz) };
 const number = i => String(i + 1).padStart(2, "0");
 const query = signal("");
-const look = signal(new URLSearchParams(location.search).get("look") === "granular" ? "granular" : "flagship");
+const LOOKS = ["flagship", "granular", "1-bit"];
+const look = signal(LOOKS.includes(new URLSearchParams(location.search).get("look")) ? new URLSearchParams(location.search).get("look") : "flagship");
 const PAGE_GRAIN = [
   { match: ".cx-card", color: "ink", fill: 0.01, hover: 0.016, edge: 2, edgeFill: 0.28, cursor: 0.95, reach: 170 },
   { match: ".cx-stats, .cx-close-inner, .cx-rail-note", color: "ink", fill: 0.014, edge: 2, edgeFill: 0.28, cursor: 0.95, reach: 170 },
@@ -148,8 +149,13 @@ function Hero() {
         h("div", { class: "cx-stats-field", "aria-hidden": "true" }, Array.from({ length: 48 }, (_, i) => h("i", { style: { "--i": i } }))))));
 }
 
+const PAGE_BITS = [
+  { match: '.cx-chip[aria-current="true"], .cx-rail-link[aria-current="true"]', color: "ink", fill: 1, cursor: 0 },
+  { match: ".cx-stats, .cx-close-inner, .cx-rail-note", color: "ink", fill: 0, edge: 1, edgeFill: 1, cursor: 0.35, reach: 120 }
+];
+
 function LookSwitch() {
-  return Segmented({ value: look, size: "sm", class: "cx-look", aria: { label: "Look" }, options: [{ value: "flagship", label: "Flagship" }, { value: "granular", label: "Granular" }] });
+  return Segmented({ value: look, size: "sm", class: "cx-look", aria: { label: "Look" }, options: [{ value: "flagship", label: "Flagship" }, { value: "granular", label: "Granular" }, { value: "1-bit", label: "1-bit" }] });
 }
 
 function Toolbar() {
@@ -209,14 +215,18 @@ mountPage({
     const page = h("div", { class: "cx" }, Hero(), Toolbar(), Catalog(), Close());
     let stop = null;
     effect(() => {
-      const on = look.value === "granular";
+      const current = look.value;
+      const on = current !== "flagship";
+      const bits = current === "1-bit";
       const url = new URL(location.href);
-      if (on) url.searchParams.set("look", "granular"); else url.searchParams.delete("look");
+      if (on) url.searchParams.set("look", current); else url.searchParams.delete("look");
       history.replaceState(null, "", url);
       stop?.();
       stop = null;
       page.classList.toggle("lucid-granular", on);
-      if (on) queueMicrotask(() => { stop = granular({ root: page, materials: PAGE_GRAIN }); });
+      page.toggleAttribute("data-bits", bits);
+      if (bits) page.setAttribute("data-bits", "1");
+      if (on) queueMicrotask(() => { stop = granular({ root: page, bits: bits ? 1 : undefined, materials: bits ? PAGE_BITS : PAGE_GRAIN }); });
     });
     return [page];
   },
