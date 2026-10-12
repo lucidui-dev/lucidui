@@ -86,6 +86,7 @@ $types = [
     '' => 'text/plain; charset=utf-8',
     'zip' => 'application/zip',
     'woff2' => 'font/woff2',
+    'ttf' => 'font/ttf',
 ];
 header('Content-Type: ' . ($types[strtolower(pathinfo($file, PATHINFO_EXTENSION))] ?? 'application/octet-stream'));
 header('Cache-Control: no-store');

@@ -1,3 +1,9 @@
+@font-face {
+  font-family: "ChicagoFLF";
+  src: url("./fonts/ChicagoFLF.ttf") format("truetype");
+  font-display: swap;
+}
+
 @layer lucid-lisa {
   .lucid-lisa {
     --lucid-bg: light-dark(#ffffff, #000000);
@@ -27,7 +33,7 @@
     --lucid-series-1: light-dark(#000000, #ffffff);
     --lucid-series-2: light-dark(#666666, #999999);
     --lucid-series-3: light-dark(#aaaaaa, #555555);
-    --lucid-font-chicago: "ChicagoFLF", "Chicago", "Pixelify Sans", ui-monospace, monospace;
+    --lucid-font-chicago: "ChicagoFLF", "Chicago", ui-monospace, monospace;
     --lucid-font-sans: ui-monospace, "SF Mono", "Geist Mono", Menlo, monospace;
     --lucid-font-mono: ui-monospace, "SF Mono", "Geist Mono", Menlo, monospace;
     --lisa-dot: color-mix(in srgb, var(--lucid-ink) 50%, transparent);
