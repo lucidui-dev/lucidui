@@ -21,16 +21,18 @@ export function cdn(local) {
   const v = local ? `?v=${version}` : "";
   const core = `${base}/index.js${v}`, ui = `${base}/ui/index.js${v}`, viz = `${base}/viz/index.js${v}`;
   const bundle = local ? dataModule(`export * from "${core}"; export * from "${ui}"; export * from "${viz}";`) : `https://cdn.jsdelivr.net/npm/@lucidui-dev/core@${version}/bundle/lucid.js`;
-  return { base, v, imports: { "@lucidui-dev/core": core, "@lucidui-dev/core/ui": ui, "@lucidui-dev/core/viz": viz, "@lucidui-dev/core/bundle": bundle } };
+  return { base, v, imports: { "@lucidui-dev/core": core, "@lucidui-dev/core/ui": ui, "@lucidui-dev/core/viz": viz, "@lucidui-dev/core/lisa": `${base}/lisa/index.js${v}`, "@lucidui-dev/core/bundle": bundle } };
 }
 
-export const pageHead = (title, base, v) => `<meta charset="utf-8">
+export const usesLisa = list => list.some(f => /@lucidui-dev\/core\/lisa|\blisa\(/.test(f.text));
+
+export const pageHead = (title, base, v, lisa = false) => `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${title}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Geist+Mono:wght@400..600&display=swap">
-<link rel="stylesheet" href="${base}/ui/lucid.css${v}">
+<link rel="stylesheet" href="${base}/ui/lucid.css${v}">${lisa ? `\n<link rel="stylesheet" href="${base}/lisa/lisa.css${v}">` : ""}
 <style>
   html, body { margin: 0; min-height: 100%; }
   body { min-height: 100vh; box-sizing: border-box; }
@@ -46,7 +48,7 @@ export function standalone(list, { local = false } = {}) {
   return `<!doctype html>
 <html lang="en">
 <head>
-${pageHead(titleFrom(list), base, v)}
+${pageHead(titleFrom(list), base, v, usesLisa(list))}
 ${projectStyles(list)}
 <script type="importmap">
 ${map}

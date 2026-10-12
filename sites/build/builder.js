@@ -8,7 +8,7 @@ import * as LucidUI from "/lucid/ui/index.js";
 import * as LucidViz from "/lucid/viz/index.js";
 import * as GitHub from "/github.js";
 import { SETS, COMPONENTS, sourceOf, appSource, usesName, unquoted } from "/shared/catalog.js";
-import { PROJECT, entryOf, safe, dataModule, projectMap, projectStyles, titleFrom, cdn, pageHead, standalone, SANDBOX } from "/runtime.js";
+import { PROJECT, entryOf, safe, dataModule, projectMap, projectStyles, titleFrom, cdn, pageHead, standalone, usesLisa, SANDBOX } from "/runtime.js";
 import { projects, loadProject, saveProject, removeProject, makeProject, snapshot, migrate, fileKind, validName, relink, encodeShare, decodeShare, publishShare, fetchShare, reportShare, zip, since } from "/workspace.js";
 
 const store = {
@@ -106,7 +106,7 @@ function documentFor(list, run) {
   const viz = `${origin}/lucid/viz/index.js${v}`;
   const bundle = dataModule(`export * from "${core}"; export * from "${ui}"; export * from "${viz}";`);
   const entry = entryOf(list);
-  const map = JSON.stringify({ imports: { "@lucidui-dev/core": core, "@lucidui-dev/core/ui": ui, "@lucidui-dev/core/viz": viz, "@lucidui-dev/core/bundle": bundle, ...projectMap(list, entry) } });
+  const map = JSON.stringify({ imports: { "@lucidui-dev/core": core, "@lucidui-dev/core/ui": ui, "@lucidui-dev/core/viz": viz, "@lucidui-dev/core/lisa": `${origin}/lucid/lisa/index.js${v}`, "@lucidui-dev/core/bundle": bundle, ...projectMap(list, entry) } });
   return `<!doctype html>
 <html lang="en" data-theme="${resolvedTheme()}">
 <head>
@@ -114,7 +114,7 @@ function documentFor(list, run) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <base href="${origin}/">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Geist+Mono:wght@400..600&display=swap">
-<link rel="stylesheet" href="${origin}/lucid/ui/lucid.css${v}">
+<link rel="stylesheet" href="${origin}/lucid/ui/lucid.css${v}">${usesLisa(list) ? `\n<link rel="stylesheet" href="${origin}/lucid/lisa/lisa.css${v}">` : ""}
 <style>
   html, body { margin: 0; min-height: 100%; }
   body { min-height: 100vh; box-sizing: border-box; }
@@ -141,7 +141,7 @@ function zipIndex(list) {
   return `<!doctype html>
 <html lang="en">
 <head>
-${pageHead(titleFrom(list), base, v)}
+${pageHead(titleFrom(list), base, v, usesLisa(list))}
 ${list.filter(f => fileKind(f.name) === "css").map(f => `<link rel="stylesheet" href="./${f.name}">`).join("\n")}
 <script type="importmap">
 ${JSON.stringify({ imports }, null, 2)}
