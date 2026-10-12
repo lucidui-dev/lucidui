@@ -2,7 +2,8 @@ import { h, signal, computed, effect, onCleanup } from "/lucid/index.js";
 import * as Core from "/lucid/index.js";
 import * as UI from "/lucid/ui/index.js";
 import * as Viz from "/lucid/viz/index.js";
-import { Button, Icon, Input, Tooltip, EmptyState, toast } from "/lucid/ui/index.js";
+import { Button, Icon, Input, Tooltip, EmptyState, Segmented, toast } from "/lucid/ui/index.js";
+import { granular } from "/lucid/granular/index.js";
 import { mountPage } from "/shared/chrome.js";
 import { highlight } from "/shared/code.js";
 import { SETS, COMPONENTS, sourceOf, appSource } from "/shared/catalog.js";
@@ -13,6 +14,12 @@ const VALUES = NAMES.map(name => SCOPE[name]);
 const MODULES = { core: Object.keys(Core), ui: Object.keys(UI), viz: Object.keys(Viz) };
 const number = i => String(i + 1).padStart(2, "0");
 const query = signal("");
+const look = signal(new URLSearchParams(location.search).get("look") === "granular" ? "granular" : "flagship");
+const PAGE_GRAIN = [
+  { match: ".cx-card", color: "ink", fill: 0.01, hover: 0.016, edge: 2, edgeFill: 0.28, cursor: 0.95, reach: 170 },
+  { match: ".cx-stats, .cx-close-inner, .cx-rail-note", color: "ink", fill: 0.014, edge: 2, edgeFill: 0.28, cursor: 0.95, reach: 170 },
+  { match: '.cx-chip[aria-current="true"], .cx-rail-link[aria-current="true"]', color: "ink", fill: 0.14, edge: 1, edgeFill: 0.7, cursor: 0.4, reach: 70 }
+];
 const activeSet = signal(SETS[0].id);
 const COUNTS = { components: COMPONENTS.length, sets: SETS.length, icons: UI.iconNames.length };
 
@@ -141,6 +148,10 @@ function Hero() {
         h("div", { class: "cx-stats-field", "aria-hidden": "true" }, Array.from({ length: 48 }, (_, i) => h("i", { style: { "--i": i } }))))));
 }
 
+function LookSwitch() {
+  return Segmented({ value: look, size: "sm", class: "cx-look", aria: { label: "Look" }, options: [{ value: "flagship", label: "Flagship" }, { value: "granular", label: "Granular" }] });
+}
+
 function Toolbar() {
   const chips = h("nav", { class: "cx-chips", aria: { label: "Sets" } },
     () => bySet.value.map(({ set, items }) => h("a", { href: `#set-${set.id}`, class: "cx-chip", "data-set": set.id, "aria-current": () => (activeSet.value === set.id ? "true" : undefined), onClick: goTo(set.id) }, set.title, h("span", items.length))));
@@ -155,6 +166,7 @@ function Toolbar() {
     h("div", { class: "site-wrap cx-bar-inner" },
       Input({ icon: "search", placeholder: "Search components, charts, patterns", value: query, onInput: e => { query.value = e.target.value; }, aria: { label: "Search components" }, class: "cx-search", type: "search" }),
       chips,
+      LookSwitch(),
       h("span", { class: "cx-found", aria: { live: "polite" } }, () => (query.value.trim() ? `${matches.value.length} of ${COMPONENTS.length}` : `${COMPONENTS.length} examples`))));
 }
 
@@ -194,7 +206,19 @@ mountPage({
       const target = location.hash && document.getElementById(location.hash.slice(1));
       if (target) requestAnimationFrame(() => target.scrollIntoView({ block: "start" }));
     });
-    return [h("div", { class: "cx" }, Hero(), Toolbar(), Catalog(), Close())];
+    const page = h("div", { class: "cx" }, Hero(), Toolbar(), Catalog(), Close());
+    let stop = null;
+    effect(() => {
+      const on = look.value === "granular";
+      const url = new URL(location.href);
+      if (on) url.searchParams.set("look", "granular"); else url.searchParams.delete("look");
+      history.replaceState(null, "", url);
+      stop?.();
+      stop = null;
+      page.classList.toggle("lucid-granular", on);
+      if (on) queueMicrotask(() => { stop = granular({ root: page, materials: PAGE_GRAIN }); });
+    });
+    return [page];
   },
   commands: [
     ...SETS.map(set => ({ group: "Component sets", label: set.title, icon: "layers", run: goTo(set.id) })),

@@ -1,0 +1,70 @@
+@layer lucid-granular {
+  .lucid-granular {
+    --lucid-bg: light-dark(#efece4, #0f0f0e);
+    --lucid-surface: light-dark(#f6f4ee, #161614);
+    --lucid-surface-raised: light-dark(#fbfaf6, #1c1c19);
+    --lucid-surface-sunken: light-dark(#e9e6dd, #0b0b0a);
+    --lucid-overlay: light-dark(rgb(246 244 238 / .9), rgb(22 22 20 / .9));
+    --lucid-ink: light-dark(#121212, #ecebe6);
+    --lucid-ink-2: light-dark(#3d3c38, #b9b7b0);
+    --lucid-ink-3: light-dark(#6f6d66, #85837c);
+    --lucid-ink-4: light-dark(#a9a69d, #4d4c47);
+    --lucid-line: light-dark(rgb(18 18 18 / .12), rgb(236 235 230 / .1));
+    --lucid-line-strong: light-dark(rgb(18 18 18 / .22), rgb(236 235 230 / .18));
+    --lucid-hover: light-dark(rgb(18 18 18 / .05), rgb(236 235 230 / .06));
+    --lucid-press: light-dark(rgb(18 18 18 / .09), rgb(236 235 230 / .1));
+    --lucid-accent: light-dark(#ff4a1c, #ff5a2e);
+    --lucid-accent-hover: light-dark(#e63d12, #ff7048);
+    --lucid-accent-ink: light-dark(#c2330c, #ff8a66);
+    --lucid-accent-soft: light-dark(rgb(255 74 28 / .1), rgb(255 90 46 / .16));
+    --lucid-ring: light-dark(rgb(255 74 28 / .55), rgb(255 90 46 / .6));
+    --lucid-primary: light-dark(#121212, #ecebe6);
+    --lucid-primary-hover: light-dark(#2a2a28, #ffffff);
+    --lucid-primary-ink: light-dark(#f6f4ee, #121212);
+    --lucid-series-1: light-dark(#121212, #ecebe6);
+    --lucid-series-2: light-dark(#ff4a1c, #ff5a2e);
+    --lucid-series-3: light-dark(#8a877e, #8f8c84);
+    --g-cell: 4px;
+    --g-ink: var(--lucid-ink);
+    --g-dot: radial-gradient(circle, var(--g-color, var(--g-ink)) var(--g-r, 0.9px), transparent calc(var(--g-r, 0.9px) + 0.6px));
+  }
+
+  .lucid-granular :is(.lucid-btn, .lucid-badge, .lucid-seg, .lucid-field-label, .lucid-nav-group, .lucid-menu-group, .lucid-dialog-title, .lucid-section-title) {
+    font-family: var(--lucid-font-mono);
+  }
+  .lucid-granular :is(.lucid-btn, .lucid-badge) { text-transform: uppercase; letter-spacing: .06em; font-size: 11.5px; font-weight: 500; }
+  .lucid-granular .lucid-btn[data-size="lg"] { font-size: 12.5px; }
+  .lucid-granular :is(.lucid-nav-group, .lucid-menu-group, .lucid-field-label) { text-transform: uppercase; letter-spacing: .08em; font-size: 10.5px; }
+
+  .lucid-granular :is(.lucid-btn, .lucid-card, .lucid-section-body, .lucid-input, .lucid-textarea, .lucid-select-trigger, .lucid-date-trigger, .lucid-seg, .lucid-badge, .lucid-check-box, .lucid-switch-track, .lucid-pop, .lucid-dialog, .lucid-toast, .lucid-kbd) {
+    background-image: var(--g-dot);
+    background-size: var(--g-cell) var(--g-cell);
+    box-shadow: inset 0 0 0 1px var(--lucid-line-strong);
+    border-radius: 3px;
+  }
+  .lucid-granular :is(.lucid-card, .lucid-section-body, .lucid-pop, .lucid-dialog, .lucid-toast) { --g-r: 0.45px; border-radius: 4px; }
+  .lucid-granular :is(.lucid-input, .lucid-textarea, .lucid-select-trigger, .lucid-date-trigger, .lucid-seg) { --g-r: 0.35px; }
+  .lucid-granular .lucid-btn[data-variant="primary"] { --g-r: 1.55px; --g-color: var(--lucid-primary); background-color: transparent; box-shadow: none; color: var(--lucid-primary-ink); }
+  .lucid-granular .lucid-btn[data-variant="accent"] { --g-r: 1.55px; --g-color: var(--lucid-accent); background-color: transparent; box-shadow: none; color: #fff; }
+  .lucid-granular .lucid-btn[data-variant="danger"] { --g-r: 0.7px; --g-color: var(--lucid-danger); background-color: transparent; box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--lucid-danger) 45%, transparent); }
+  .lucid-granular .lucid-btn[data-variant="ghost"] { background-image: none; box-shadow: none; }
+  .lucid-granular .lucid-btn[data-variant="secondary"] { --g-r: 0.5px; background-color: transparent; }
+  .lucid-granular .lucid-switch-track { --g-r: 1px; border-radius: 999px; background-color: transparent; }
+  .lucid-granular .lucid-check input:checked + .lucid-switch-track { --g-r: 1.55px; --g-color: var(--lucid-accent); background-color: transparent; }
+  .lucid-granular .lucid-switch-track::after { border-radius: 2px; box-shadow: none; background: var(--lucid-surface-raised); outline: 1px solid var(--lucid-line-strong); }
+  .lucid-granular :is(.lucid-check-box, .lucid-badge, .lucid-kbd) { --g-r: 0.5px; border-radius: 2px; }
+  .lucid-granular .lucid-check input:checked + .lucid-check-box { --g-r: 1.55px; --g-color: var(--lucid-accent); background-color: transparent; }
+  .lucid-granular .lucid-seg-thumb { border-radius: 2px; background: var(--lucid-surface-raised); background-image: var(--g-dot); background-size: var(--g-cell) var(--g-cell); --g-r: 0.6px; box-shadow: inset 0 0 0 1px var(--lucid-line-strong); }
+  .lucid-granular :is(.lucid-pop, .lucid-dialog, .lucid-toast) { background-color: var(--lucid-surface-raised); }
+  .lucid-granular .lucid-avatar { border-radius: 3px; }
+  .lucid-granular :is(.lucid-dialog-foot, .lucid-command-foot) { background: none; box-shadow: none; background-image: radial-gradient(circle, var(--lucid-ink-3) 0.7px, transparent 1.2px); background-size: 4px 1px; background-repeat: repeat-x; background-position: 0 0; }
+  .lucid-granular .lucid-section-body > * + * { border-top: 0; background-image: radial-gradient(circle, var(--lucid-ink-4) 0.7px, transparent 1.2px); background-size: 4px 1px; background-repeat: repeat-x; }
+  .lucid-granular .lucid-divider { height: 1px; background: none; background-image: radial-gradient(circle, var(--lucid-ink-3) 0.7px, transparent 1.2px); background-size: 4px 1px; background-repeat: repeat-x; }
+
+  .lucid-granular-live :is(.lucid-btn, .lucid-card, .lucid-section-body, .lucid-input, .lucid-textarea, .lucid-select-trigger, .lucid-date-trigger, .lucid-seg, .lucid-badge, .lucid-check-box, .lucid-switch-track, .lucid-kbd)[data-grain] { isolation: isolate; }
+  .lucid-granular-live :is(.lucid-btn, .lucid-card, .lucid-section-body, .lucid-input, .lucid-textarea, .lucid-select-trigger, .lucid-date-trigger, .lucid-seg, .lucid-badge, .lucid-check-box, .lucid-kbd)[data-grain]:not([style*="position"]) { position: relative; }
+  .lucid-granular-live [data-grain] { background-image: none !important; box-shadow: none !important; }
+  .lucid-granular-live :is(.lucid-pop, .lucid-dialog, .lucid-toast)[data-grain] { isolation: isolate; }
+  .lucid-granular-live .lucid-btn[data-grain]:active:not(:disabled) { transform: none; }
+  .lucid-grain-canvas { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; border-radius: inherit; }
+}
