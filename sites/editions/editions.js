@@ -156,6 +156,29 @@ const LAYOUTS = {
     { x: 2, y: 18, w: 20, h: 9, kind: "lines", gap: 3, a: 0.3 },
     { x: 0, y: 26, w: 44, h: 2, a: 0.12 }
   ],
+  desktop: [
+    { x: 0, y: 0, w: 44, h: 1, a: 0.5 },
+    { x: 1, y: 0, w: 1, h: 1, a: 1, gold: true },
+    { x: 3, y: 0, w: 2, h: 1, a: 0.9 },
+    { x: 6, y: 0, w: 2, h: 1, a: 0.9 },
+    { x: 1, y: 3, w: 8, h: 24, a: 0.12 },
+    { x: 2, y: 5, w: 6, h: 9, kind: "lines", gap: 2, a: 0.45 },
+    { x: 2, y: 17, w: 5, h: 7, kind: "lines", gap: 2, a: 0.3 },
+    { x: 11, y: 3, w: 18, h: 13, a: 0.14 },
+    { x: 11, y: 3, w: 18, h: 1, a: 0.55 },
+    { x: 13, y: 6, w: 2, h: 2, a: 0.7 },
+    { x: 17, y: 6, w: 2, h: 2, a: 0.7 },
+    { x: 21, y: 6, w: 2, h: 2, a: 0.7 },
+    { x: 13, y: 10, w: 2, h: 2, a: 0.7 },
+    { x: 18, y: 10, w: 16, h: 16, a: 0.2 },
+    { x: 18, y: 10, w: 16, h: 1, a: 1, gold: true },
+    { x: 20, y: 13, w: 12, h: 11, kind: "lines", gap: 2, a: 0.55 },
+    { x: 40, y: 3, w: 2, h: 2, a: 0.85 },
+    { x: 40, y: 7, w: 2, h: 2, a: 0.85 },
+    { x: 40, y: 11, w: 2, h: 2, a: 0.85 },
+    { x: 40, y: 15, w: 2, h: 2, a: 0.85 },
+    { x: 40, y: 24, w: 2, h: 3, a: 1, gold: true }
+  ],
   ledger: [
     { x: 0, y: 0, w: 44, h: 2, a: 0.16 },
     { x: 2, y: 4, w: 20, h: 3, a: 0.85 },
@@ -361,6 +384,19 @@ const EDITIONS = {
       ["You get", "The full source, a guide for AI agents, a README, a commercial licence and updates."],
       ["Not included", "A CMS or real photography. Content lives in one data file, and the artwork swaps for your images in one place."]
     ]
+  },
+  "07": {
+    no: "No. 07", name: "Lisa Office", kind: "1-bit desktop", href: "/lisa-office/",
+    summary: "A working desktop in pure black and white, a nod to Apple's Lisa and the first Macintosh: windows you drag, a menu bar, and a shelf of apps that save as you go.",
+    rows: [
+      ["Apps", "Files, LisaWrite, LisaPaint, Calendar, LisaCalc with a paper tape, a fifteen puzzle, Control Panel and About, each in its own window."],
+      ["Data", "A whole office: 45 documents and 12 pictures in 11 folders, 107 calendar events across four months, a calculator tape and a Trash with things in it."],
+      ["Feel", "1-bit Lisa: Chicago type, pinstriped title bars, hard shadows, dithered patterns, and a light and dark theme that invert the whole desk."],
+      ["Works", "Drag, resize, zoom and windowshade windows; draggable desktop icons; a collapsible shelf; rename, Get Info, Trash and Put Back; a 1-bit paint program with undo; ⌘K to find anything."],
+      ["Built with", "Lucid UI and its 1-bit Lisa look only. Plain ES modules, no build step. About 2,100 lines of JavaScript and 420 of CSS."],
+      ["You get", "The full source, a guide for AI agents, a README, a commercial licence and updates."],
+      ["Not included", "Accounts or a server. Everything saves in the browser; the store is one file to point at your API."]
+    ]
   }
 };
 
@@ -428,7 +464,8 @@ const PLATES = [
   { key: "03", no: "No. 03", name: "Relay", layout: "flow", state: "Live preview", now: true },
   { key: "04", no: "No. 04", name: "Ledgerline", layout: "desk", state: "Live preview", now: true },
   { key: "05", no: "No. 05", name: "Murmur", layout: "feed", state: "Live preview", now: true },
-  { key: "06", no: "No. 06", name: "Vesper", layout: "folio", state: "Live preview", now: true }
+  { key: "06", no: "No. 06", name: "Vesper", layout: "folio", state: "Live preview", now: true },
+  { key: "07", no: "No. 07", name: "Lisa Office", layout: "desktop", state: "Live preview", now: true }
 ];
 
 const picked = signal("01");

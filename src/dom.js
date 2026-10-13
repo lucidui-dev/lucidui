@@ -181,7 +181,11 @@ function applyStyle(element, value) {
       else setStyle(element, name, entry);
     }
   } else if (isReactive(value)) {
-    effect(() => { element.style.cssText = read(value) ?? ""; });
+    effect(() => {
+      const next = read(value);
+      element.style.cssText = isPlainObject(next) ? "" : next ?? "";
+      if (isPlainObject(next)) applyStyle(element, next);
+    });
   } else if (value) {
     element.style.cssText = value;
   }

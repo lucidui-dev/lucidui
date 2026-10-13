@@ -70,6 +70,21 @@ test("reactive attributes, classes and styles", () => {
   assert.equal(box.style.width, "20px");
 });
 
+test("a style function can return an object", () => {
+  const x = signal(10);
+  const lit = signal(true);
+  mount(() => h("div", { style: () => ({ left: x.value, top: "4px", opacity: lit.value ? 0.5 : null, "--tone": "dark" }) }), app);
+  const box = app.firstElementChild;
+  assert.equal(box.style.left, "10px");
+  assert.equal(box.style.top, "4px");
+  assert.equal(box.style.opacity, "0.5");
+  assert.equal(box.style.getPropertyValue("--tone"), "dark");
+  x.value = 30;
+  lit.value = false;
+  assert.equal(box.style.left, "30px");
+  assert.equal(box.style.opacity, "");
+});
+
 test("event handlers", () => {
   const count = signal(0);
   mount(() => h("button", { onClick: () => count.value++ }, "Add ", count), app);

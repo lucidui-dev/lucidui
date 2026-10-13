@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Lisa Office · Live preview · Lucid Editions</title>
+  <meta name="description" content="Live preview of Lisa Office, Lucid Editions No. 07: a 1-bit desktop with windows, files and five apps, built only from Lucid UI.">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#ffffff">
+  <meta property="og:site_name" content="Lucid Editions">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Lisa Office · Lucid Editions No. 07">
+  <meta property="og:description" content="A 1-bit desktop built only with Lucid UI: draggable windows, a menu bar, Files, LisaWrite, LisaPaint, a calendar and a calculator with a paper tape. Try the live preview.">
+  <meta property="og:url" content="https://editions.lucidui.dev/lisa-office/">
+  <meta property="og:image" content="/media/og/editions-lisa-office.jpg">
+  <meta property="og:image:width" content="2400">
+  <meta property="og:image:height" content="1260">
+  <meta property="og:image:alt" content="Lisa Office, Lucid Editions No. 07: a black and white desktop with overlapping windows">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@lucidui_">
+  <meta name="twitter:title" content="Lisa Office · Lucid Editions No. 07">
+  <meta name="twitter:description" content="A 1-bit desktop, built only with Lucid UI. Try the live preview.">
+  <meta name="twitter:image" content="/media/og/editions-lisa-office.jpg">
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./app.css">
+  <script>
+    try {
+      const theme = localStorage.getItem("lisa-office:theme");
+      if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme;
+    } catch {}
+  </script>
+  <style>
+    .ed-badge { position: fixed; z-index: 9000; left: 0; right: 0; bottom: 0; height: 44px; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 0 44px 0 16px; padding-bottom: env(safe-area-inset-bottom); font: 400 14px/1 "ChicagoFLF", ui-monospace, monospace; color: #fff; background: #000; -webkit-font-smoothing: none; }
+    .ed-badge span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ed-badge a { flex: none; display: inline-flex; align-items: center; height: 28px; padding: 0 12px; border-radius: 6px; color: #000; background: #fff; text-decoration: none; }
+    .ed-badge a:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+    .ed-badge button { position: absolute; right: 8px; display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; color: #fff; background: none; cursor: pointer; font: inherit; font-size: 16px; }
+    .ed-badge button:hover, .ed-badge button:focus-visible { color: #000; background: #fff; outline: none; }
+    .ed-badge[hidden] { display: none; }
+    body:has(.ed-badge:not([hidden])) .lo-desk { bottom: 44px; }
+    @media (max-width: 719px) { body:has(.ed-badge:not([hidden])) :is(.lo-window, .lo-windows) { bottom: 44px; } .ed-badge b { display: none; } }
+  </style>
+</head>
+<body class="lucid-app lucid-lisa">
+  <div id="app"></div>
+  <aside class="ed-badge" id="ed-badge" aria-label="Lucid Editions">
+    <span><b>Lucid Editions</b> No. 07 · live preview</span>
+    <a href="https://editions.lucidui.dev">Back to Editions</a>
+    <button type="button" aria-label="Hide this badge" onclick="document.getElementById('ed-badge').hidden = true">×</button>
+  </aside>
+  <script>if (window.top !== window.self) document.getElementById("ed-badge").hidden = true;</script>
+  <noscript>Lisa Office needs JavaScript.</noscript>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
