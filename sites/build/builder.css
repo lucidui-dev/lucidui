@@ -331,6 +331,21 @@ a.b-name:hover { color: var(--lucid-ink-2); }
 .b-home-hero { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 18px; }
 .b-home-hero p { margin: 8px 0 0; color: var(--lucid-ink-3); }
 .b-home-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.b-kit { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; margin-top: -16px; padding: 14px 16px; border-radius: 14px; box-shadow: 0 0 0 1px var(--lucid-line); background: var(--lucid-surface); }
+.b-kit-copy { display: grid; gap: 2px; flex: 1 1 260px; min-width: 0; }
+.b-kit-copy b { font-size: 14px; font-weight: 600; }
+.b-kit-copy small { font-size: 12.5px; color: var(--lucid-ink-3); }
+.b-kit-more { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; color: var(--lucid-ink-2); text-decoration: none; }
+.b-kit-more:hover { color: var(--lucid-ink); text-decoration: underline; }
+.b-kit-badge { display: inline-block; margin-left: 8px; padding: 1px 7px; border-radius: 6px; font: 600 10.5px/1.5 var(--lucid-font-sans); letter-spacing: .02em; color: var(--lucid-bg); background: var(--lucid-ink); vertical-align: 2px; }
+.b-kit-btn { gap: 4px; white-space: nowrap; }
+.b-kit-btn[data-kit="lisa"] { box-shadow: inset 0 0 0 1px var(--lucid-ink); }
+@media (max-width: 560px) {
+  .b-kit { margin-top: -20px; }
+  .b-kit .lucid-seg { width: 100%; }
+  .b-kit .lucid-seg button { flex: 1; }
+  .b-kit-btn { padding-inline: 8px; }
+}
 .b-starters { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
 .b-starter { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 12px; row-gap: 2px; align-items: center; padding: 14px; border: 0; border-radius: 14px; text-align: left; font: inherit; color: var(--lucid-ink); background: var(--lucid-surface); box-shadow: 0 0 0 1px var(--lucid-line); cursor: pointer; transition: box-shadow 200ms, transform 200ms var(--lucid-ease-out); }
 .b-starter:hover { transform: translateY(-1px); box-shadow: 0 0 0 1px var(--lucid-line-strong), var(--lucid-shadow-sm); }

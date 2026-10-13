@@ -17,6 +17,30 @@ const store = {
   drop(key) { try { localStorage.removeItem(`lucid-builder:${key}`); } catch {} }
 };
 
+const KITS = { flagship: "Flagship", lisa: "1-bit Lisa" };
+const LISA_IMPORT = 'import { lisa } from "@lucidui-dev/core/lisa";';
+const askedKit = new URLSearchParams(location.search).get("kit");
+if (askedKit in KITS) {
+  store.set("kit", askedKit);
+  const clean = new URL(location.href);
+  clean.searchParams.delete("kit");
+  history.replaceState(null, "", clean.pathname + clean.search + clean.hash);
+}
+const kit = signal(store.get("kit", "flagship") in KITS ? store.get("kit", "flagship") : "flagship");
+effect(() => store.set("kit", kit.value));
+
+function withLisa(text) {
+  if (usesLisa([{ text }])) return text;
+  const imports = [...text.matchAll(/^import .*$/gm)];
+  const at = imports.length ? imports[imports.length - 1].index + imports[imports.length - 1][0].length : 0;
+  const body = `${text.slice(0, at)}${at ? "\n" : ""}${LISA_IMPORT}${at ? "" : "\n"}${text.slice(at)}`;
+  return `${body.replace(/\s*$/, "")}\n\nlisa();\n`;
+}
+
+function withoutLisa(text) {
+  return text.replace(/^import \{ lisa \} from "@lucidui-dev\/core\/lisa";\n?/m, "").replace(/\n*^lisa\(\);\s*$/m, "\n");
+}
+
 const byKey = Object.fromEntries(TEMPLATES.map(t => [t.value, t]));
 migrate(TEMPLATES);
 const view = signal("home");
@@ -276,7 +300,20 @@ function createProject({ name, files: list, template }) {
   return p;
 }
 
-const fromTemplate = t => createProject({ name: t.label, files: [{ name: "app.js", text: t.code }], template: t.value });
+const fromTemplate = t => createProject({ name: t.label, files: [{ name: "app.js", text: kit.peek() === "lisa" ? withLisa(t.code) : t.code }], template: t.value });
+
+function switchKit(next) {
+  const p = project.peek();
+  if (!p) return;
+  const entry = entryOf(p.files);
+  const text = next === "lisa" ? withLisa(entry.text) : withoutLisa(entry.text);
+  if (text === entry.text) return;
+  update(q => ({ ...q, files: q.files.map(f => (f.name === entry.name ? { ...f, text } : f)) }), { now: true });
+  if (project.peek().active === entry.name) code.value = text;
+  saveVersion(`Switched to ${KITS[next]}`, true);
+  run();
+  toast(`Now using ${KITS[next]}`, { tone: "success", description: next === "lisa" ? "Added lisa() to your app." : "Removed lisa() from your app." });
+}
 
 function selectFile(name) {
   const p = project.peek();
@@ -1127,6 +1164,12 @@ function Home() {
       h("div", { class: "b-home-actions" },
         Button({ icon: "link", onClick: () => { agentOpen.value = true; } }, "Connect an agent"),
         Button({ variant: "primary", icon: "plus", onClick: () => fromTemplate(byKey.counter ?? TEMPLATES[0]) }, "New project"))),
+    h("section", { class: "b-kit", "data-kit": kit },
+      h("div", { class: "b-kit-copy" },
+        h("b", "Building with"),
+        h("small", () => (kit.value === "lisa" ? "New projects start in 1-bit Lisa: pure black and white, a nod to Apple's Lisa." : "New projects start in Lucid's flagship look."))),
+      Segmented({ value: kit, aria: { label: "UI kit" }, options: Object.entries(KITS).map(([value, label]) => ({ value, label })) }),
+      () => (kit.value === "lisa" ? h("a", { class: "b-kit-more", href: "https://lucidui.dev/lisa/", target: "_blank", rel: "noopener" }, "What's 1-bit Lisa?", Icon({ name: "external", size: 12 })) : null)),
     h("section", { class: "b-home-start" },
       h("h2", "Start from"),
       h("div", { class: "b-starters" }, TEMPLATES.map(t => h("button", { type: "button", class: "b-starter", onClick: () => fromTemplate(t) },
@@ -1136,7 +1179,7 @@ function Home() {
       () => (list.value.length ? h("div", { class: "b-projects" }, list.value.map(meta => h("article", { class: "b-project" },
         h("a", { href: `#/p/${meta.id}`, class: "b-project-hit", aria: { label: `Open ${meta.name}` } }, Thumb(meta)),
         h("div", { class: "b-project-meta" },
-          h("div", h("b", meta.name), h("small", `${meta.files} file${meta.files === 1 ? "" : "s"} · ${since(meta.updated)}`)),
+          h("div", h("b", meta.name, meta.lisa ? h("span", { class: "b-kit-badge" }, "1-bit Lisa") : null), h("small", `${meta.files} file${meta.files === 1 ? "" : "s"} · ${since(meta.updated)}`)),
           Menu({ placement: "bottom-end", trigger: Button({ variant: "ghost", size: "xs", icon: "more", aria: { label: `${meta.name} options` } }), items: [
             { label: "Open", icon: "arrow-right", onSelect: () => openProject(meta.id) },
             { label: "Rename", icon: "pen", onSelect: () => { naming.value = { kind: "project", id: meta.id }; } },
@@ -1158,7 +1201,15 @@ function Bar() {
     () => (inEditor.value ? [
       h("span", { class: "b-slash", "aria-hidden": "true" }, "/"),
       h("button", { type: "button", class: "b-project-name", onClick: () => { naming.value = { kind: "project", id: project.peek().id }; }, aria: { label: () => `Rename ${project.value?.name}` } }, h("span", { class: "b-project-label" }, () => project.value?.name ?? ""), Icon({ name: "pen", size: 12 })),
-      Tooltip({ label: "Version history", kbd: ["mod", "S"] }, Button({ variant: "ghost", size: "sm", icon: "clock", class: "b-ghost b-history-btn", aria: { label: "Version history" }, onClick: () => { historyOpen.value = true; } }, h("span", { class: "b-hide-sm" }, () => `v${project.value?.versions.length ?? 0}`)))
+      Tooltip({ label: "Version history", kbd: ["mod", "S"] }, Button({ variant: "ghost", size: "sm", icon: "clock", class: "b-ghost b-history-btn", aria: { label: "Version history" }, onClick: () => { historyOpen.value = true; } }, h("span", { class: "b-hide-sm" }, () => `v${project.value?.versions.length ?? 0}`))),
+      (() => {
+        const current = computed(() => (usesLisa(project.value?.files ?? []) ? "lisa" : "flagship"));
+        return Menu({
+          placement: "bottom-start",
+          trigger: Button({ variant: "ghost", size: "sm", class: "b-ghost b-kit-btn", "data-kit": current, aria: { label: () => `UI kit: ${KITS[current.value]}` } }, () => KITS[current.value], Icon({ name: "chevron-down", size: 12 })),
+          items: () => [{ group: "UI kit" }, ...Object.entries(KITS).map(([value, label]) => ({ label, checked: () => current.value === value, onSelect: () => switchKit(value) }))]
+        });
+      })()
     ] : null),
     h("span", { class: "lucid-spacer" }),
     Tooltip({ label: "What is Builder?" }, Button({ variant: "ghost", size: "sm", icon: "info", class: "b-ghost", aria: { label: "What is Builder?" }, onClick: () => { guideOpen.value = true; } })),

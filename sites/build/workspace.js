@@ -14,7 +14,7 @@ effect(() => write("projects", projects.value));
 export const loadProject = id => read(`project:${id}`);
 export function saveProject(p) {
   const ok = write(`project:${p.id}`, p);
-  const meta = { id: p.id, name: p.name, created: p.created, updated: p.updated, files: p.files.length, template: p.template, from: p.from ?? null, size: p.files.reduce((s, f) => s + f.text.length, 0) };
+  const meta = { id: p.id, name: p.name, created: p.created, updated: p.updated, files: p.files.length, template: p.template, from: p.from ?? null, lisa: p.files.some(f => /@lucidui-dev\/core\/lisa/.test(f.text)), size: p.files.reduce((s, f) => s + f.text.length, 0) };
   projects.value = [meta, ...projects.peek().filter(x => x.id !== p.id)].sort((a, b) => b.updated - a.updated);
   return ok;
 }

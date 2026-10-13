@@ -40,13 +40,25 @@ function live(entry) {
   }
 }
 
+const LISA_IMPORT = 'import { lisa } from "@lucidui-dev/core/lisa";';
+
+function lisaSource(text) {
+  const imports = [...text.matchAll(/^import .*$/gm)];
+  const last = imports[imports.length - 1];
+  const at = last ? last.index + last[0].length : 0;
+  return `${text.slice(0, at)}${at ? "\n" : ""}${LISA_IMPORT}${at ? "" : "\n"}${text.slice(at).replace(/\s*$/, "")}\n\nlisa();\n`;
+}
+
+const builderHome = () => (look.value === "lisa" ? "https://build.lucidui.dev/?kit=lisa" : "https://build.lucidui.dev");
+
 async function shareLink(entry) {
-  const json = JSON.stringify({ v: 1, name: entry.name, files: [{ name: "app.js", text: appSource(entry, MODULES) }] });
+  const source = appSource(entry, MODULES);
+  const json = JSON.stringify({ v: 1, name: entry.name, files: [{ name: "app.js", text: look.peek() === "lisa" ? lisaSource(source) : source }] });
   const stream = new Blob([json]).stream().pipeThrough(new CompressionStream("deflate-raw"));
   const bytes = new Uint8Array(await new Response(stream).arrayBuffer());
   let binary = "";
   for (const b of bytes) binary += String.fromCharCode(b);
-  return `https://build.lucidui.dev/#share=${btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "")}`;
+  return `${builderHome()}#share=${btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "")}`;
 }
 
 function openInBuilder(entry) {
@@ -138,7 +150,7 @@ function Hero() {
         h("p", { class: "cx-lede" }, "Every component, chart and pattern in Lucid UI, on one page. Use them right here, read the code that draws them, and open any one in Builder to make it yours."),
         h("div", { class: "cx-hero-actions" },
           Button({ variant: "primary", size: "lg", iconRight: "arrow-down", onClick: goTo(SETS[0].id) }, "Browse the kit"),
-          Button({ size: "lg", icon: "external", href: "https://build.lucidui.dev" }, "Open Builder"))),
+          Button({ size: "lg", icon: "external", href: builderHome }, "Open Builder"))),
       h("div", { class: "cx-stats", aria: { label: "What's inside" } },
         stat(COUNTS.components, "live examples"),
         stat(COUNTS.sets, "sets"),
@@ -195,7 +207,7 @@ function Close() {
       h("h2", "Know what to ask for."),
       h("p", "When an agent builds with Lucid UI, these are the words it understands. Name a Waffle, a rail or a sheet, and that's what you get."),
       h("div", { class: "cx-hero-actions" },
-        Button({ variant: "primary", size: "lg", icon: "zap", href: "https://build.lucidui.dev" }, "Build in Builder"),
+        Button({ variant: "primary", size: "lg", icon: "zap", href: builderHome }, "Build in Builder"),
         Button({ size: "lg", icon: "hash", href: "https://docs.lucidui.dev" }, "Read the docs"))));
 }
 
