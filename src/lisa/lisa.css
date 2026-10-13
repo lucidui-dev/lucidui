@@ -105,6 +105,8 @@
   .lucid-lisa .lucid-avatar { background: var(--lucid-bg); color: var(--lucid-ink); box-shadow: inset 0 0 0 1px var(--lucid-ink); font-family: var(--lucid-font-chicago); font-weight: 400; }
   .lucid-lisa .lucid-avatars .lucid-avatar { box-shadow: inset 0 0 0 1px var(--lucid-ink), 0 0 0 1px var(--lucid-bg); }
   .lucid-lisa .lucid-dot { background: var(--lucid-ink); }
+  .lucid-lisa .lucid-viz { --lucid-line: light-dark(#d9d9d9, #333333); --lucid-line-strong: light-dark(#a6a6a6, #5c5c5c); }
+  .lucid-lisa .lucid-virtual { background: var(--lucid-bg); box-shadow: inset 0 0 0 1px var(--lucid-ink); }
   .lucid-lisa .lucid-shell-side { background: var(--lucid-bg); box-shadow: inset -1px 0 0 var(--lucid-ink); }
   .lucid-lisa .lucid-toaster .lucid-toast { font-family: var(--lucid-font-chicago); }
 }
