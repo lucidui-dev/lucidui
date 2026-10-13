@@ -390,7 +390,7 @@ const EDITIONS = {
     summary: "A working desktop in pure black and white, a nod to Apple's Lisa and the first Macintosh: windows you drag, a menu bar, and a shelf of apps that save as you go.",
     rows: [
       ["Apps", "Files, LisaWrite, LisaPaint, Calendar, LisaCalc with a paper tape, a fifteen puzzle, Control Panel and About, each in its own window."],
-      ["Data", "A whole office: 45 documents and 12 pictures in 11 folders, 107 calendar events across four months, a calculator tape and a Trash with things in it."],
+      ["Data", "A whole office: 45 documents and 12 pictures in 11 folders, over 100 calendar events across four months, a calculator tape and a Trash with things in it."],
       ["Feel", "1-bit Lisa: Chicago type, pinstriped title bars, hard shadows, dithered patterns, and a light and dark theme that invert the whole desk."],
       ["Works", "Drag, resize, zoom and windowshade windows; draggable desktop icons; a collapsible shelf; rename, Get Info, Trash and Put Back; a 1-bit paint program with undo; ⌘K to find anything."],
       ["Built with", "Lucid UI and its 1-bit Lisa look only. Plain ES modules, no build step. About 2,100 lines of JavaScript and 420 of CSS."],
