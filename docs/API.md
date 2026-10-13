@@ -69,7 +69,7 @@ p(() => (count.value > 9 ? "Lots" : "A few"));
 | attributes | `{ id: "main", disabled: busy }` (any prop can be a signal or function) |
 | events | `{ onClick: () => count.value++ }`, `{ onInput: e => ... }` |
 | `class` | `"card"`, `["card", "wide"]`, `{ active: isActive }`, or a mix |
-| `style` | `{ width: 120, opacity: fade, "--accent": "teal" }` (numbers get `px` where CSS needs a unit) |
+| `style` | `{ width: 120, opacity: fade, "--accent": "teal" }`, or a function that returns that object or a CSS string, such as `() => ({ left: x.value })` (numbers get `px` where CSS needs a unit) |
 | `aria` | `{ label: "Close", expanded: open }` becomes `aria-label`, `aria-expanded` |
 | `data` | `{ userId: 7 }` becomes `data-user-id` |
 | `bind` | `{ bind: name }` keeps an input, checkbox, radio, select or textarea in sync with a signal |

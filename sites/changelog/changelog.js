@@ -102,6 +102,17 @@ const UPDATES = [
 
 const RELEASES = [
   {
+    version: "0.3.7",
+    date: "13 October 2026",
+    title: "Style functions and a finer 1-bit Lisa",
+    summary: "Style functions can return objects, and 1-bit Lisa gets a full monochrome palette with soft grey plates that keep small text readable on the dotted desktop.",
+    items: [
+      ["Fixed", "A style function can return an object, such as style: () => ({ left: x.value, top: 4 }), as well as a CSS string. Numbers get px, and properties it stops returning are cleared."],
+      ["Improved", "1-bit Lisa charts, deltas and shadows are fully black and white, with light grey grids and tracks."],
+      ["Improved", "1-bit Lisa avatars are crisp white with an ink outline, and long lists sit on paper."]
+    ]
+  },
+  {
     version: "0.3.6",
     date: "12 October 2026",
     title: "1-bit Lisa",
