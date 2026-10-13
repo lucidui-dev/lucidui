@@ -398,14 +398,14 @@ const history = createHistory(count);`,
   {
     id: "sparkline", set: "charts", name: "DotSparkline", uses: ["DotSparkline"],
     summary: "A trail of dots for a trend, the latest one lit.",
-    code: `Stack({ gap: 3 },
+    code: `Stack({ gap: 3, style: { width: "min(100%, 320px)" } },
   DotSparkline({ data: [4, 6, 5, 8, 7, 9, 12, 11, 14, 13, 16, 18], label: "Signups" }),
   DotSparkline({ data: [18, 16, 17, 13, 14, 11, 9, 10, 7, 6, 5, 4], color: "var(--lucid-series-2)", label: "Errors" }))`
   },
   {
     id: "meter", set: "charts", name: "DotMeter", uses: ["DotMeter"],
     summary: "Progress toward a total, counted in dots.",
-    code: `Stack({ gap: 3 },
+    code: `Stack({ gap: 3, style: { width: "min(100%, 320px)" } },
   DotMeter({ value: 72, label: "Storage used" }),
   DotMeter({ value: 9, max: 12, dots: 12, color: "var(--lucid-success)", label: "Tasks done" }))`
   },

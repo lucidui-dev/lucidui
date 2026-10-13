@@ -33,10 +33,29 @@
     --lucid-series-1: light-dark(#000000, #ffffff);
     --lucid-series-2: light-dark(#666666, #999999);
     --lucid-series-3: light-dark(#aaaaaa, #555555);
+    --lucid-series-4: light-dark(#333333, #cccccc);
+    --lucid-series-5: light-dark(#888888, #777777);
+    --lucid-series-6: light-dark(#cccccc, #333333);
+    --lucid-series-7: light-dark(#444444, #bbbbbb);
+    --lucid-series-8: light-dark(#999999, #666666);
+    --lucid-seq-1: light-dark(#e6e6e6, #1a1a1a);
+    --lucid-seq-2: light-dark(#bdbdbd, #424242);
+    --lucid-seq-3: light-dark(#8f8f8f, #707070);
+    --lucid-seq-4: light-dark(#5e5e5e, #a1a1a1);
+    --lucid-seq-5: light-dark(#2e2e2e, #d1d1d1);
+    --lucid-seq-6: light-dark(#000000, #ffffff);
+    --lucid-success-ink: light-dark(#000000, #ffffff);
+    --lucid-danger-soft: transparent;
+    --lucid-highlight: 0 0 0 0 transparent;
+    --lucid-shadow-xs: 0 0 0 0 transparent;
+    --lucid-shadow-sm: 0 0 0 0 transparent;
+    --lucid-shadow-md: 2px 2px 0 var(--lucid-ink);
+    --lucid-shadow-lg: 2px 2px 0 var(--lucid-ink);
     --lucid-font-chicago: "ChicagoFLF", "Chicago", ui-monospace, monospace;
     --lucid-font-sans: ui-monospace, "SF Mono", "Geist Mono", Menlo, monospace;
     --lucid-font-mono: ui-monospace, "SF Mono", "Geist Mono", Menlo, monospace;
     --lisa-dot: color-mix(in srgb, var(--lucid-ink) 50%, transparent);
+    --lisa-pill: light-dark(#f1f1f1, #1d1d1d);
     --lisa-desktop: conic-gradient(at 1px 1px, transparent 75%, var(--lisa-dot) 0) 0 0 / 3px 3px;
     -webkit-font-smoothing: none;
     font-family: var(--lucid-font-sans);
@@ -83,7 +102,8 @@
   .lucid-lisa .lucid-section-body > * + * { border-top: 1px solid var(--lucid-ink); }
   .lucid-lisa .lucid-section-body > .lucid-lisa-canvas + * { border-top: 0; }
   .lucid-lisa .lucid-divider { background: var(--lucid-ink); }
-  .lucid-lisa .lucid-avatar { filter: grayscale(1) contrast(1.6); box-shadow: inset 0 0 0 1px var(--lucid-ink); }
+  .lucid-lisa .lucid-avatar { background: var(--lucid-bg); color: var(--lucid-ink); box-shadow: inset 0 0 0 1px var(--lucid-ink); font-family: var(--lucid-font-chicago); font-weight: 400; }
+  .lucid-lisa .lucid-avatars .lucid-avatar { box-shadow: inset 0 0 0 1px var(--lucid-ink), 0 0 0 1px var(--lucid-bg); }
   .lucid-lisa .lucid-dot { background: var(--lucid-ink); }
   .lucid-lisa .lucid-shell-side { background: var(--lucid-bg); box-shadow: inset -1px 0 0 var(--lucid-ink); }
   .lucid-lisa .lucid-toaster .lucid-toast { font-family: var(--lucid-font-chicago); }
