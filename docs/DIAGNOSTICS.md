@@ -40,6 +40,12 @@ Fix: use `DatePicker` for dates. For other values, use `Select` or `Input`.
 
 Fix: use `toast("Saved")` for messages, and `if (await ask({ title: "Delete workspace?", confirm: "Delete", tone: "danger" })) { ... }` for confirmations.
 
+## html-in-svg
+
+**warn.** An HTML element was put inside an SVG, so the browser won't draw it. This happens with the four tags that exist in both HTML and SVG: `a`, `title`, `style` and `script`. HTML inside a `foreignObject` is fine.
+
+Fix: prefix the tag with `svg:`, for example `h("svg:title", "Revenue")` for a tooltip or `h("svg:a", { href }, ...)` for a link.
+
 ## unknown-icon
 
 **warn.** `Icon({ name })` was given a name it does not know, so a placeholder was drawn. Common words such as `close`, `edit`, `delete`, `gear` and `email` already map to the right icon.

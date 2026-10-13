@@ -3,12 +3,6 @@ import { fail, report } from "./diagnostics.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 
-const SVG_TAGS = new Set([
-  "svg", "g", "path", "circle", "ellipse", "line", "polyline", "polygon", "rect",
-  "defs", "use", "symbol", "clipPath", "mask", "pattern", "linearGradient",
-  "radialGradient", "stop", "filter", "foreignObject", "text", "tspan", "textPath"
-]);
-
 const PROPERTIES = new Set(["value", "checked", "selected", "indeterminate", "muted"]);
 
 const INTERACTIVE = new Set([
@@ -40,9 +34,8 @@ export function h(tag, ...args) {
   if (typeof tag === "function") return untrack(() => tag(props, ...children));
   const svg = tag.startsWith("svg:");
   const name = svg ? tag.slice(4) : tag;
-  const element = svg || SVG_TAGS.has(name)
-    ? document.createElementNS(SVG_NS, name)
-    : document.createElement(name);
+  let element = svg ? null : document.createElement(name);
+  if (svg || element instanceof HTMLUnknownElement) element = document.createElementNS(SVG_NS, name);
   applyProps(element, props);
   insert(element, children);
   audit(element, props);
@@ -60,6 +53,7 @@ export function insert(parent, value, before = null) {
     return;
   }
   if (value instanceof Node) {
+    if (parent instanceof SVGElement && value instanceof HTMLElement && parent.localName != "foreignObject") report("html-in-svg", { element: value });
     parent.insertBefore(value, before);
     return;
   }

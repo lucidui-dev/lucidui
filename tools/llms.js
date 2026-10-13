@@ -1,7 +1,8 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { examplesDoc } from "./examples.js";
 
-export const LLMS_DOCS = ["API", "UI", "RECIPES", "VIZ", "DIAGNOSTICS", "WORDPRESS"];
+export const LLMS_DOCS = ["API", "UI", "VIZ", "EXAMPLES", "RECIPES", "DIAGNOSTICS", "WORDPRESS"];
 
 export const pinVersion = (text, version) => text.replaceAll("@lucidui-dev/core@0.3/", `@lucidui-dev/core@${version}/`);
 
@@ -14,5 +15,6 @@ export async function llmsFull(root) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const root = join(import.meta.dirname, "..");
+  await writeFile(join(root, "docs", "EXAMPLES.md"), await examplesDoc(root));
   await writeFile(join(root, "llms-full.txt"), await llmsFull(root));
 }

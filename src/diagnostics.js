@@ -29,6 +29,11 @@ const catalog = {
     message: "alert(), confirm() or prompt() was called, which opens a browser dialog.",
     fix: "Use toast(\"...\") for messages and await ask({ title, confirm }) for confirmations. Both are styled."
   },
+  "html-in-svg": {
+    level: "warn",
+    message: "An HTML element inside an SVG will not draw.",
+    fix: "Prefix the tag with svg:, as in h(\"svg:title\")."
+  },
   "unknown-icon": {
     level: "warn",
     message: "Icon was given a name it does not know, so a placeholder was drawn.",

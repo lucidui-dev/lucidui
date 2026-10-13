@@ -68,6 +68,15 @@ export const COMPONENTS = [
   Row({ gap: 3, style: { height: "20px" } }, Text({ size: "sm" }, "Left"), Divider({ vertical: true }), Text({ size: "sm" }, "Right")))`
   },
   {
+    id: "spacer", set: "layout", name: "Spacer", uses: ["Spacer"],
+    summary: "Takes up the free space in a Row, pushing everything after it to the far end.",
+    code: `Row({ gap: 2, style: { width: "min(100%, 380px)" } },
+  Text({ weight: "medium" }, "Quarterly report"),
+  Spacer(),
+  Button({ size: "sm", variant: "ghost" }, "Share"),
+  Button({ size: "sm", variant: "primary" }, "Export"))`
+  },
+  {
     id: "appshell", set: "shells", name: "AppShell & NavList", uses: ["AppShell", "NavList", "Page"], wide: true, tall: true,
     summary: "A sidebar and a main area. On phones the sidebar becomes a scrolling row of tabs.",
     setup: `const view = signal("inbox");`,
@@ -352,6 +361,14 @@ const known = signal([{ value: "design", label: "Design" }, { value: "urgent", l
   Badge({ tone: "solid" }, "Pro"))`
   },
   {
+    id: "dot", set: "identity", name: "Dot", uses: ["Dot"],
+    summary: "A small round marker for a status or a series colour. It sits beside text and is hidden from screen readers.",
+    code: `Stack({ gap: 2 },
+  Row({ gap: 2 }, Dot({ color: "var(--lucid-success)" }), Text({ size: "sm" }, "All systems normal")),
+  Row({ gap: 2 }, Dot({ color: "var(--lucid-warning)" }), Text({ size: "sm" }, "Slow responses in Europe")),
+  Row({ gap: 2 }, Dot({ color: "var(--lucid-danger)", size: 10 }), Text({ size: "sm" }, "Payments are down")))`
+  },
+  {
     id: "icons", set: "identity", name: "Icon", uses: ["Icon", "iconNames"], wide: true,
     summary: "One set of icons drawn on one grid. Every icon prop in Lucid takes these names.",
     code: `Grid({ min: 132, gap: 1 },
@@ -529,7 +546,7 @@ export function sourceOf(entry) {
 }
 
 export const unquoted = text => text.replace(/"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'|`(?:[^`\\]|\\.)*`/g, '""');
-export const usesName = (text, name) => new RegExp(`(^|[^\\w.$])${name.replace(/\$/g, "\\$")}\\b`).test(unquoted(text));
+export const usesName = (text, name) => new RegExp(`(^|[^\\w.$])${name.replace(/\$/g, "\\$")}\\b(?!\\s*:)`).test(unquoted(text));
 
 export function appSource(entry, modules) {
   const text = sourceOf(entry);

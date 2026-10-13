@@ -32,7 +32,7 @@ Key rules:
 - Pass `Show` branches as functions. Give `For` a `key` when items have ids.
 - Use `button` for actions and `a` for navigation, never a clickable `div`.
 - Never use browser controls or dialogs. Use `Select` (not `select`), `DatePicker` (not a date `input`), `Switch` and `Checkbox` (not hand-made toggles), `toast()` (not `alert()`) and `await ask({ title, confirm })` (not `confirm()`).
-- Use Lucid components for every control: `Input`, `Field`, `Button`, `Card`, `Badge`. Build screens from `AppShell`, `NavList`, `Page`, `Section` and `SettingRow`, and start from a recipe in RECIPES.md.
+- Use Lucid components for every control: `Input`, `Field`, `Button`, `Card`, `Badge`. Build screens from `AppShell`, `NavList`, `Page`, `Section` and `SettingRow`, and start from a recipe in RECIPES.md. For any single component, copy its snippet from EXAMPLES.md.
 - Write no CSS for colours, borders, radii, shadows or type: the components already look finished. Add CSS only for layout a component can't do.
 - Mount once, and switch views with a signal.
 - When you see a diagnostic code, look it up in https://docs.lucidui.dev/docs/DIAGNOSTICS.md and apply the fix it gives.
@@ -56,6 +56,7 @@ If you can use MCP tools, the Lucid bridge renders your code in the user's Lucid
 - [API](https://docs.lucidui.dev/docs/API.md): the complete API
 - [Components](https://docs.lucidui.dev/docs/UI.md): styled, accessible components (@lucidui-dev/core/ui)
 - [Charts](https://docs.lucidui.dev/docs/VIZ.md): charts with tooltips, legends and table views (@lucidui-dev/core/viz)
+- [Examples](https://docs.lucidui.dev/docs/EXAMPLES.md): every component as a working snippet with its imports, generated from the live catalog
 - [Build with an agent](https://docs.lucidui.dev/docs/AGENTS.md): connect to Lucid Builder with the bridge, or use the brief
 - [WordPress](https://docs.lucidui.dev/docs/WORDPRESS.md): the plugin, the [lucid] shortcode, apps as theme files, props and WordPress content
 - [Recipes](https://docs.lucidui.dev/docs/RECIPES.md): complete settings, dashboard and list pages to start from

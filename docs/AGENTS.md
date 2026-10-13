@@ -98,5 +98,6 @@ The homepage has a button that copies it. If something comes out wrong, Builder'
 - The whole API reference is about 1,140 tokens, so an agent can read all of it before it writes.
 - [llms-full.txt](https://lucidui.dev/llms-full.txt) holds every doc in one file, for agents that can only open one page.
 - [Recipes](RECIPES.md) give complete pages to start from, built only from Lucid components.
+- [Examples](EXAMPLES.md) show every component as a working snippet with its imports, generated from the catalog behind lucidui.dev/components.
 - Every mistake has a stable code and a fix, listed in [Diagnostics](DIAGNOSTICS.md).
 - Browser dialogs and native pickers are reported, so what agents build always looks designed.

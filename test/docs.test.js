@@ -22,3 +22,17 @@ test("llms-full.txt is current and names the right project", async () => {
   assert.match(committed, /@lucidui-dev\/core/);
   assert.match(committed, /not AppNexus/i);
 });
+
+test("docs/EXAMPLES.md is generated from the current catalog", async () => {
+  const { examplesDoc } = await import("../tools/examples.js");
+  assert.equal(read("docs/EXAMPLES.md"), await examplesDoc("."), "Run node tools/llms.js to regenerate docs/EXAMPLES.md");
+});
+
+test("the catalog shows every component, and only ones that exist", async () => {
+  const { COMPONENTS, sourceOf, usesName } = await import("../sites/shared/catalog.js");
+  const modules = { ...(await import("../src/index.js")), ...(await import("../src/ui/index.js")), ...(await import("../src/viz/index.js")) };
+  for (const entry of COMPONENTS) for (const name of entry.uses ?? []) assert.ok(name in modules, `${entry.id} lists ${name}, which Lucid UI doesn't export`);
+  const shown = name => COMPONENTS.some(entry => usesName(sourceOf(entry), name));
+  const components = Object.keys({ ...(await import("../src/ui/index.js")), ...(await import("../src/viz/index.js")) }).filter(name => /^[A-Z]/.test(name));
+  for (const name of [...components, "toast", "ask", "hotkey", "form", "createHistory"]) assert.ok(shown(name), `${name} has no example in sites/shared/catalog.js`);
+});

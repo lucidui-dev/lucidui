@@ -37,7 +37,7 @@ h("p", "Hello");
 h("a", { href: "/docs" }, "Read the docs");
 ```
 
-SVG elements get the SVG namespace automatically. Prefix a tag with `svg:` to force it, for example `h("svg:a")`.
+Every SVG element gets the SVG namespace automatically, including filters such as `feGaussianBlur`, `marker`, `image` and animations. Four tags exist in both HTML and SVG, `a`, `title`, `style` and `script`; inside an SVG, write them as `h("svg:title")` or `h("svg:a")`.
 
 `tags` gives every element as a function:
 

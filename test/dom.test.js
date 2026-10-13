@@ -238,6 +238,22 @@ test("svg elements get the svg namespace", () => {
   assert.equal(icon.firstChild.namespaceURI, "http://www.w3.org/2000/svg");
 });
 
+test("every svg tag gets the svg namespace, and html stays html", () => {
+  const SVG = "http://www.w3.org/2000/svg";
+  for (const tag of ["image", "marker", "desc", "feGaussianBlur", "feDropShadow", "animate", "text", "clipPath"]) assert.equal(h(tag).namespaceURI, SVG, tag);
+  for (const tag of ["div", "a", "title", "span", "my-card"]) assert.notEqual(h(tag).namespaceURI, SVG, tag);
+  assert.equal(h("svg:title", "Revenue").namespaceURI, SVG);
+  assert.equal(h("svg:a").namespaceURI, SVG);
+});
+
+test("html inside an svg is reported, except in foreignObject", () => {
+  const { found, off } = collect();
+  h("svg", h("svg:title", "Fine"), h("foreignObject", h("div", "Fine")));
+  h("svg", h("title", "Lost"));
+  off();
+  assert.deepEqual(found, ["html-in-svg"]);
+});
+
 test("aria-* props keep boolean values as strings", () => {
   const open = signal(false);
   const node = h("button", { "aria-expanded": open, "aria-hidden": true }, "Menu");

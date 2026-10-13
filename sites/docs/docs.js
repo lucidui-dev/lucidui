@@ -11,6 +11,7 @@ const PAGES = [
   { group: "Core", slug: "diagnostics", file: "DIAGNOSTICS.md", title: "Diagnostics", icon: "alert-circle", text: "Every warning and error Lucid reports, with the fix for each." },
   { group: "Interface", slug: "components", file: "UI.md", title: "Components", icon: "layers", text: "Layout, pages, inputs, forms, overlays, identity, undo and long lists.", live: "https://lucidui.dev/components/" },
   { group: "Interface", slug: "charts", file: "VIZ.md", title: "Charts", icon: "chart", text: "Dot columns, dumbbells, waffles, unit rows, calendars and stat tiles.", live: "https://lucidui.dev/components/#set-charts" },
+  { group: "Interface", slug: "examples", file: "EXAMPLES.md", title: "Examples", icon: "copy", text: "Every component as a working snippet with its imports, generated from the live catalog.", live: "https://lucidui.dev/components/" },
   { group: "Guides", slug: "recipes", file: "RECIPES.md", title: "Recipes", icon: "board", text: "Complete settings, dashboard and list pages built only from components." },
   { group: "Guides", slug: "deploy", file: "DEPLOY.md", title: "Put it online", icon: "external", text: "Publish from Builder, or upload to cPanel, Netlify, Vercel or GitHub Pages." },
   { group: "Guides", slug: "wordpress", file: "WORDPRESS.md", title: "WordPress", icon: "download", text: "The plugin, apps as theme files, props, WordPress content and fixes." },
