@@ -443,7 +443,7 @@ function Inside() {
 
 const STEPS = [
   { title: "Try it live", text: "Every Edition has a full working preview. Click through every screen before you buy." },
-  { title: "Buy it once", text: "Checkout is handled by Polar, who take care of sales tax and VAT and send your receipt." },
+  { title: "Buy it once", text: "Pay once through Stripe. The price you see is the price you pay, and your receipt arrives by email." },
   { title: "Make it yours", text: "Accept the invite to the private repo or download the zip, then rename it, restyle it and ship it." }
 ];
 
@@ -540,8 +540,8 @@ const FAQ = [
   ["Do I need to know Lucid UI?", "No. Editions run as they are, and each one includes a guide to how it's built. If you've written JavaScript, you'll find your way around in an afternoon, and your agent will in a minute."],
   ["What do I need to run one?", "A browser and a place to host static files. There's no build step, no framework and no package to install unless you want one."],
   ["Can I use an Edition for a client?", "Yes. The licence covers your own products and client work. You can't resell or give away the Edition itself as a template."],
-  ["How does the private repo work?", "When you buy, Polar sends you an invite to a private GitHub repository. Accept it to clone the Edition and pull updates. Prefer a zip? That's included too."],
-  ["Who handles payment?", "Polar is the seller of record. They process the payment, handle sales tax and VAT, and send your receipt and invoice."],
+  ["How does the private repo work?", "After checkout we send you an invite to a private GitHub repository. Accept it to clone the Edition and pull updates. Prefer a zip? That's included too."],
+  ["Who handles payment?", "Stripe. Your card details go straight to Stripe and never touch our servers. The price shown is all you pay, with no tax added at checkout, and Stripe emails your receipt."],
   ["Can my agent work on it?", "That's the idea. Every Edition comes with a guide written for agents, and they can preview changes live in Lucid Builder."]
 ];
 
