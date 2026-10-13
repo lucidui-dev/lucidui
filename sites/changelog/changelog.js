@@ -105,6 +105,17 @@ const UPDATES = [
 
 const RELEASES = [
   {
+    version: "0.3.8",
+    date: "13 October 2026",
+    title: "Every SVG tag draws",
+    summary: "Filters, markers, images and animations now work inside SVGs built with h(), and a new page of examples covers every component.",
+    items: [
+      ["Fixed", "h() makes any tag the browser doesn't know as HTML into an SVG element, so feGaussianBlur, feDropShadow, marker, image, desc and animate all draw. Before, anything outside a short list silently showed nothing."],
+      ["New", "An html-in-svg diagnostic for the four tags HTML and SVG share. Inside an SVG, write h(\"svg:title\") or h(\"svg:a\")."],
+      ["New", "docs/EXAMPLES.md: every component as a working snippet with its imports, generated from the catalog behind lucidui.dev/components and included in llms-full.txt."]
+    ]
+  },
+  {
     version: "0.3.7",
     date: "13 October 2026",
     title: "Style functions and a finer 1-bit Lisa",
