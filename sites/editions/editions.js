@@ -179,6 +179,30 @@ const LAYOUTS = {
     { x: 40, y: 15, w: 2, h: 2, a: 0.85 },
     { x: 40, y: 24, w: 2, h: 3, a: 1, gold: true }
   ],
+  tables: [
+    { x: 0, y: 0, w: 8, h: 28, a: 0.14 },
+    { x: 1, y: 1, w: 2, h: 2, a: 1, gold: true },
+    { x: 1, y: 4, w: 6, h: 1, a: 0.4 },
+    { x: 1, y: 7, w: 5, h: 8, kind: "lines", gap: 2, a: 0.45 },
+    { x: 1, y: 17, w: 5, h: 6, kind: "lines", gap: 2, a: 0.3 },
+    { x: 10, y: 1, w: 12, h: 2, a: 0.85 },
+    { x: 10, y: 5, w: 7, h: 4, a: 0.18 },
+    { x: 18, y: 5, w: 7, h: 4, a: 0.18 },
+    { x: 26, y: 5, w: 7, h: 4, a: 0.18 },
+    { x: 34, y: 5, w: 8, h: 4, a: 0.18 },
+    { x: 10, y: 11, w: 32, h: 16, a: 0.1 },
+    { x: 12, y: 13, w: 3, h: 3, a: 1, gold: true },
+    { x: 17, y: 13, w: 3, h: 3, a: 0.55 },
+    { x: 22, y: 13, w: 5, h: 3, a: 1, gold: true },
+    { x: 29, y: 13, w: 3, h: 3, a: 0.55 },
+    { x: 34, y: 13, w: 6, h: 3, a: 1, gold: true },
+    { x: 12, y: 19, w: 3, h: 3, a: 0.55 },
+    { x: 17, y: 19, w: 4, h: 4, a: 1, gold: true },
+    { x: 23, y: 19, w: 3, h: 3, a: 0.55 },
+    { x: 28, y: 19, w: 6, h: 3, a: 0.55 },
+    { x: 36, y: 18, w: 4, h: 7, a: 1, gold: true },
+    { x: 18, y: 25, w: 14, h: 1, a: 0.3 }
+  ],
   ledger: [
     { x: 0, y: 0, w: 44, h: 2, a: 0.16 },
     { x: 2, y: 4, w: 20, h: 3, a: 0.85 },
@@ -289,11 +313,14 @@ function Plate({ layout, dim = false, label }) {
   });
   box.addEventListener("pointerleave", () => { mouse = null; if (still) draw(performance.now()); });
 
+  let ro, io, stopped = false;
+  onCleanup(() => { stopped = true; ro?.disconnect(); io?.disconnect(); cancelAnimationFrame(frame); });
   queueMicrotask(() => {
+    if (stopped) return;
     size();
-    const ro = new ResizeObserver(() => { size(); draw(performance.now()); });
+    ro = new ResizeObserver(() => { size(); draw(performance.now()); });
     ro.observe(box);
-    const io = new IntersectionObserver(([entry]) => {
+    io = new IntersectionObserver(([entry]) => {
       const was = visible;
       visible = entry.isIntersecting;
       if (visible && !was && !still && !dim) born = Math.min(born, performance.now());
@@ -301,7 +328,6 @@ function Plate({ layout, dim = false, label }) {
     io.observe(box);
     if (still) draw(performance.now());
     else frame = requestAnimationFrame(loop);
-    onCleanup(() => { ro.disconnect(); io.disconnect(); cancelAnimationFrame(frame); });
   });
   return box;
 }
@@ -397,6 +423,19 @@ const EDITIONS = {
       ["You get", "The full source, a guide for AI agents, a README, a commercial licence and updates."],
       ["Not included", "Accounts or a server. Everything saves in the browser; the store is one file to point at your API."]
     ]
+  },
+  "08": {
+    no: "No. 08", name: "Tablekeep", kind: "Restaurant reservations", href: "/tablekeep/",
+    summary: "The front of house for a restaurant, in linen and claret: tonight at a glance, a live floor plan, a waitlist, every guest, and private events with their own planning sidebar.",
+    rows: [
+      ["Screens", "Tonight, Reservations with saved views, a floor plan of four rooms, Waitlist, Guests with a profile each, Private events and Settings."],
+      ["Data", "A restaurant with 132 seats and 165 days of service: 1,400 guests, about 6,800 bookings, a live waitlist and 12 private events with menus, RSVPs, wine, staffing and invoices."],
+      ["Feel", "Linen paper and claret buttons by day, a deep wine night in dark mode, a serif for the big moments and room to breathe everywhere."],
+      ["Works", "A sidebar that folds to icons and swaps to an event's own sidebar, a booking sheet for every reservation, seat, move and close from the floor, saved views, ⌘K and Undo on everything, phone to wide screen."],
+      ["Built with", "Lucid UI only. Plain ES modules, no build step. About 1,750 lines of JavaScript and 600 of CSS."],
+      ["You get", "The full source, a guide for AI agents, a README, a commercial licence and updates."],
+      ["Not included", "Payments, a booking widget for your website or real text messages. The store is one file to point at your API."]
+    ]
   }
 };
 
@@ -465,7 +504,8 @@ const PLATES = [
   { key: "04", no: "No. 04", name: "Ledgerline", layout: "desk", state: "Live preview", now: true },
   { key: "05", no: "No. 05", name: "Murmur", layout: "feed", state: "Live preview", now: true },
   { key: "06", no: "No. 06", name: "Vesper", layout: "folio", state: "Live preview", now: true },
-  { key: "07", no: "No. 07", name: "Lisa Office", layout: "desktop", state: "Live preview", now: true }
+  { key: "07", no: "No. 07", name: "Lisa Office", layout: "desktop", state: "Live preview", now: true },
+  { key: "08", no: "No. 08", name: "Tablekeep", layout: "tables", state: "Live preview", now: true }
 ];
 
 const picked = signal("01");

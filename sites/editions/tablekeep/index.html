@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Tablekeep · Live preview · Lucid Editions</title>
+  <meta name="description" content="Live preview of Tablekeep, Lucid Editions No. 08: a reservations and floor console for restaurants, built only from Lucid UI.">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#ebe4d7">
+  <meta property="og:site_name" content="Lucid Editions">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Tablekeep · Lucid Editions No. 08">
+  <meta property="og:description" content="A reservations console for restaurants, built only with Lucid UI: tonight at a glance, a live floor plan, a waitlist, 1,400 guests and private events with their own planning sidebar. Try the live preview.">
+  <meta property="og:url" content="https://editions.lucidui.dev/tablekeep/">
+  <meta property="og:image" content="/media/og/editions-tablekeep.jpg">
+  <meta property="og:image:width" content="2400">
+  <meta property="og:image:height" content="1260">
+  <meta property="og:image:alt" content="Tablekeep, Lucid Editions No. 08: a linen and claret restaurant console with a sidebar and tonight's bookings">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@lucidui_">
+  <meta name="twitter:title" content="Tablekeep · Lucid Editions No. 08">
+  <meta name="twitter:description" content="A reservations and floor console for restaurants, built only with Lucid UI. Try the live preview.">
+  <meta name="twitter:image" content="/media/og/editions-tablekeep.jpg">
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400..700&family=Instrument+Serif:ital@0;1&display=swap">
+  <link rel="stylesheet" href="./app.css">
+  <script>
+    try {
+      const theme = localStorage.getItem("tablekeep:theme");
+      if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme;
+    } catch {}
+  </script>
+  <style>
+    .ed-badge { position: fixed; z-index: 40; left: 0; right: 0; bottom: 0; height: 44px; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 0 44px 0 16px; padding-bottom: env(safe-area-inset-bottom); font: 500 13px/1 "Instrument Sans", system-ui, sans-serif; color: #f7ecdc; background: #4a1220; box-shadow: 0 -1px 0 rgb(255 230 220 / .12); }
+    .ed-badge span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ed-badge b { font-weight: 600; }
+    .ed-badge a { flex: none; display: inline-flex; align-items: center; height: 28px; padding: 0 12px; border-radius: 999px; color: #4a1220; background: #f7ecdc; text-decoration: none; font-weight: 600; }
+    .ed-badge a:focus-visible { outline: 2px solid #f7ecdc; outline-offset: 2px; }
+    .ed-badge button { position: absolute; right: 8px; display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; color: rgb(247 236 220 / .7); background: none; cursor: pointer; font: inherit; font-size: 16px; }
+    .ed-badge button:hover { color: #f7ecdc; background: rgb(247 236 220 / .1); }
+    .ed-badge[hidden] { display: none; }
+    body:has(.ed-badge:not([hidden])) { padding-bottom: 44px; }
+    body:has(.ed-badge:not([hidden])) .tk-rail { height: calc(100dvh - 68px); }
+    @media (max-width: 900px) { body:has(.ed-badge:not([hidden])) .tk-rail { height: auto; bottom: 44px; } }
+    @media (max-width: 640px) { .ed-badge b { display: none; } }
+  </style>
+</head>
+<body class="lucid-app">
+  <div id="app"></div>
+  <aside class="ed-badge" id="ed-badge" aria-label="Lucid Editions">
+    <span><b>Lucid Editions</b> No. 08 · live preview</span>
+    <a href="https://editions.lucidui.dev">Back to Editions</a>
+    <button type="button" aria-label="Hide this badge" onclick="document.getElementById('ed-badge').hidden = true">×</button>
+  </aside>
+  <script>if (window.top !== window.self) document.getElementById("ed-badge").hidden = true;</script>
+  <noscript>Tablekeep needs JavaScript.</noscript>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
