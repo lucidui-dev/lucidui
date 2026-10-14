@@ -36,6 +36,13 @@ mount(Counter, "#app");
 claude mcp add --scope user lucid -- npx -y @lucidui-dev/bridge
 ```
 
+## Start from a template
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Flucidui-dev%2Flucid-starter&project-name=lucid-app&repository-name=lucid-app)
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/lucidui-dev/lucid-starter)
+
+The [Lucid UI starter](https://github.com/lucidui-dev/lucid-starter) is a finished app in two files with no build step. One click puts your own copy online.
+
 ## Use it anywhere
 
 Lucid UI also ships as one file, `bundle/lucid.js` (with `bundle/lucid.css`), which exports everything from `@lucidui-dev/core`, `@lucidui-dev/core/ui` and `@lucidui-dev/core/viz`. Drop it into any page that allows a script tag:

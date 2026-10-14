@@ -31,6 +31,15 @@ If the page is blank, check that `index.html` and `app.js` sit side by side in t
 2. Open `app.netlify.com/drop` and drag the folder onto the page.
 3. Netlify gives you a live address in seconds. Sign in to keep it and add your own domain.
 
+## One click: the starter
+
+The [Lucid UI starter](https://github.com/lucidui-dev/lucid-starter) is a small finished app, with a team list, search and an Add dialog, in two files with no build step. One click copies it to your GitHub and puts it online:
+
+- [Deploy to Vercel](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Flucidui-dev%2Flucid-starter&project-name=lucid-app&repository-name=lucid-app)
+- [Deploy to Netlify](https://app.netlify.com/start/deploy?repository=https://github.com/lucidui-dev/lucid-starter)
+
+Or press **Use this template** on GitHub. Every push afterwards updates the site.
+
 ## GitHub, Vercel and Cloudflare Pages
 
 Put the files in a GitHub repository, then import that repository on Vercel, Netlify or Cloudflare Pages. Choose **no framework** and leave the build command empty; the output folder is the repository root. Every push to GitHub then updates the site.
