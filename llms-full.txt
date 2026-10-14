@@ -172,7 +172,13 @@ ul(For({ each: todos, key: todo => todo.id }, (todo, index) =>
 ));
 ```
 
-Replacing an item with a new object under the same key rebuilds that row only.
+Replacing an item with a new object under the same key rebuilds that row only. To keep the row and update it in place instead, take a third argument: a signal holding the row's latest item.
+
+```js
+ul(For({ each: todos, key: todo => todo.id }, (todo, index, live) =>
+  li(() => live.value.title)
+));
+```
 
 ## Mounting
 

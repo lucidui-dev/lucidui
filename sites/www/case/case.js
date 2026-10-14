@@ -28,7 +28,7 @@ const STEPS = [
   { key: "build", label: "Build", title: "Real screens out of a few dozen parts.", text: "Layout, forms with validation, menus, selects, date pickers, dialogs, command menus, toasts, virtual lists and charts are designed together, so screens look consistent without anyone policing it.", proof: "30+ components and 8 chart types, one design language." },
   { key: "agents", label: "With agents", title: "AI writes it right the first time, more often.", text: "Agents read the entire API before they write a line, and when they slip, Lucid answers with a stable code and the fix, as data. Generate, run, read, repair, done.", proof: "About 1,140 tokens for the whole reference." },
   { key: "ship", label: "Ship", title: "Ship the files you wrote.", text: "What runs in the browser is what's in your editor: plain ES modules and CSS. Upload them to any host, from shared hosting to a CDN. Nothing to compile, nothing to eject.", proof: "This website ships exactly like that." },
-  { key: "maintain", label: "Maintain", title: "Small enough to understand forever.", text: "The core runtime is 6.1 KB gzipped with no dependencies, so there's no tree of packages to audit, upgrade or replace. A new teammate can read the whole runtime in an afternoon.", proof: "0 dependencies. A size budget enforced by tests." }
+  { key: "maintain", label: "Maintain", title: "Small enough to understand forever.", text: "The core runtime is 6.2 KB gzipped with no dependencies, so there's no tree of packages to audit, upgrade or replace. A new teammate can read the whole runtime in an afternoon.", proof: "0 dependencies. A size budget enforced by tests." }
 ];
 
 const COLUMNS = ["Lucid UI", "React", "Tailwind CSS", "shadcn/ui", "Svelte", "Plain CSS"];
@@ -125,7 +125,7 @@ function Hero(L) {
       Button({ variant: "primary", size: "lg", href: L.playground, iconRight: "arrow-right" }, "See it in the sandbox"),
       Button({ variant: "secondary", size: "lg", onClick: jump("compare"), icon: "table" }, "Jump to the comparison")),
     h("dl", { class: "case-numbers" },
-      [["6.1 KB", "core, gzipped"], ["0", "dependencies"], ["0", "build steps"], ["1,140", "tokens for the whole API"]]
+      [["6.2 KB", "core, gzipped"], ["0", "dependencies"], ["0", "build steps"], ["1,140", "tokens for the whole API"]]
         .map(([value, label]) => h("div", h("dt", value), h("dd", label)))));
 }
 

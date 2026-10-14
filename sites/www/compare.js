@@ -20,8 +20,8 @@ const ROUNDS = [
     caption: "The source you own and maintain, drawn from the real files, line by line. shadcn/ui copies its components into your project; Lucid UI keeps them in the library." },
   { id: "race", label: "Race", unit: () => "ms", value: () => null, digits: 1,
     caption: "React and Lucid UI, core against core, render, update and reorder 1,000 real rows on this page, in your browser. Whatever it shows is the result. React loads from esm.sh only when you press Run." },
-  { id: "mistake", label: "Mistakes", unit: () => "", value: () => null, digits: 0,
-    caption: "Both stacks ship an icon button with no label, so screen readers announce it as just “button”. Only one of them says so." }
+  { id: "mistake", label: "Mistakes", unit: s => (s === STACKS.lucid ? "warning" : "warnings"), value: () => null, digits: 0,
+    caption: "Both ship an icon button with no label, so screen readers announce it as just “button”. React can catch this too if you add the jsx-a11y lint plugin. Lucid UI catches it as it runs, with no setup." }
 ];
 
 const LUCID_APP = `import { signal, computed, h, mount, For } from "@lucidui-dev/core";
@@ -101,14 +101,8 @@ function formation(round, side, W, H, pool, extra) {
         out.push({ x: left + f * (colW + 8) + w / 2, y: pad + l * lineH + lineH / 2, w, h: Math.max(1.5, lineH * 0.62), a: len ? 0.9 : 0, fill: 1, glow: 0 });
       });
     });
-  } else if (round === "race") {
-    const n = 40;
-    const gap = (W - pad * 2) / n;
-    for (let i = 0; i < n; i++) {
-      const lit = i / n < extra;
-      out.push({ x: pad + gap * i + gap / 2, y: H - pad * 0.7, w: 4, h: lit ? 10 : 4, a: lit ? 1 : 0.35, fill: 1, glow: lit ? 1 : 0 });
-    }
   } else if (round === "mistake") {
+    const cy = H * 0.3;
     const bw = Math.min(150, W * 0.42);
     const bh = 46;
     const per = 2 * (bw + bh);
@@ -261,7 +255,7 @@ async function loadReact() {
 
 function racers(lucidBox, reactBox, R) {
   const rows = signal([]);
-  const stop = mount(() => h("ul", { class: "cmp-rows" }, For({ each: rows, key: r => r.id }, r => h("li", r.label))), lucidBox);
+  const stop = mount(() => h("ul", { class: "cmp-rows" }, For({ each: rows, key: r => r.id }, (r, i, live) => h("li", () => live.value.label))), lucidBox);
   const root = R.createRoot(reactBox);
   const List = ({ items }) => R.createElement("ul", { className: "cmp-rows" }, items.map(r => R.createElement("li", { key: r.id }, r.label)));
   let reactItems = [];
@@ -272,31 +266,121 @@ function racers(lucidBox, reactBox, R) {
 }
 
 const OPS = [
-  { name: "Create 1,000 rows", next: () => ROWS(1000) },
-  { name: "Update every row", next: rows => rows.map(r => ({ ...r, label: `${r.label} ✓` })) },
-  { name: "Swap two rows", next: rows => { const c = [...rows]; [c[1], c[998]] = [c[998], c[1]]; return c; } },
-  { name: "Clear the list", next: () => [] }
+  { name: "Create 1,000", next: () => ROWS(1000) },
+  { name: "Update all", next: rows => rows.map(r => ({ ...r, label: `${r.label} ✓` })) },
+  { name: "Swap two", next: rows => { const c = [...rows]; [c[1], c[998]] = [c[998], c[1]]; return c; } },
+  { name: "Clear all", next: () => [] }
 ];
 
+const LOGO = new Path2D("M287.5,575 C128.512511,575 0,446.485406 0,287.5 C0,128.509211 128.512511,0 287.5,0 C446.487489,0 575,128.509211 575,287.5 C575,446.485406 446.487489,575 287.5,575 Z M325.873508,495.768352 C325.873508,489.400754 320.708257,484.238856 314.43463,484.238856 L260.56537,484.238856 C254.205656,484.238856 249.126492,489.400754 249.126492,495.768352 C249.126492,502.039064 254.205656,507.206345 260.56537,507.206345 L314.43463,507.206345 C320.708257,507.206345 325.873508,502.039064 325.873508,495.768352 Z M399.661264,419.303353 C399.661264,412.941138 394.496014,407.86536 388.222386,407.86536 L186.777614,407.86536 C180.412518,407.86536 175.338736,412.941138 175.338736,419.303353 C175.338736,425.665568 180.412518,430.741346 186.777614,430.741346 L388.222386,430.741346 C394.496014,430.741346 399.661264,425.665568 399.661264,419.303353 Z M491.898651,342.929858 C491.898651,336.567643 486.7334,331.400361 480.459773,331.400361 L94.5402272,331.400361 C88.1751319,331.400361 83.1013493,336.567643 83.1013493,342.929858 C83.1013493,349.205952 88.1751319,354.367851 94.5402272,354.367851 L480.459773,354.367851 C486.7334,354.367851 491.898651,349.205952 491.898651,342.929858 Z M535.34056,252.357104 C518.273711,130.791427 413.768855,37.2636343 287.5,37.2636343 C161.225764,37.2636343 56.7262885,130.791427 39.6594397,252.357104 C37.0768144,270.98623 51.8354419,287.5 70.6509432,287.5 L504.349057,287.5 C523.07309,287.5 537.923186,270.98623 535.34056,252.357104 Z");
+
+function Intro({ stage, done }) {
+  const canvas = h("canvas", { class: "cmp-intro", "aria-hidden": "true" });
+  const ctx = canvas.getContext("2d");
+  const probe = document.createElement("canvas").getContext("2d");
+  let dots = [];
+  let W = 0, H = 0, raf = 0, burstAt = 0, holdAt = 0, ink = "#000", accent = "#c9a";
+  const seeded = n => { const x = Math.sin(n * 91.7 + 13.3) * 43758.5453; return x - Math.floor(x); };
+
+  const build = () => {
+    const r = canvas.getBoundingClientRect();
+    const dpr = Math.min(2, devicePixelRatio || 1);
+    W = r.width;
+    H = r.height;
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const css = getComputedStyle(canvas);
+    ink = css.color;
+    accent = css.borderTopColor;
+    const size = Math.min(W * 0.72, H * 0.82, 420);
+    const gap = Math.max(7, size / 34);
+    const left = W / 2 - size / 2;
+    const top = H / 2 - size / 2;
+    const scale = 575 / size;
+    dots = [];
+    let n = 0;
+    for (let y = gap / 2; y < size; y += gap) {
+      for (let x = gap / 2; x < size; x += gap) {
+        if (!probe.isPointInPath(LOGO, x * scale, y * scale, "evenodd")) continue;
+        n++;
+        const a = seeded(n) * Math.PI * 2;
+        const d = Math.max(W, H) * (0.45 + seeded(n + 7) * 0.5);
+        const side = x < size / 2 ? -1 : 1;
+        dots.push({
+          tx: left + x, ty: top + y,
+          sx: W / 2 + Math.cos(a) * d, sy: H / 2 + Math.sin(a) * d * 0.7,
+          bx: W / 2 + side * (W * 0.18 + seeded(n + 3) * W * 0.22), by: H * (0.25 + seeded(n + 5) * 0.55),
+          lag: seeded(n + 11) * 0.35, r: gap * 0.3
+        });
+      }
+    }
+    wake();
+  };
+
+  const progress = () => {
+    const r = stage.getBoundingClientRect();
+    return Math.min(1, Math.max(0, (innerHeight - r.top) / (innerHeight * 0.62)));
+  };
+
+  const frame = now => {
+    raf = 0;
+    ctx.clearRect(0, 0, W, H);
+    const p = progress();
+    if (!burstAt && p >= 1) { holdAt ||= now; if (now - holdAt > 520) { burstAt = now; done.value = true; } }
+    if (p < 1) holdAt = 0;
+    const b = burstAt ? Math.min(1, (now - burstAt) / 950) : 0;
+    for (const d of dots) {
+      const q = ease((p - d.lag) / (1 - d.lag));
+      let x = d.sx + (d.tx - d.sx) * q;
+      let y = d.sy + (d.ty - d.sy) * q;
+      let alpha = 0.15 + q * 0.85;
+      if (b) {
+        const k = ease(b);
+        x += (d.bx - x) * k;
+        y += (d.by - y) * k;
+        alpha *= 1 - b;
+      }
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = b > 0.05 ? accent : ink;
+      ctx.beginPath();
+      ctx.arc(x, y, d.r * (1 + b * 0.6), 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    if (b < 1) raf = requestAnimationFrame(frame);
+  };
+  const wake = () => { if (!raf && W) raf = requestAnimationFrame(frame); };
+  const onScroll = () => wake();
+  const sizer = new ResizeObserver(build);
+  queueMicrotask(() => sizer.observe(canvas));
+  addEventListener("scroll", onScroll, { passive: true });
+  onCleanup(() => { sizer.disconnect(); removeEventListener("scroll", onScroll); cancelAnimationFrame(raf); });
+  return canvas;
+}
+
 export function Compare({ builderUrl }) {
-  const round = signal("install");
+  const introDone = signal(still.matches);
+  const round = signal(still.matches ? "install" : "intro");
   const extra = signal(0);
   const auto = signal(true);
   const inView = signal(false);
   const race = signal({ state: "idle", lucid: null, react: null, ops: [] });
   const caught = signal(null);
-  const index = computed(() => ROUNDS.findIndex(r => r.id === round.value));
+  const index = computed(() => Math.max(0, ROUNDS.findIndex(r => r.id === round.value)));
   const def = computed(() => ROUNDS[index.value]);
   let timer = 0;
 
+  effect(() => { if (introDone.value) untrack(() => { if (round.value === "intro") round.value = "install"; }); });
+
   const go = (id, byHand) => {
-    if (byHand) auto.value = false;
+    if (byHand) { auto.value = false; introDone.value = true; }
     round.value = id;
     extra.value = id === "race" ? (race.peek().state === "done" ? 1 : 0) : id === "mistake" ? (caught.peek() ? 1 : 0) : 0;
   };
   effect(() => {
     clearTimeout(timer);
-    if (!auto.value || !inView.value || still.matches) return;
+    if (!auto.value || !inView.value || !introDone.value || still.matches) return;
     const i = index.value;
     timer = setTimeout(() => go(ROUNDS[(i + 1) % ROUNDS.length].id), i >= 3 ? 9000 : 6500);
   });
@@ -306,19 +390,20 @@ export function Compare({ builderUrl }) {
     const value = computed(() => {
       const r = def.value;
       if (r.id === "race") return race.value[side];
-      if (r.id === "mistake") return null;
+      if (r.id === "mistake") return caught.value ? (side === "lucid" ? 1 : 0) : null;
       return r.value(STACKS[side]);
     });
     const digits = computed(() => def.value.digits);
-    return h("div", { class: "cmp-readout", "aria-live": "polite" },
-      () => {
-        const r = def.value;
-        if (r.id === "mistake") return h("div", { class: "cmp-verdict" }, side === "lucid"
-          ? () => (caught.value ? h("div", { class: "cmp-diag" }, h("b", caught.value.code), h("p", caught.value.message), h("small", caught.value.fix)) : h("p", { class: "cmp-wait" }, "Waiting for a mistake."))
-          : () => (caught.value ? h("p", { class: "cmp-silent" }, "No warning. The button ships without a name.") : h("p", { class: "cmp-wait" }, "Waiting for a mistake.")));
-        if (r.id === "race" && race.value[side] == null) return h("p", { class: "cmp-wait" }, race.value.state === "running" ? "Running…" : race.value.state === "error" ? "Couldn't load React here." : "Ready when you are.");
-        return h("p", { class: "cmp-big" }, Count({ value, digits }), h("span", { class: "cmp-unit" }, () => def.value.unit(STACKS[side])));
-      });
+    return h("div", { class: "cmp-readout", "aria-live": "polite" }, () => {
+      const r = def.value;
+      if (value.value == null) {
+        const wait = r.id === "race"
+          ? (race.value.state === "running" ? "Running…" : race.value.state === "error" ? "Couldn't load React here." : "Ready when you are.")
+          : "Waiting for a mistake.";
+        return h("p", { class: "cmp-wait" }, wait);
+      }
+      return untrack(() => h("p", { class: "cmp-big" }, Count({ value, digits }), h("span", { class: "cmp-unit" }, () => def.value.unit(STACKS[side]))));
+    });
   };
 
   const lucidBox = h("div", { class: "cmp-viewport", aria: { label: "Lucid UI race rows" } });
@@ -371,26 +456,50 @@ export function Compare({ builderUrl }) {
     extra.value = 1;
   };
 
+  const results = side => h("ol", { class: "cmp-results" }, OPS.map((op, k) => h("li",
+    h("span", op.name),
+    h("i", { class: "cmp-result-bar" }, h("b", { style: () => { const o = race.value.ops[k]; return { width: o ? `${Math.max(4, (o[side] / Math.max(o.react, o.lucid)) * 100)}%` : "0%" }; } })),
+    h("small", () => { const o = race.value.ops[k]; return o ? `${o[side].toFixed(1)} ms` : "–"; }))));
+
+  const note = side => h("div", { class: "cmp-note", hidden: () => round.value !== "mistake" || !caught.value }, side === "lucid"
+    ? () => (caught.value ? h("div", { class: "cmp-diag" }, h("b", caught.value.code), h("p", caught.value.message), h("small", caught.value.fix)) : null)
+    : h("p", { class: "cmp-silent" }, "No warning without a lint plugin. The button ships without a name."));
+
   const Lane = side => h("div", { class: "cmp-lane", "data-side": side },
     h("header", { class: "cmp-lane-head" },
       h("span", { class: "cmp-lane-dot" }),
       h("div",
         h("b", () => (round.value === "race" ? (side === "react" ? "React" : "Lucid UI") : STACKS[side].name)),
-        h("small", () => (round.value === "race" ? (side === "react" ? "React 19.3 and React DOM, from esm.sh" : "Lucid UI 0.3.8 core") : STACKS[side].tools)))),
+        h("small", () => (round.value === "race" ? (side === "react" ? "React 19.3, from esm.sh" : "Lucid UI 0.3.8 core") : STACKS[side].tools)))),
     h("div", { class: "cmp-field" },
       Particles({ side, round, extra }),
-      h("div", { class: "cmp-race", hidden: () => round.value !== "race" }, side === "lucid" ? lucidBox : reactBox)),
+      h("div", { class: "cmp-race", hidden: () => round.value !== "race" }, side === "lucid" ? lucidBox : reactBox, results(side)),
+      note(side)),
     readout(side));
 
   const winner = computed(() => {
     const r = race.value;
-    if (r.state !== "done") return null;
+    if (r.state !== "done") return "";
     const names = { react: "React", lucid: "Lucid UI" };
     const fast = r.lucid <= r.react ? "lucid" : "react";
     const ratio = Math.max(r.lucid, r.react) / Math.max(0.1, Math.min(r.lucid, r.react));
     const gap = Math.abs(r.react - r.lucid).toFixed(1);
     return ratio < 1.25 ? `Within ${gap} ms of each other on this device.` : `${names[fast]} was ${ratio.toFixed(1)}× faster on this device.`;
   });
+
+  const next = i => ROUNDS[(i + 1) % ROUNDS.length];
+  const actions = ROUNDS.map((r, i) => h("div", { class: "cmp-cell", "data-on": () => String(round.value === r.id || (round.value === "intro" && i === 0)) },
+    r.id === "race"
+      ? [Button({ variant: "primary", icon: "zap", disabled: () => race.value.state === "running", onClick: runRace }, () => (race.value.state === "done" ? "Run it again" : "Run the race")),
+        h("span", { class: "cmp-winner" }, () => winner.value || "Your device, your numbers.")]
+      : r.id === "mistake"
+        ? Button({ variant: "primary", icon: "alert-circle", onClick: makeMistake }, () => (caught.value ? "Make it again" : "Make the mistake"))
+        : Button({ variant: "secondary", iconRight: "arrow-right", onClick: () => go(next(i).id, true) }, `Next: ${next(i).label}`)));
+
+  const stage = h("div", { class: "cmp-stage", "data-intro": () => String(!introDone.value), role: "tabpanel", aria: { label: () => def.value.label } },
+    Lane("react"),
+    h("div", { class: "cmp-vs", "aria-hidden": "true" }, h("span", "vs")),
+    Lane("lucid"));
 
   const section = h("section", { class: "section cmp", id: "compare" },
     h("div", { class: "site-wrap cmp-wrap" },
@@ -405,32 +514,16 @@ export function Compare({ builderUrl }) {
         role: "tab",
         class: "cmp-round",
         "aria-selected": () => String(round.value === r.id),
-        "data-auto": () => String(auto.value && inView.value && round.value === r.id && !still.matches),
+        "data-auto": () => String(auto.value && inView.value && introDone.value && round.value === r.id && !still.matches),
         style: { "--dur": i >= 3 ? "9s" : "6.5s" },
         onClick: () => go(r.id, true)
       }, h("span", { class: "cmp-round-n" }, String(i + 1).padStart(2, "0")), h("span", r.label), h("i", { class: "cmp-round-bar" })))),
-      h("div", { class: "cmp-stage", role: "tabpanel", aria: { label: () => def.value.label } },
-        Lane("react"),
-        h("div", { class: "cmp-vs", "aria-hidden": "true" }, h("span", "vs")),
-        Lane("lucid")),
+      h("div", { class: "cmp-arena" }, stage, still.matches ? null : Intro({ stage, done: introDone })),
       h("div", { class: "cmp-under" },
-        h("p", { class: "cmp-caption", "aria-live": "polite" }, () => def.value.caption),
-        h("div", { class: "cmp-actions" }, () => {
-          if (round.value === "race") return [
-            Button({ variant: "primary", icon: "zap", disabled: () => race.value.state === "running", onClick: runRace }, () => (race.value.state === "done" ? "Run it again" : "Run the race")),
-            () => (winner.value ? h("span", { class: "cmp-winner" }, winner.value) : null)
-          ];
-          if (round.value === "mistake") return Button({ variant: "primary", icon: "alert-circle", onClick: makeMistake }, caught.value ? "Make it again" : "Make the mistake");
-          return Button({ variant: "secondary", iconRight: "arrow-right", onClick: () => go(ROUNDS[(index.value + 1) % ROUNDS.length].id, true) }, `Next: ${ROUNDS[(index.value + 1) % ROUNDS.length].label}`);
-        }),
-        () => (round.value === "race" && race.value.ops.length ? h("ol", { class: "cmp-ops" }, race.value.ops.map(o => h("li",
-          h("span", o.name),
-          h("span", { class: "cmp-op-bars" },
-            h("i", { "data-side": "react", style: { width: `${Math.min(100, (o.react / Math.max(o.react, o.lucid)) * 100)}%` } }),
-            h("i", { "data-side": "lucid", style: { width: `${Math.min(100, (o.lucid / Math.max(o.react, o.lucid)) * 100)}%` } })),
-          h("small", `${o.react.toFixed(1)} · ${o.lucid.toFixed(1)} ms`)))) : null)),
+        h("div", { class: "cmp-stack cmp-captions", "aria-live": "polite" }, ROUNDS.map((r, i) => h("p", { class: "cmp-cell cmp-caption", "data-on": () => String(round.value === r.id || (round.value === "intro" && i === 0)) }, r.caption))),
+        h("div", { class: "cmp-stack cmp-actions" }, actions)),
       h("div", { class: "cmp-score", role: "list", aria: { label: "Scoreboard" } },
-        [["Runtime packages", "33", "1"], ["Shipped, gzipped", `${total(STACKS.react)} KB`, `${total(STACKS.lucid)} KB`], ["Code you own", "181 lines", "30 lines"], ["Says when you slip", "No", "Yes"]].map(([label, r, l]) => h("div", { class: "cmp-score-item", role: "listitem" },
+        [["Runtime packages", "33", "1"], ["Shipped, gzipped", `${total(STACKS.react)} KB`, `${total(STACKS.lucid)} KB`], ["Code you own", "181 lines", "30 lines"], ["Accessibility warnings", "With a plugin", "Built in"]].map(([label, r, l]) => h("div", { class: "cmp-score-item", role: "listitem" },
           h("small", label), h("div", h("span", { "data-side": "react" }, r), h("i", "vs"), h("b", { "data-side": "lucid" }, l))))),
       h("p", { class: "cmp-foot" },
         h("a", { href: builderUrl(LUCID_APP) }, Icon({ name: "zap", size: 14 }), "Open the Lucid version in Builder"),

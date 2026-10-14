@@ -247,10 +247,11 @@ export function For(props, render) {
   const create = (item, index) => {
     const scope = new Scope(owner);
     const position = signal(index);
+    const current = signal(item);
     const content = document.createDocumentFragment();
-    runIn(scope, () => insert(content, render(item, position)));
+    runIn(scope, () => insert(content, render(item, position, current)));
     if (!content.firstChild) content.append(document.createComment(""));
-    return { item, scope, position, first: content.firstChild, last: content.lastChild };
+    return { item, scope, position, current, first: content.firstChild, last: content.lastChild };
   };
 
   const nodesOf = row => {
@@ -281,6 +282,7 @@ export function For(props, render) {
           id = Symbol("duplicate");
         }
         let row = rows.get(id);
+        if (row && render.length > 2) row.current.value = row.item = item;
         if (!row || row.item !== item) row = create(item, index);
         else row.position.value = index;
         next.set(id, row);

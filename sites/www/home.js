@@ -9,7 +9,7 @@ import { CodeWindow } from "/shared/code.js";
 import { DotField } from "/shared/field.js";
 import { Compare } from "./compare.js";
 
-const FACTS = { core: "6.1 KB", all: "38 KB", tokens: "1,140", deps: "0" };
+const FACTS = { core: "6.2 KB", all: "38 KB", tokens: "1,140", deps: "0" };
 
 let LINKS;
 

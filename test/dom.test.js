@@ -183,6 +183,18 @@ test("For rebuilds a row when its item is replaced under the same key", () => {
   assert.equal(app.textContent, "done");
 });
 
+test("For keeps a row and updates it when the render takes the live item", () => {
+  const rows = signal([{ id: 1, label: "One" }, { id: 2, label: "Two" }]);
+  mount(() => h("ul", For({ each: rows, key: r => r.id }, (r, i, live) => h("li", () => live.value.label))), app);
+  const first = app.querySelector("li");
+  rows.value = rows.value.map(r => ({ ...r, label: `${r.label}!` }));
+  assert.equal(app.querySelector("li"), first);
+  assert.equal(app.textContent, "One!Two!");
+  rows.value = [rows.value[1], rows.value[0]];
+  assert.equal(app.querySelector("li").textContent, "Two!");
+  assert.equal(app.querySelectorAll("li")[1], first);
+});
+
 test("For handles rows with several nodes and nested reactivity", () => {
   const items = signal(["x", "y"]);
   const suffix = signal("!");
