@@ -93,6 +93,42 @@ Build this with Lucid UI from lucidui.dev, the npm package @lucidui-dev/core. Be
 
 The homepage has a button that copies it. If something comes out wrong, Builder's console shows each diagnostic and its fix; paste those back to the agent.
 
+## In Next.js, and in v0
+
+Tools that work inside a Next.js project, such as v0, can't preview a standalone `index.html`. Mount Lucid UI inside a normal page instead. Install `@lucidui-dev/core`, load the stylesheet in the layout, and mount from a client component after the page loads:
+
+`app/layout.jsx`:
+
+```jsx
+import "@lucidui-dev/core/bundle.css";
+
+export default function RootLayout({ children }) {
+  return <html lang="en"><body className="lucid-app">{children}</body></html>;
+}
+```
+
+`app/page.jsx`:
+
+```jsx
+"use client";
+import { useEffect, useRef } from "react";
+
+export default function Page() {
+  const host = useRef(null);
+  useEffect(() => {
+    let stop;
+    import("@lucidui-dev/core/bundle").then(({ signal, mount, Page, Button }) => {
+      const count = signal(0);
+      stop = mount(() => Page({ title: "Hello" }, Button({ onClick: () => count.value++ }, () => `Clicked ${count.value}`)), host.current);
+    });
+    return () => stop?.();
+  }, []);
+  return <div ref={host} />;
+}
+```
+
+Write the whole Lucid UI app inside that `then` callback, or in its own module that the callback imports. React only provides the empty `div`; Lucid UI owns everything inside it.
+
 ## What makes Lucid UI easy for agents
 
 - The whole API reference is about 1,140 tokens, so an agent can read all of it before it writes.
