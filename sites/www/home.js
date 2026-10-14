@@ -628,15 +628,15 @@ mountPage({
   site: "www",
   main: L => {
     LINKS = L;
-    return [Hero(), Signals(), Agents(), Watch(), Components(), Charts(), Compare({ builderUrl: code => `${LINKS.builder.replace(/\/$/, "")}/#name=Team%20directory&code=${encodeURIComponent(code)}` }), Principles(), Anywhere(), Start()];
+    return [Hero(), Compare({ builderUrl: code => `${LINKS.builder.replace(/\/$/, "")}/#name=Team%20directory&code=${encodeURIComponent(code)}` }), Signals(), Agents(), Watch(), Components(), Charts(), Principles(), Anywhere(), Start()];
   },
   commands: [
+    { group: "On this page", label: "The weigh-in: Lucid UI vs React and shadcn/ui", icon: "zap", keywords: "compare comparison react tailwind shadcn size benchmark race", run: jump("compare") },
     { group: "On this page", label: "Signals", icon: "zap", run: jump("signals") },
     { group: "On this page", label: "Made for agents", icon: "sparkles", run: jump("agents") },
     { group: "On this page", label: "Watch Claude build live", icon: "monitor", keywords: "video demo builder bridge", run: jump("watch") },
     { group: "On this page", label: "Components", icon: "layers", run: jump("components") },
     { group: "On this page", label: "Charts", icon: "chart", run: jump("charts") },
-    { group: "On this page", label: "The weigh-in: Lucid UI vs React and shadcn/ui", icon: "zap", keywords: "compare comparison react tailwind shadcn size benchmark race", run: jump("compare") },
     { group: "On this page", label: "Principles", icon: "target", run: jump("principles") },
     { group: "On this page", label: "Works anywhere", icon: "layers", keywords: "wordpress shopify squarespace embed plugin cdn", run: jump("anywhere") }
   ]
