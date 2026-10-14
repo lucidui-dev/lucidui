@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { test, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import { signal, mount, h } from "../src/index.js";
@@ -120,4 +121,10 @@ test("icons accept common aliases and report unknown names", async () => {
   Icon({ name: "definitely-not-an-icon" });
   off();
   assert.deepEqual(found, ["unknown-icon"]);
+});
+
+test("design tokens resolve inside .lucid-app, so bundlers that polyfill light-dark() keep their colours", () => {
+  const css = readFileSync(new URL("../src/ui/lucid.css", import.meta.url), "utf8");
+  const block = /@layer lucid \{\s*([^{]+)\{/.exec(css)[1].split(",").map(part => part.trim());
+  assert.ok(block.includes(".lucid-app"), "the token block must also target .lucid-app, where color-scheme is set");
 });

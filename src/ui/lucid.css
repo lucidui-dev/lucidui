@@ -1,5 +1,5 @@
 @layer lucid {
-  :root {
+  :root, .lucid-app {
     --lucid-font-sans: "Geist", "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
     --lucid-font-mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 

@@ -433,7 +433,17 @@ function Charts() {
           title: "Activity",
           subtitle: "Size and shade both carry the value.",
           table: () => ({ columns: ["Day", "Events"], rows: days.filter(d => d.value).map(d => [new Date(d.date).toDateString(), d.value]) })
-        }, DotCalendar({ days, unit: "events", label: "Daily activity" }))))));
+        }, DotCalendar({ days, unit: "events", label: "Daily activity" })))),
+      h("div", { class: "chart-weigh" },
+        h("div", { class: "chart-weigh-copy" },
+          h("b", "A bar chart with a tooltip, weighed"),
+          h("p", "The smallest real page each library needs, with TanStack Charts 1.1 and Lucid UI 0.3.9, built with Vite 8 and gzipped. TanStack Charts draws axes and gridlines and covers far more chart types; Lucid UI draws dot charts with value labels and a table view, and its count includes the stylesheet for every component.")),
+        h("div", { class: "chart-weigh-bars", role: "list", aria: { label: "Shipped size" } },
+          [["TanStack Charts", 40.2, "react"], ["Lucid UI", 19.4, "lucid"]].map(([name, kb, side]) => h("div", { class: "chart-weigh-row", role: "listitem", "data-side": side },
+            h("span", name),
+            h("i", h("b", { style: { width: `${(kb / 40.2) * 100}%` } })),
+            h("small", `${kb} KB`)))),
+        h("a", { class: "chart-weigh-link", href: "https://github.com/lucidui-dev/lucidui/tree/main/bench/charts" }, Icon({ name: "external", size: 13 }), "Rerun it"))));
 }
 
 function Principles() {
