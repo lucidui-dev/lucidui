@@ -331,7 +331,23 @@ a.b-name:hover { color: var(--lucid-ink-2); }
 .b-home-hero { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 18px; }
 .b-home-hero p { margin: 8px 0 0; color: var(--lucid-ink-3); }
 .b-home-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-.b-kit { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; margin-top: -16px; padding: 14px 16px; border-radius: 14px; box-shadow: 0 0 0 1px var(--lucid-line); background: var(--lucid-surface); }
+.b-ask { display: grid; gap: 14px; padding: 22px; border-radius: 18px; background: var(--lucid-surface); box-shadow: 0 0 0 1px var(--lucid-line), var(--lucid-shadow-sm); }
+.b-ask-head h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; color: var(--lucid-ink); letter-spacing: -.02em; }
+.b-ask-head p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--lucid-ink-3); }
+.b-ask-form { display: grid; gap: 12px; }
+.b-ask-input { width: 100%; font-size: 16px; resize: vertical; min-height: 64px; }
+.b-ask-ideas { display: flex; flex-wrap: wrap; gap: 6px; }
+.b-ask-idea { height: 30px; padding: 0 12px; border: 0; border-radius: 999px; background: var(--lucid-surface-sunken); box-shadow: inset 0 0 0 1px var(--lucid-line); color: var(--lucid-ink-2); font: 500 13px/1 var(--lucid-font-sans); cursor: pointer; }
+.b-ask-idea:hover { color: var(--lucid-ink); box-shadow: inset 0 0 0 1px var(--lucid-line-strong); }
+.b-ask-idea:focus-visible { outline: 2px solid var(--lucid-ring); outline-offset: 2px; }
+.b-ask-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.b-ask-back { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding-top: 14px; box-shadow: inset 0 1px 0 var(--lucid-line); font-size: 13.5px; color: var(--lucid-ink-3); }
+.b-paste-input { width: 100%; font: 13px/1.5 var(--lucid-font-mono); }
+@media (max-width: 560px) {
+  .b-ask { padding: 18px 16px; }
+  .b-ask-actions > .lucid-btn { flex: 1 1 calc(50% - 4px); }
+}
+.b-kit { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; margin-top: -24px; padding: 14px 16px; border-radius: 14px; box-shadow: 0 0 0 1px var(--lucid-line); background: var(--lucid-surface); }
 .b-kit-copy { display: grid; gap: 2px; flex: 1 1 260px; min-width: 0; }
 .b-kit-copy b { font-size: 14px; font-weight: 600; }
 .b-kit-copy small { font-size: 12.5px; color: var(--lucid-ink-3); }
@@ -341,7 +357,7 @@ a.b-name:hover { color: var(--lucid-ink-2); }
 .b-kit-btn { gap: 4px; white-space: nowrap; }
 .b-kit-btn[data-kit="lisa"] { box-shadow: inset 0 0 0 1px var(--lucid-ink); }
 @media (max-width: 560px) {
-  .b-kit { margin-top: -20px; }
+  .b-kit { margin-top: -16px; }
   .b-kit .lucid-seg { width: 100%; }
   .b-kit .lucid-seg button { flex: 1; }
   .b-kit-btn { padding-inline: 8px; }

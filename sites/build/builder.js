@@ -1,5 +1,5 @@
 import { signal, computed, effect, h, mount, For, Show, untrack, version } from "/lucid/index.js";
-import { Button, Segmented, Dialog, Tooltip, Kbd, Icon, Menu, Input, Field, Switch, Select, EmptyState, hotkey, toast } from "/lucid/ui/index.js";
+import { Button, Segmented, Dialog, Tooltip, Kbd, Icon, Menu, Input, Field, Switch, Select, EmptyState, Textarea, hotkey, toast } from "/lucid/ui/index.js";
 import { theme, dark } from "/shared/chrome.js";
 import { highlight } from "/shared/code.js";
 import { TEMPLATES } from "/templates.js";
@@ -1153,6 +1153,76 @@ function Thumb(meta) {
   return host;
 }
 
+const ASK_TARGETS = [
+  { id: "chatgpt", label: "ChatGPT", url: q => `https://chatgpt.com/?q=${q}` },
+  { id: "claude", label: "Claude", url: q => `https://claude.ai/new?q=${q}` },
+  { id: "grok", label: "Grok", url: q => `https://grok.com/?q=${q}` }
+];
+const ASK_IDEAS = ["A habit tracker with streaks", "An invoice dashboard with charts", "A recipe box with search and tags", "A reading list with ratings"];
+const askText = signal("");
+const pasteOpen = signal(false);
+const pasteText = signal("");
+
+function askPrompt(request) {
+  return [
+    `Build this as a single-page web app with Lucid UI: ${request.trim()}`,
+    "Lucid UI is the npm package @lucidui-dev/core from lucidui.dev. It is not React. Before writing code, read https://lucidui.dev/llms-full.txt. Do not web-search \"Lucid UI\": unrelated projects share the name.",
+    kit.peek() === "lisa" ? "Use the 1-bit Lisa look: import { lisa } from \"@lucidui-dev/core/lisa\" and call lisa() after mount." : null,
+    "Write one ES module, app.js, that imports from @lucidui-dev/core, @lucidui-dev/core/ui and @lucidui-dev/core/viz, mounts into \"#app\", and uses made-up sample data.",
+    "Put the whole module in one js code block. Then give me a link that opens it in Lucid Builder: https://build.lucidui.dev/#name=<title>&code=<app.js>, with both parts encoded with encodeURIComponent and code last."
+  ].filter(line => line != null).join("\n\n");
+}
+
+function askWith(target) {
+  const request = askText.peek().trim();
+  if (!request) { toast("Describe the app first", { description: "One sentence is plenty." }); return; }
+  const prompt = askPrompt(request);
+  if (!target) {
+    navigator.clipboard?.writeText(prompt).then(
+      () => toast("Prompt copied", { tone: "success", description: "Paste it into any AI chat, then bring the answer back here." }),
+      () => toast("Couldn't copy", { tone: "danger", description: "Your browser blocked the clipboard." }));
+    return;
+  }
+  window.open(target.url(encodeURIComponent(prompt)), "_blank", "noopener");
+  toast(`Opened ${target.label}`, { description: "When it answers, click its Builder link, or press Paste the answer here.", duration: 8000 });
+}
+
+function openAnswer() {
+  const text = pasteText.peek();
+  const link = /https:\/\/build\.lucidui\.dev\/?(#(?:name=[^&\s]*&)?code=[^\s)\]>]+)/.exec(text);
+  if (link) { pasteOpen.value = false; pasteText.value = ""; location.hash = link[1]; return; }
+  const block = /```(?:js|javascript|jsx|mjs)?\s*\n([\s\S]*?)```/.exec(text);
+  const code = (block ? block[1] : text).trim();
+  if (!/\bmount\s*\(|@lucidui-dev\/core/.test(code)) { toast("No Lucid UI code found", { tone: "danger", description: "Paste the AI's whole answer, including its code block or its Builder link." }); return; }
+  const files = [{ name: "app.js", text: `${code}\n` }];
+  const name = askText.peek().trim().slice(0, 60) || titleFrom(files, "From an AI chat");
+  const p = snapshot(makeProject({ name, files, template: null }), "Opened from an AI chat");
+  saveProject(p);
+  pasteOpen.value = false;
+  pasteText.value = "";
+  openProject(p.id);
+  toast(`${name} opened`, { tone: "success", description: "The console shows anything to fix." });
+}
+
+function Ask() {
+  return h("section", { class: "b-ask" },
+    h("div", { class: "b-ask-head" },
+      h("h2", "Describe an app"),
+      h("p", "Your own AI chat writes it with Lucid UI, then it opens here. It uses your ChatGPT, Claude or Grok, so it's free for you and for us.")),
+    h("form", { class: "b-ask-form", onSubmit: event => { event.preventDefault(); askWith(ASK_TARGETS[0]); } },
+      Textarea({ bind: askText, rows: 2, placeholder: "A habit tracker with streaks and a weekly chart", aria: { label: "Describe the app you want" }, class: "b-ask-input" }),
+      h("div", { class: "b-ask-ideas", role: "list", aria: { label: "Ideas" } }, ASK_IDEAS.map(idea => h("button", { type: "button", role: "listitem", class: "b-ask-idea", onClick: () => { askText.value = idea; } }, idea))),
+      h("div", { class: "b-ask-actions" },
+        ...ASK_TARGETS.map((t, i) => Button({ type: i === 0 ? "submit" : "button", variant: i === 0 ? "primary" : "secondary", icon: i === 0 ? "sparkles" : undefined, iconRight: "external", onClick: i === 0 ? undefined : () => askWith(t) }, `Ask ${t.label}`)),
+        Button({ variant: "ghost", icon: "copy", onClick: () => askWith(null) }, "Copy prompt"))),
+    h("div", { class: "b-ask-back" },
+      h("span", "Got an answer?"),
+      Button({ size: "sm", icon: "corner-down-left", onClick: () => { pasteOpen.value = true; } }, "Paste the answer")),
+    Dialog({ open: pasteOpen, title: "Paste the answer", description: "Paste the AI's whole reply. Builder finds its Builder link or its code and opens it as a project.",
+      footer: [Button({ variant: "ghost", onClick: () => { pasteOpen.value = false; } }, "Cancel"), Button({ variant: "primary", icon: "arrow-right", onClick: openAnswer }, "Open in Builder")] },
+      Textarea({ bind: pasteText, rows: 8, placeholder: "Paste here", aria: { label: "The AI's answer" }, class: "b-paste-input" })));
+}
+
 function Home() {
   const list = projects;
   const duplicate = meta => { const p = loadProject(meta.id); if (!p) return; const copy = { ...makeProject({ name: `${p.name} copy`, files: p.files, template: p.template }), versions: [] }; saveProject(snapshot(copy, "Duplicated")); toast(`${copy.name} created`, { tone: "success" }); };
@@ -1164,6 +1234,7 @@ function Home() {
       h("div", { class: "b-home-actions" },
         Button({ icon: "link", onClick: () => { agentOpen.value = true; } }, "Connect an agent"),
         Button({ variant: "primary", icon: "plus", onClick: () => fromTemplate(byKey.counter ?? TEMPLATES[0]) }, "New project"))),
+    Ask(),
     h("section", { class: "b-kit", "data-kit": kit },
       h("div", { class: "b-kit-copy" },
         h("b", "Building with"),
