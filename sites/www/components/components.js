@@ -4,9 +4,9 @@ import * as UI from "/lucid/ui/index.js";
 import * as Viz from "/lucid/viz/index.js";
 import { Button, Icon, Input, Tooltip, EmptyState, Segmented, toast } from "/lucid/ui/index.js";
 import { lisa } from "/lucid/lisa/index.js";
-import { mountPage } from "/shared/chrome.js";
+import { mountPage, copyBrief } from "/shared/chrome.js";
 import { highlight } from "/shared/code.js";
-import { SETS, COMPONENTS, sourceOf, appSource } from "/shared/catalog.js";
+import { SETS, COMPONENTS, sourceOf, appSource, promptOf } from "/shared/catalog.js";
 
 const SCOPE = { ...Core, ...UI, ...Viz };
 const NAMES = Object.keys(SCOPE).filter(name => /^[A-Za-z_$][\w$]*$/.test(name));
@@ -68,6 +68,14 @@ function openInBuilder(entry) {
   }, () => { tab?.close(); toast("Couldn't open Builder", { tone: "danger", description: "Copy the code and paste it into Builder instead." }); });
 }
 
+function copyPrompt(entry) {
+  const source = appSource(entry, MODULES);
+  const text = promptOf(entry, look.peek() === "lisa" ? lisaSource(source) : source);
+  navigator.clipboard?.writeText(text).then(
+    () => toast("Prompt copied", { tone: "success", description: `Paste it into your AI agent to build with ${entry.name}.` }),
+    () => toast("Copy failed", { tone: "danger", description: "Your browser blocked the clipboard." }));
+}
+
 function copy(entry) {
   navigator.clipboard?.writeText(sourceOf(entry)).then(
     () => toast(`${entry.name} copied`, { tone: "success", description: "Paste it inside any Lucid UI component." }),
@@ -113,6 +121,7 @@ function Specimen(entry) {
       h("div", { class: "cx-actions" },
         Button({ size: "sm", variant: "ghost", icon: "hash", class: "cx-code-btn", "aria-expanded": () => String(codeOpen.value), "aria-controls": codeId, onClick: () => { codeOpen.value = !codeOpen.peek(); } }, () => (codeOpen.value ? "Hide code" : "Code")),
         Tooltip({ label: "Copy code" }, Button({ size: "sm", variant: "ghost", icon: "copy", aria: { label: `Copy ${entry.name} code` }, onClick: () => copy(entry) })),
+        Tooltip({ label: "Copy a prompt for your AI agent" }, Button({ size: "sm", variant: "ghost", icon: "sparkles", aria: { label: `Copy an AI prompt for ${entry.name}` }, onClick: () => copyPrompt(entry) }, "Prompt")),
         Tooltip({ label: "Open in Builder" }, Button({ size: "sm", icon: "external", aria: { label: `Open ${entry.name} in Builder` }, onClick: () => openInBuilder(entry) }, h("span", { class: "cx-hide-sm" }, "Builder"))))),
     h("div", { class: "cx-code", id: codeId, inert: () => !codeOpen.value },
       h("div", { class: "cx-code-clip" },
@@ -150,7 +159,8 @@ function Hero() {
         h("p", { class: "cx-lede" }, "Every component, chart and pattern in Lucid UI, on one page. Use them right here, read the code that draws them, and open any one in Builder to make it yours."),
         h("div", { class: "cx-hero-actions" },
           Button({ variant: "primary", size: "lg", iconRight: "arrow-down", onClick: goTo(SETS[0].id) }, "Browse the kit"),
-          Button({ size: "lg", icon: "external", href: builderHome }, "Open Builder"))),
+          Button({ size: "lg", icon: "external", href: builderHome }, "Open Builder"),
+          Button({ size: "lg", variant: "ghost", icon: "sparkles", onClick: copyBrief }, "Copy agent prompt"))),
       h("div", { class: "cx-stats", aria: { label: "What's inside" } },
         stat(COUNTS.components, "live examples"),
         stat(COUNTS.sets, "sets"),

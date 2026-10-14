@@ -575,7 +575,7 @@ function GuideDialog() {
     description: "A workbench for Lucid UI that runs entirely in your browser. Write an app and watch it render as you type, or let your AI agent build here with you.",
     size: "lg",
     footer: [
-      h("span", { class: "b-guide-note" }, Icon({ name: "lock", size: 13 }), "Nothing you write leaves this browser unless you share it."),
+      h("span", { class: "b-guide-note" }, Icon({ name: "lock", size: 13 }), "No account, no waitlist. Nothing you write leaves this browser unless you share it."),
       h("span", { class: "lucid-spacer" }),
       Button({ variant: "ghost", href: "https://docs.lucidui.dev" }, "Read the docs"),
       Button({ variant: "primary", iconRight: "arrow-right", onClick: close }, "Start building")
@@ -1160,7 +1160,7 @@ function Home() {
   const share = meta => { const p = loadProject(meta.id); project.value = p; shareOpen.value = true; };
   return h("main", { class: "b-home" },
     h("section", { class: "b-home-hero" },
-      h("div", h("h1", "Your projects"), h("p", "Saved in this browser, with their history. Nothing is uploaded unless you share.")),
+      h("div", h("h1", "Your projects"), h("p", "Saved in this browser, with their history. No account and no waitlist, and nothing is uploaded unless you share.")),
       h("div", { class: "b-home-actions" },
         Button({ icon: "link", onClick: () => { agentOpen.value = true; } }, "Connect an agent"),
         Button({ variant: "primary", icon: "plus", onClick: () => fromTemplate(byKey.counter ?? TEMPLATES[0]) }, "New project"))),

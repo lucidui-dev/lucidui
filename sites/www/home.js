@@ -309,7 +309,7 @@ function Watch() {
       h("div", { class: "watch-ctas" },
         Button({ variant: "primary", size: "lg", href: "https://docs.lucidui.dev/docs/AGENTS.md", icon: "link" }, "Connect your agent"),
         Button({ size: "lg", href: LINKS.builder, iconRight: "arrow-right" }, "Open Builder")),
-      h("p", { class: "watch-note" }, "Runs on your computer through the Lucid bridge. Nothing is uploaded.")));
+      h("p", { class: "watch-note" }, "Open to everyone: no account, no waitlist. Runs on your computer through the Lucid bridge, and nothing is uploaded.")));
 }
 
 function Components() {
@@ -437,10 +437,13 @@ function Charts() {
 }
 
 function Principles() {
-  const item = (icon, title, text) => h("li", { class: "principle" },
+  const item = (icon, title, text, proof) => h("li", { class: "principle" },
     h("span", { class: "principle-icon" }, Icon({ name: icon, size: 18 })),
     h("h3", { class: "principle-title" }, title),
-    h("p", { class: "principle-text" }, text));
+    h("p", { class: "principle-text" }, text),
+    h("div", { class: "principle-proof" }, proof));
+  const pair = rows => h("dl", { class: "proof-pairs" }, rows.map(([k, v]) => [h("dt", k), h("dd", v)]));
+  const core = parseFloat(FACTS.core);
   return h("section", { class: "section", id: "principles" },
     h("div", { class: "site-wrap" },
       SectionHead({
@@ -450,12 +453,20 @@ function Principles() {
       }),
       h("a", { class: "manifesto-link", href: LINKS.manifesto }, h("span", { class: "manifesto-link-dot" }), "Read the manifesto: nine things Lucid believes", Icon({ name: "arrow-right", size: 14 })),
       h("ul", { class: "principles" },
-        item("monitor", "Browser-native", "Plain elements and plain events. What you write is what the browser runs."),
-        item("zap", "No build step", "Import the modules in a script tag and start. Tooling is always optional."),
-        item("hexagon", "Small by contract", `The core runtime is ${FACTS.core} gzipped, and a test fails the build if it grows past its budget. Every component, chart and style together is ${FACTS.all}.`),
-        item("check-circle", "Accessible by structure", "Keyboard, focus and ARIA live inside the components, not in a checklist."),
-        item("sparkles", "Beautiful by default", "A design language with a point of view, in light and dark, from one set of tokens."),
-        item("users", "Free, forever", "MIT licensed. No paid tier, no hosted dependency, no lock-in.")),
+        item("monitor", "Browser-native", "Plain elements and plain events. What you write is what the browser runs.",
+          h("code", { class: "proof-code" }, h("span", { class: "tok-prop" }, "Button"), "(", h("span", { class: "tok-str" }, "\"Save\""), ") → <button class=\"lucid-btn\">")),
+        item("zap", "No build step", "Import the modules in a script tag and start. Tooling is always optional.",
+          pair([["Build steps", "0"], ["Runs from", "a script tag"]])),
+        item("hexagon", "Small by contract", `The core runtime is ${FACTS.core} gzipped, and a test fails the build if it grows past its budget. Every component, chart and style together is ${FACTS.all}.`,
+          h("div", { class: "proof-meter" },
+            h("div", { class: "proof-meter-row" }, h("span", `Core ${FACTS.core}`), h("span", "Budget 7 KB")),
+            h("i", h("b", { style: { width: `${Math.round((core / 7) * 100)}%` } })))),
+        item("check-circle", "Accessible by structure", "Keyboard, focus and ARIA live inside the components, not in a checklist.",
+          h("code", { class: "proof-code" }, "Dialog → <dialog> opened with ", h("span", { class: "tok-prop" }, "showModal()"), " · focus stays inside · Esc closes")),
+        item("sparkles", "Beautiful by default", "A design language with a point of view, in light and dark, from one set of tokens.",
+          h("div", { class: "proof-swatches" }, ["--lucid-bg", "--lucid-surface", "--lucid-ink", "--lucid-accent"].map(t => h("span", { style: { background: `var(${t})` }, title: t })), h("small", "One set of tokens, both themes"))),
+        item("users", "Free, forever", "MIT licensed. No paid tier, no hosted dependency, no lock-in.",
+          pair([["Licence", "MIT"], ["Paid tiers", "None"], ["Hosting", "Anywhere"]]))),
       h("div", { class: "source-band" },
         h("div", { class: "source-band-copy" },
           h("div", { class: "source-band-url" }, h("span", "view-source:"), "lucidui.dev"),

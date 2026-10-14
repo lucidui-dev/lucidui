@@ -571,3 +571,19 @@ export function appSource(entry, modules) {
     ""
   ].filter(line => line !== null).join("\n");
 }
+
+export function promptOf(entry, source) {
+  return [
+    "Build with Lucid UI from lucidui.dev, the npm package @lucidui-dev/core. Before writing any code, read https://lucidui.dev/llms-full.txt. Do not web-search \"Lucid UI\": unrelated projects share the name.",
+    "",
+    `Use ${entry.name}. ${entry.summary}`,
+    "",
+    "Start from this working example:",
+    "",
+    "```js",
+    source.trimEnd(),
+    "```",
+    "",
+    "When Lucid reports a diagnostic, apply the fix it gives. When you finish, give me a link that opens the app in Lucid Builder, as llms-full.txt describes under Hand your code to Builder."
+  ].join("\n");
+}

@@ -1386,6 +1386,64 @@ Page({ title: "Projects", actions: Button({ variant: "primary", icon: "plus" }, 
       : EmptyState({ icon: "inbox", title: "No projects yet", description: "Create one to get started." })));
 ```
 
+## Server data with TanStack Query
+
+Lucid UI draws the interface; [TanStack Query](https://tanstack.com/query) can fetch, cache and refetch the data under it. Its core runs without a framework, so two small adapters turn a query and a mutation into Lucid signals. Install `@tanstack/query-core` from npm, or import it from a CDN such as esm.sh.
+
+```js
+import { QueryClient, QueryObserver, MutationObserver } from "@tanstack/query-core";
+import { signal, onCleanup, mount, Page, Stack, Row, Text, Input, Button, Card, EmptyState, toast } from "@lucidui-dev/core/bundle";
+
+const client = new QueryClient();
+client.mount();
+
+function query(options) {
+  const observer = new QueryObserver(client, options);
+  const result = signal(observer.getOptimisticResult(observer.options));
+  onCleanup(observer.subscribe(next => { result.value = next; }));
+  return result;
+}
+
+function mutation(options) {
+  const observer = new MutationObserver(client, options);
+  const result = signal(observer.getCurrentResult());
+  onCleanup(observer.subscribe(next => { result.value = next; }));
+  return { result, mutate: variables => observer.mutate(variables).catch(() => {}) };
+}
+
+const api = {
+  people: () => fetch("/api/people").then(r => r.json()),
+  add: name => fetch("/api/people", { method: "POST", body: JSON.stringify({ name }) }).then(r => r.json())
+};
+
+function People() {
+  const draft = signal("");
+  const people = query({ queryKey: ["people"], queryFn: api.people });
+  const add = mutation({
+    mutationFn: api.add,
+    onSuccess: () => { client.invalidateQueries({ queryKey: ["people"] }); toast("Added", { tone: "success" }); },
+    onError: () => toast("Couldn't add them", { tone: "danger" })
+  });
+  const submit = () => { if (draft.value.trim()) { add.mutate(draft.value.trim()); draft.value = ""; } };
+
+  return Page({ title: "People", description: () => (people.value.isFetching ? "Refreshing…" : "Up to date") },
+    Row({ gap: 2 },
+      Input({ bind: draft, placeholder: "Name", aria: { label: "Name" }, style: { flex: 1 } }),
+      Button({ variant: "primary", icon: "plus", loading: () => add.result.value.isPending, onClick: submit }, "Add")),
+    () => {
+      const r = people.value;
+      if (r.isPending) return Text({ tone: "muted" }, "Loading…");
+      if (r.isError) return EmptyState({ icon: "alert-circle", title: "Couldn't load people", action: Button({ onClick: () => r.refetch() }, "Try again") });
+      if (!r.data.length) return EmptyState({ icon: "users", title: "No one yet", description: "Add the first person above." });
+      return Stack({ gap: 2 }, r.data.map(p => Card({ padding: "sm" }, Text(p.name))));
+    });
+}
+
+mount(People, "#app");
+```
+
+`query` returns a signal holding TanStack's whole result, with `data`, `isPending`, `isFetching`, `isError` and `refetch`, so any part of the page can read it. Both adapters unsubscribe when their component is removed. Caching, retries, background refetching and invalidation all work as they do in TanStack Query.
+
 
 ---
 
