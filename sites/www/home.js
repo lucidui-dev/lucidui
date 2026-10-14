@@ -7,6 +7,7 @@ import { StatTile, DotSparkline, DotColumns, Waffle, DotDumbbell, DotCalendar, C
 import { mountPage, commandOpen, SectionHead, jump, DownloadButton, copyBrief } from "/shared/chrome.js";
 import { CodeWindow } from "/shared/code.js";
 import { DotField } from "/shared/field.js";
+import { Compare } from "./compare.js";
 
 const FACTS = { core: "6.1 KB", all: "38 KB", tokens: "1,140", deps: "0" };
 
@@ -627,7 +628,7 @@ mountPage({
   site: "www",
   main: L => {
     LINKS = L;
-    return [Hero(), Signals(), Agents(), Watch(), Components(), Charts(), Principles(), Anywhere(), Start()];
+    return [Hero(), Signals(), Agents(), Watch(), Components(), Charts(), Compare({ builderUrl: code => `${LINKS.builder.replace(/\/$/, "")}/#name=Team%20directory&code=${encodeURIComponent(code)}` }), Principles(), Anywhere(), Start()];
   },
   commands: [
     { group: "On this page", label: "Signals", icon: "zap", run: jump("signals") },
@@ -635,6 +636,7 @@ mountPage({
     { group: "On this page", label: "Watch Claude build live", icon: "monitor", keywords: "video demo builder bridge", run: jump("watch") },
     { group: "On this page", label: "Components", icon: "layers", run: jump("components") },
     { group: "On this page", label: "Charts", icon: "chart", run: jump("charts") },
+    { group: "On this page", label: "The weigh-in: Lucid UI vs React and shadcn/ui", icon: "zap", keywords: "compare comparison react tailwind shadcn size benchmark race", run: jump("compare") },
     { group: "On this page", label: "Principles", icon: "target", run: jump("principles") },
     { group: "On this page", label: "Works anywhere", icon: "layers", keywords: "wordpress shopify squarespace embed plugin cdn", run: jump("anywhere") }
   ]
