@@ -15,5 +15,6 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: node tools/build.js
+      - run: node tools/prepack.js
       - run: npm test
+      - run: node tools/build.js
