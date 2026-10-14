@@ -109,6 +109,16 @@ const UPDATES = [
 
 const RELEASES = [
   {
+    version: "0.3.9",
+    date: "14 October 2026",
+    title: "Lists that update in place",
+    summary: "For can keep a row and update it when its item is replaced, so updating a long list no longer rebuilds every row.",
+    items: [
+      ["Improved", "Give For's row function a third argument, a signal holding the row's latest item, and read from it. The row stays and only what changed updates. Updating every row of a 1,000-row list is about twice as fast."],
+      ["Changed", "The core is 6.2 KB gzipped, up from 6.1 KB."]
+    ]
+  },
+  {
     version: "0.3.8",
     date: "13 October 2026",
     title: "Every SVG tag draws",
