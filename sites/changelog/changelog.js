@@ -116,6 +116,15 @@ const UPDATES = [
 
 const RELEASES = [
   {
+    version: "0.3.10",
+    date: "14 October 2026",
+    title: "Colours that survive Vite",
+    summary: "Apps bundled with Vite 8 keep their colours. Before, its CSS minifier could turn charts black and colours wrong.",
+    items: [
+      ["Fixed", "The design tokens in lucid.css now also live on .lucid-app, where color-scheme is set, so light-dark() colours resolve after Vite's minifier rewrites them. Light, dark and per-app themes all work in bundled builds."]
+    ]
+  },
+  {
     version: "0.3.9",
     date: "14 October 2026",
     title: "Lists that update in place",
