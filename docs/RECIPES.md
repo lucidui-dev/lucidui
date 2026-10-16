@@ -145,3 +145,23 @@ mount(People, "#app");
 ```
 
 `query` returns a signal holding TanStack's whole result, with `data`, `isPending`, `isFetching`, `isError` and `refetch`, so any part of the page can read it. Both adapters unsubscribe when their component is removed. Caching, retries, background refetching and invalidation all work as they do in TanStack Query.
+
+## Inside React, Next.js and v0
+
+Tools that only preview React, such as v0, Lovable and Bolt, mount a Lucid UI app with one component:
+
+```jsx
+"use client";
+import { signal } from "@lucidui-dev/core";
+import { Button } from "@lucidui-dev/core/ui";
+import { Lucid } from "@lucidui-dev/core/react";
+
+const count = signal(0);
+const Counter = () => Button({ onClick: () => count.value++ }, () => `Clicked ${count.value}`);
+
+export default function Page() {
+  return <Lucid app={Counter} />;
+}
+```
+
+`<Lucid app={App} props={{ ... }} />` renders a `div` with the `lucid-app` class, runs `App(props)` inside it once the page loads, and stops it when React removes it. React owns the page around it; Lucid UI owns everything inside. Keep the file a client component with `"use client"`, and import `@lucidui-dev/core/ui.css` once, in Next.js from `app/layout.jsx`.

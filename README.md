@@ -57,6 +57,7 @@ Lucid UI also ships as one file, `bundle/lucid.js` (with `bundle/lucid.css`), wh
 </script>
 ```
 
+- **React, Next.js and v0:** `import { Lucid } from "@lucidui-dev/core/react"` and render `<Lucid app={App} />`. React owns the page; Lucid UI owns everything inside. See [docs/RECIPES.md](docs/RECIPES.md#inside-react-nextjs-and-v0).
 - **1-bit Lisa:** a second look for every component, in pure black and white. Import `lisa` from `@lucidui-dev/core/lisa` and add `lisa.css`. See [docs/UI.md](docs/UI.md).
 - **WordPress:** the plugin in [integrations/wordpress](integrations/wordpress/lucid-ui/readme.txt) adds a `[lucid app="..."]` shortcode and registers `@lucidui-dev/core`, `@lucidui-dev/core/ui` and `@lucidui-dev/core/viz` as script modules (WordPress 6.5+). Guide: [docs/WORDPRESS.md](docs/WORDPRESS.md).
 - **Shopify:** upload `lucid.js` and `lucid.css` to your theme assets and import with `{{ 'lucid.js' | asset_url }}` in a section. Theme storefronts only; checkout does not allow custom scripts.

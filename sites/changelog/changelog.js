@@ -3,6 +3,7 @@ import { Badge } from "/lucid/ui/index.js";
 import { mountPage, SectionHead } from "/shared/chrome.js";
 
 const UPDATES = [
+  { date: "15 October 2026", area: "Library", kind: "New", title: "Lucid UI inside React", text: "AI app builders such as v0, Lovable and Bolt only preview React apps. Lucid UI 0.3.11 adds a Lucid component, so they can drop a Lucid UI app into their React page in one line: import { Lucid } from \"@lucidui-dev/core/react\" and render <Lucid app={App} />. React owns the page around it and Lucid owns everything inside. React stays optional, and the core and the bundle never load it." },
   { date: "14 October 2026", area: "Editions", kind: "New", title: "No. 08, Tablekeep", text: "Tablekeep is the front of house for a restaurant, built only from Lucid UI, in linen paper and claret by day and a deep wine night in dark mode. Tonight shows covers, arrivals, allergy and VIP heads-ups and how full each room is. Reservations runs one day at a time under a two-week strip of covers, with views you save into the sidebar. The floor plan draws four rooms to scale with live table states, and you seat, move or close tables from it. There is a waitlist with quotes that turn claret when overdue, 1,400 guests with a profile each, and private events that swap the sidebar for their own, with planning checklists for the menu, guest list, wine, floor, staffing and deposit. The sidebar folds to icons and becomes a drawer on phones. Try the live preview at editions.lucidui.dev/tablekeep." },
   { date: "14 October 2026", area: "Docs", kind: "Improved", title: "Agents can read the docs from anywhere", text: "lucidui.dev/llms.txt and llms-full.txt now allow cross-origin reads, so AI tools that fetch the docs from inside a browser sandbox, like DeepSeek's code runner, are no longer blocked. The agent guide also has a new section for Next.js and v0, which can't preview a standalone index.html: mount Lucid UI from a client component instead. The pattern is tested on Next.js 16." },
   { date: "14 October 2026", area: "Docs", kind: "New", title: "A starter you can deploy in one click", text: "github.com/lucidui-dev/lucid-starter is a small finished Lucid UI app, a team list with search, an Add dialog and toasts, in two files with no build step. Deploy to Vercel or Deploy to Netlify copies it to your GitHub and puts it online, or press Use this template. The README and the Put it online guide link to it." },
@@ -118,6 +119,16 @@ const UPDATES = [
 ];
 
 const RELEASES = [
+  {
+    version: "0.3.11",
+    date: "15 October 2026",
+    title: "Lucid UI inside React",
+    summary: "A Lucid component for React, so v0, Lovable, Bolt and any Next.js or React app can run a Lucid UI app inside their own page.",
+    items: [
+      ["New", "import { Lucid } from \"@lucidui-dev/core/react\" and render <Lucid app={App} />. It renders a div with the lucid-app class, mounts the Lucid UI app inside it once the page loads, and stops it when React removes it. It works with React 18 and 19, server rendering and Strict Mode, and React stays optional: the core and the bundle never load it."],
+      ["Docs", "The agent guide and recipes now show the Lucid component for Next.js and v0, in place of the hand-written useEffect setup."]
+    ]
+  },
   {
     version: "0.3.10",
     date: "14 October 2026",
