@@ -39,6 +39,7 @@ export function links(site) {
     editions: "https://editions.lucidui.dev",
     changelog: "https://changelog.lucidui.dev",
     x: "https://x.com/lucidui_",
+    maker_x: "https://x.com/madebyez",
     github: "https://github.com/lucidui-dev/lucidui",
     npm: "https://www.npmjs.com/package/@lucidui-dev/core",
     reddit: "https://www.reddit.com/user/lucidui_",
@@ -336,7 +337,7 @@ function Social(L) {
 function Footer(L) {
   const column = (title, items) => h("div", { class: "foot-col" },
     h("div", { class: "foot-title" }, title),
-    items.map(([label, href]) => h("a", { href }, label)));
+    items.map(([label, href, external]) => h("a", external ? { href, target: "_blank", rel: "noopener" } : { href }, label)));
   return h("footer", { class: "site-foot" },
     h("div", { class: "site-wrap foot-inner" },
       h("div", { class: "foot-brand" },
@@ -347,7 +348,8 @@ function Footer(L) {
       column("Product", [["Components", L.components], ["Manifesto", L.manifesto], ["The Case for Lucid", L.case], ["Sandbox", L.playground], ["Builder", L.builder], ["Editions", L.editions], ["Docs", L.docs], ["Changelog", L.changelog], ["Status", L.status], ["Download", DOWNLOAD]]),
       column("Source", [["Page source", L.source], ["Core runtime", L.core], ["llms.txt", L.llms]]),
       column("Contact", [["hello@lucidui.dev", L.hello], ["press@lucidui.dev", L.press_mail], ["security@lucidui.dev", L.security]]),
-      column("Company", [["Press", L.press], ["Privacy", L.privacy], ["License", L.license], ["legal@lucidui.dev", L.legal]])),
+      column("Company", [["Press", L.press], ["Privacy", L.privacy], ["License", L.license], ["legal@lucidui.dev", L.legal]]),
+      column("Follow", [["@lucidui_ on X", L.x, true], ["@madebyez on X", L.maker_x, true]])),
     h("div", { class: "site-wrap foot-base" },
       h("span", { class: "foot-copy" },
         `© ${new Date().getFullYear()} Lucid UI`),
@@ -380,6 +382,7 @@ function Commands(L, extra) {
       { group: "Contact", label: "Press enquiries", icon: "message", run: go(L.press_mail) },
       { group: "Contact", label: "Report a security issue", icon: "alert-circle", run: go(L.security) },
       { group: "Follow", label: "@lucidui_ on X", icon: "external", keywords: "twitter social", run: go(L.x) },
+      { group: "Follow", label: "@madebyez on X", icon: "external", keywords: "twitter social maker ezra", run: go(L.maker_x) },
       { group: "Follow", label: "GitHub", icon: "external", keywords: "source code repository lucidui-dev", run: go(L.github) },
       { group: "Follow", label: "npm", icon: "external", keywords: "package registry lucidui", run: go(L.npm) },
       { group: "Follow", label: "Reddit", icon: "external", keywords: "community u/lucidui_", run: go(L.reddit) },
