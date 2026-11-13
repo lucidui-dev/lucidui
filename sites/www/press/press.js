@@ -2,6 +2,7 @@ import { signal, computed, h, version } from "/lucid/index.js";
 import { Button, Segmented, Input, Icon, Tooltip, toast } from "/lucid/ui/index.js";
 import { StatTile, Waffle } from "/lucid/viz/index.js";
 import { mountPage, SectionHead, jump } from "/shared/chrome.js";
+import { RELEASES, releaseDate, releasePath } from "/press/releases.js";
 
 const MEDIA = "/media/";
 const KIT = "/media/press/lucidui-press-kit.zip";
@@ -118,6 +119,20 @@ function Hero(L) {
         },
         h("img", { src: `${MEDIA}logo/lucidui-icon.svg`, alt: "", width: 320, height: 320 }),
         h("span", { class: "press-hero-shine", style: { "--x": () => `${(tilt.value.x + 0.5) * 100}%`, "--y": () => `${(tilt.value.y + 0.5) * 100}%` } })))));
+}
+
+function News() {
+  const r = RELEASES[0];
+  if (!r) return null;
+  return h("section", { class: "site-wrap pr-news-wrap", id: "news" },
+    h("a", { class: "pr-card", href: releasePath(r) },
+      h("div", { class: "pr-card-meta" },
+        h("span", { class: "pr-card-kicker" }, h("i"), "News"),
+        h("time", { datetime: r.date }, releaseDate(r.date))),
+      h("div", { class: "pr-card-text" },
+        h("h2", { class: "pr-card-title" }, r.headline),
+        h("p", { class: "pr-card-sub" }, r.sub)),
+      h("span", { class: "pr-card-go" }, "Read the release", Icon({ name: "arrow-right", size: 16 }))));
 }
 
 function Facts() {
@@ -328,8 +343,9 @@ function Contact(L) {
 
 mountPage({
   site: "press",
-  main: L => [Hero(L), Facts(), Logos(), Files(), Usage(), Colours(), Type(), Words(L), Contact(L)],
+  main: L => [News(), Hero(L), Facts(), Logos(), Files(), Usage(), Colours(), Type(), Words(L), Contact(L)],
   commands: [
+    ...RELEASES.map(r => ({ group: "News", label: r.headline, icon: "message", run: () => { location.href = releasePath(r); } })),
     { group: "On this page", label: "Logos", icon: "image", run: jump("logos") },
     { group: "On this page", label: "Every file and size", icon: "download", run: jump("files") },
     { group: "On this page", label: "Usage", icon: "check-circle", run: jump("usage") },

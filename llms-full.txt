@@ -63,6 +63,11 @@ If you can use MCP tools, the Lucid bridge renders your code in the user's Lucid
 - [Diagnostics](https://docs.lucidui.dev/docs/DIAGNOSTICS.md): every warning and error code, with the fix
 - [Vision](https://docs.lucidui.dev/docs/VISION.md): goals, principles and roadmap
 
+## Press
+
+- [The UI layer your AI agent can learn in one read](https://lucidui.dev/press/2026-11-launch.txt): the launch press release, 12 November 2026, as plain text
+- [Press kit](https://lucidui.dev/press/): logos, colors, type, facts and contact, press@lucidui.dev
+
 
 ---
 

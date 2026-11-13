@@ -235,3 +235,21 @@
   .file-row > code, .file-row > .file-format { display: none; }
   .file-row-head > :nth-child(2), .file-row-head > :nth-child(3) { display: none; }
 }
+
+.pr-news-wrap { padding-top: 40px; }
+.pr-card { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 28px; padding: 26px 30px; border-radius: 22px; color: var(--lucid-ink); text-decoration: none; background: var(--lucid-bg); box-shadow: inset 0 0 0 1px var(--lucid-line); transition: box-shadow 200ms, transform 200ms var(--lucid-ease-out); }
+.pr-card:hover { box-shadow: inset 0 0 0 1px var(--lucid-line-strong), 0 20px 40px -28px rgb(10 10 10 / .4); transform: translateY(-1px); }
+.pr-card:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--lucid-ring); }
+.pr-card-meta { display: grid; gap: 10px; justify-items: start; }
+.pr-card-kicker { display: inline-flex; align-items: center; gap: 7px; height: 26px; padding: 0 11px 0 9px; border-radius: 99px; font: 500 12px/1 var(--lucid-font-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--site-eyebrow); background: light-dark(rgb(138 109 31 / .08), rgb(232 214 168 / .1)); box-shadow: inset 0 0 0 1px light-dark(rgb(138 109 31 / .25), rgb(232 214 168 / .28)); }
+.pr-card-kicker i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.pr-card-meta time { font: 500 12.5px/1 var(--lucid-font-mono); color: var(--lucid-ink-3); white-space: nowrap; }
+.pr-card-text { min-width: 0; }
+.pr-card-title { margin: 0; font-size: clamp(19px, 2vw, 24px); line-height: 1.2; font-weight: 600; letter-spacing: -.025em; text-wrap: balance; }
+.pr-card-sub { margin: 8px 0 0; font-size: 14.5px; line-height: 1.55; color: var(--lucid-ink-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.pr-card-go { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 12px; font-size: 14.5px; font-weight: 500; white-space: nowrap; color: var(--lucid-primary-ink); background: var(--lucid-primary); }
+@media (max-width: 860px) {
+  .pr-card { grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 22px 20px; }
+  .pr-card-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+  .pr-card-go { justify-self: start; }
+}
