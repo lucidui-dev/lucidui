@@ -72,3 +72,8 @@ test("search engines and agents can find every release", () => {
     assert.ok(read("llms.txt").includes(`https://lucidui.dev/press/${r.slug}.txt`));
   }
 });
+
+test("the home and press pages link the latest release in their static HTML", () => {
+  const r = RELEASES[0];
+  for (const page of ["sites/www/index.html", "sites/www/press/index.html"]) assert.ok(read(page).includes(`href="${releasePath(r)}"`), page);
+});
